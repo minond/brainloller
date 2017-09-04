@@ -10,15 +10,6 @@ import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetic
 import Task
 
 
-main =
-    Html.program
-        { init = ( Loading, loadCode )
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
 type Msg
     = ImageLoaded (Result Error Canvas)
 
@@ -26,6 +17,15 @@ type Msg
 type Model
     = GotCanvas Canvas Int
     | Loading
+
+
+main =
+    Html.program
+        { init = ( Loading, loadCode )
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
