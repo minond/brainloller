@@ -1,10 +1,12 @@
 ELMMAKE = elm-make
 YARN = yarn
 
-install:
-	$(YARN)
-
 .PHONY: build
-build:
+build: vendor
 	$(ELMMAKE) src/Main.elm --output=build/main.js
 
+vendor:
+	cp node_modules/tachyons/css/tachyons.min.css build/tachyons.min.css
+
+install:
+	$(YARN)

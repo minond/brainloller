@@ -8145,121 +8145,6 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
-var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
-var _elm_lang$html$Html_Events$targetChecked = A2(
-	_elm_lang$core$Json_Decode$at,
-	{
-		ctor: '::',
-		_0: 'target',
-		_1: {
-			ctor: '::',
-			_0: 'checked',
-			_1: {ctor: '[]'}
-		}
-	},
-	_elm_lang$core$Json_Decode$bool);
-var _elm_lang$html$Html_Events$targetValue = A2(
-	_elm_lang$core$Json_Decode$at,
-	{
-		ctor: '::',
-		_0: 'target',
-		_1: {
-			ctor: '::',
-			_0: 'value',
-			_1: {ctor: '[]'}
-		}
-	},
-	_elm_lang$core$Json_Decode$string);
-var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
-var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
-var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
-var _elm_lang$html$Html_Events$onFocus = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'focus',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onBlur = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'blur',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
-	_elm_lang$html$Html_Events$defaultOptions,
-	{preventDefault: true});
-var _elm_lang$html$Html_Events$onSubmit = function (msg) {
-	return A3(
-		_elm_lang$html$Html_Events$onWithOptions,
-		'submit',
-		_elm_lang$html$Html_Events$onSubmitOptions,
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onCheck = function (tagger) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'change',
-		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
-};
-var _elm_lang$html$Html_Events$onInput = function (tagger) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'input',
-		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
-};
-var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseout',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseover',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseleave',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseenter',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseup',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mousedown',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'dblclick',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$onClick = function (msg) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'click',
-		_elm_lang$core$Json_Decode$succeed(msg));
-};
-var _elm_lang$html$Html_Events$Options = F2(
-	function (a, b) {
-		return {stopPropagation: a, preventDefault: b};
-	});
-
 var _justgage$tachyons_elm$Tachyons$stylesheet = function (url) {
 	return A3(
 		_elm_lang$html$Html$node,
@@ -10317,6 +10202,83 @@ var _user$project$Main$update = F2(
 			return model - 1;
 		}
 	});
+var _user$project$Main$textCopy = function (copy) {
+	return A2(
+		_elm_lang$html$Html$p,
+		{
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons$classes(
+				{
+					ctor: '::',
+					_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(copy),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Main$mainTitle = function (title) {
+	return A2(
+		_elm_lang$html$Html$h1,
+		{
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons$classes(
+				{
+					ctor: '::',
+					_0: _justgage$tachyons_elm$Tachyons_Classes$mt0,
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons_Classes$f3,
+						_1: {
+							ctor: '::',
+							_0: _justgage$tachyons_elm$Tachyons_Classes$f2_m,
+							_1: {
+								ctor: '::',
+								_0: _justgage$tachyons_elm$Tachyons_Classes$f1_l,
+								_1: {
+									ctor: '::',
+									_0: _justgage$tachyons_elm$Tachyons_Classes$fw1,
+									_1: {
+										ctor: '::',
+										_0: _justgage$tachyons_elm$Tachyons_Classes$baskerville,
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(title),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Main$stylesheet = function (url) {
+	return A3(
+		_elm_lang$html$Html$node,
+		'link',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$rel('stylesheet'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href(url),
+				_1: {ctor: '[]'}
+			}
+		},
+		{ctor: '[]'});
+};
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -10325,16 +10287,16 @@ var _user$project$Main$view = function (model) {
 			_0: _justgage$tachyons_elm$Tachyons$classes(
 				{
 					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$f1,
+					_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
 					_1: {
 						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$purple,
+						_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
 						_1: {
 							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$pointer,
+							_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
 							_1: {
 								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$b,
+								_0: 'container',
 								_1: {ctor: '[]'}
 							}
 						}
@@ -10344,16 +10306,24 @@ var _user$project$Main$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$tachyons.css,
+			_0: _user$project$Main$stylesheet('/build/tachyons.min.css'),
 			_1: {
 				ctor: '::',
-				_0: _elm_lang$html$Html$text('hi'),
-				_1: {ctor: '[]'}
+				_0: _user$project$Main$stylesheet('/assets/styles/editor.css'),
+				_1: {
+					ctor: '::',
+					_0: _user$project$Main$mainTitle('Brainloller'),
+					_1: {
+						ctor: '::',
+						_0: _user$project$Main$textCopy('Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments.'),
+						_1: {ctor: '[]'}
+					}
+				}
 			}
 		});
 };
 var _user$project$Main$main = _elm_lang$html$Html$beginnerProgram(
-	{model: 3, view: _user$project$Main$view, update: _user$project$Main$update})();
+	{model: 0, view: _user$project$Main$view, update: _user$project$Main$update})();
 var _user$project$Main$Decrement = {ctor: 'Decrement'};
 var _user$project$Main$Increment = {ctor: 'Increment'};
 
