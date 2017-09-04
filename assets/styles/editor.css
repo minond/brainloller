@@ -3,6 +3,6 @@
   margin: 0 auto;
 }
 
-.canvas-container > div {
-  margin: 0 auto !important;
+.canvas-container {
+  text-align: center;
 }

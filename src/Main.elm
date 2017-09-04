@@ -1,10 +1,10 @@
 module Main exposing (main)
 
-import Canvas exposing (Error, Canvas, Size, Point, DrawOp(..), DrawImageParams(..))
+import Canvas exposing (Canvas, DrawImageParams(..), DrawOp(..), Error, Point, Size)
 import Collage exposing (collage, toForm)
-import Element exposing (Element, toHtml, image)
+import Element exposing (Element, image, toHtml)
 import Html exposing (Html, div, h1, node, p, text)
-import Html.Attributes exposing (href, rel, class)
+import Html.Attributes exposing (class, href, rel)
 import Tachyons exposing (classes, tachyons)
 import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetica, lh_copy, mt0, pa3, pa4_ns)
 import Task
@@ -24,7 +24,7 @@ type Msg
 
 
 type Model
-    = GotCanvas Canvas
+    = GotCanvas Canvas Int
     | Loading
 
 
@@ -32,7 +32,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model ) of
         ( ImageLoaded (Ok canvas), _ ) ->
-            ( GotCanvas canvas, Cmd.none )
+            let
+                size =
+                    300
+            in
+            ( GotCanvas canvas size, Cmd.none )
 
         _ ->
             ( Loading, loadCode )
@@ -63,14 +67,14 @@ codeEditor model =
         Loading ->
             textCopy "Loading code"
 
-        GotCanvas canvas ->
+        GotCanvas canvas size ->
             let
                 draw =
-                    Scaled (Point 0 0) (Size 300 300)
+                    Scaled (Point 0 0) (Size size size)
                         |> DrawImage canvas
             in
-            div []
-                [ Canvas.initialize (Size 800 800)
+            div [ class "canvas-container" ]
+                [ Canvas.initialize (Size size size)
                     |> Canvas.draw draw
                     |> Canvas.toHtml []
                 ]
