@@ -16,8 +16,7 @@ main =
 
 
 type alias Model =
-    {
-    }
+    {}
 
 
 stylesheet : String -> Html msg
@@ -41,14 +40,14 @@ textCopy copy =
         [ text copy ]
 
 
-init : Model -> (Model, Cmd msg)
+init : Model -> ( Model, Cmd msg )
 init model =
-    (model, Cmd.none)
+    ( model, Cmd.none )
 
 
-update : msg -> Model -> (Model, Cmd msg)
+update : msg -> Model -> ( Model, Cmd msg )
 update _ model =
-    (model, Cmd.none)
+    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -59,12 +58,15 @@ subscriptions model =
 view : Model -> Html msg
 view model =
     let
-        title = mainTitle "Brainloller"
-        intro = textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
+        title =
+            mainTitle "Brainloller"
+
+        intro =
+            textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
     in
-        div [ classes [ cf, pa3, pa4_ns, "container" ] ]
-            [ stylesheet "/build/tachyons.min.css"
-            , stylesheet "/assets/styles/editor.css"
-            , title
-            , intro
-            ]
+    div [ classes [ cf, pa3, pa4_ns, "container" ] ]
+        [ stylesheet "/build/tachyons.min.css"
+        , stylesheet "/assets/styles/editor.css"
+        , title
+        , intro
+        ]
