@@ -7,7 +7,17 @@ import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetic
 
 
 main =
-    view
+    Html.programWithFlags
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+type alias Model =
+    {
+    }
 
 
 stylesheet : String -> Html msg
@@ -31,7 +41,23 @@ textCopy copy =
         [ text copy ]
 
 
-view =
+init : Model -> (Model, Cmd msg)
+init model =
+    (model, Cmd.none)
+
+
+update : msg -> Model -> (Model, Cmd msg)
+update _ model =
+    (model, Cmd.none)
+
+
+subscriptions : Model -> Sub msg
+subscriptions model =
+    Sub.none
+
+
+view : Model -> Html msg
+view model =
     let
         title = mainTitle "Brainloller"
         intro = textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
