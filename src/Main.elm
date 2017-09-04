@@ -1,9 +1,9 @@
 module Main exposing (..)
 
-import Html exposing (Html, beginnerProgram, div, text, h1, node, p)
+import Html exposing (Html, beginnerProgram, div, h1, node, p, text)
 import Html.Attributes exposing (href, rel)
 import Tachyons exposing (classes, tachyons)
-import Tachyons.Classes exposing (cf, pa3, pa4_ns, mt0, f3, f2_m, f1_l, fw1, baskerville, lh_copy, helvetica)
+import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetica, lh_copy, mt0, pa3, pa4_ns)
 
 
 main =
@@ -12,24 +12,23 @@ main =
 
 stylesheet : String -> Html msg
 stylesheet url =
-  node "link"
-    [ rel "stylesheet"
-    , href url
-    ]
-    []
+    node "link"
+        [ rel "stylesheet"
+        , href url
+        ]
+        []
 
 
 mainTitle : String -> Html msg
 mainTitle title =
-  h1 [ classes [ mt0, f3, f2_m, f1_l, fw1, baskerville ] ]
-    [ text title ]
+    h1 [ classes [ mt0, f3, f2_m, f1_l, fw1, baskerville ] ]
+        [ text title ]
 
 
 textCopy : String -> Html msg
 textCopy copy =
-  p [ classes [ lh_copy, helvetica ] ]
-    [ text copy ]
-
+    p [ classes [ lh_copy, helvetica ] ]
+        [ text copy ]
 
 
 view model =
