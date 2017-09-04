@@ -2,3 +2,7 @@
   max-width: 75rem;
   margin: 0 auto;
 }
+
+.canvas-container > div {
+  margin: 0 auto !important;
+}
