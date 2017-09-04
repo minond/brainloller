@@ -1,25 +1,86 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Canvas exposing (Error, Canvas, Size, Point, DrawOp(..), DrawImageParams(..))
 import Collage exposing (collage, toForm)
 import Element exposing (Element, toHtml, image)
 import Html exposing (Html, div, h1, node, p, text)
 import Html.Attributes exposing (href, rel, class)
 import Tachyons exposing (classes, tachyons)
 import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetica, lh_copy, mt0, pa3, pa4_ns)
+import Task
 
 
 main =
     Html.program
-        { init = init
+        { init = ( Loading, loadCode )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
 
 
-type alias Model =
-    { url : String
-    }
+type Msg
+    = ImageLoaded (Result Error Canvas)
+
+
+type Model
+    = GotCanvas Canvas
+    | Loading
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update message model =
+    case ( message, model ) of
+        ( ImageLoaded (Ok canvas), _ ) ->
+            ( GotCanvas canvas, Cmd.none )
+
+        _ ->
+            ( Loading, loadCode )
+
+
+subscriptions : Model -> Sub msg
+subscriptions model =
+    Sub.none
+
+
+view : Model -> Html Msg
+view model =
+    let
+        title =
+            mainTitle "Brainloller"
+    in
+    div [ classes [ cf, pa3, pa4_ns, "container" ] ]
+        [ stylesheet "/build/tachyons.min.css"
+        , stylesheet "/assets/styles/editor.css"
+        , title
+        , codeEditor model
+        ]
+
+
+codeEditor : Model -> Html Msg
+codeEditor model =
+    case model of
+        Loading ->
+            textCopy "Loading code"
+
+        GotCanvas canvas ->
+            let
+                draw =
+                    Scaled (Point 0 0) (Size 300 300)
+                        |> DrawImage canvas
+            in
+            div []
+                [ Canvas.initialize (Size 800 800)
+                    |> Canvas.draw draw
+                    |> Canvas.toHtml []
+                ]
+
+
+loadCode : Cmd Msg
+loadCode =
+    Task.attempt
+        ImageLoaded
+        (Canvas.loadImage "brainloller/helloworldlarge.png")
 
 
 stylesheet : String -> Html msg
@@ -41,39 +102,3 @@ textCopy : String -> Html msg
 textCopy copy =
     p [ classes [ lh_copy, helvetica ] ]
         [ text copy ]
-
-
-init : ( Model, Cmd msg )
-init =
-    ( Model "brainloller/helloworldlarge.png", Cmd.none )
-
-
-update : msg -> Model -> ( Model, Cmd msg )
-update _ model =
-    ( model, Cmd.none )
-
-
-subscriptions : Model -> Sub msg
-subscriptions model =
-    Sub.none
-
-
-view : Model -> Html msg
-view model =
-    let
-        title =
-            mainTitle "Brainloller"
-
-        intro =
-            textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
-
-        canvas =
-            collage 300 300 [ toForm (image 300 300 model.url) ]
-    in
-    div [ classes [ cf, pa3, pa4_ns, "container" ] ]
-        [ stylesheet "/build/tachyons.min.css"
-        , stylesheet "/assets/styles/editor.css"
-        , title
-        , intro
-        , div [ class "canvas-container" ] [ toHtml canvas ]
-        ]
