@@ -10,3 +10,9 @@ vendor:
 
 install:
 	$(YARN)
+
+.PHONY: serve
+serve:
+	@echo "Opening http://localhost:$(PORT)"
+	(sleep 1 && open http://localhost:$(PORT)) &
+	python -m SimpleHTTPServer $(PORT)
