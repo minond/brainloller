@@ -1,4 +1,8 @@
 ELMMAKE = elm-make
+YARN = yarn
+
+install:
+	$(YARN)
 
 .PHONY: build
 build:
