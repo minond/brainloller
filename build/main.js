@@ -10193,15 +10193,6 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'Increment') {
-			return model + 1;
-		} else {
-			return model - 1;
-		}
-	});
 var _user$project$Main$textCopy = function (copy) {
 	return A2(
 		_elm_lang$html$Html$p,
@@ -10279,7 +10270,9 @@ var _user$project$Main$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
-var _user$project$Main$view = function (model) {
+var _user$project$Main$view = function () {
+	var intro = _user$project$Main$textCopy('Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments.');
+	var title = _user$project$Main$mainTitle('Brainloller');
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10312,20 +10305,17 @@ var _user$project$Main$view = function (model) {
 				_0: _user$project$Main$stylesheet('assets/styles/editor.css'),
 				_1: {
 					ctor: '::',
-					_0: _user$project$Main$mainTitle('Brainloller'),
+					_0: title,
 					_1: {
 						ctor: '::',
-						_0: _user$project$Main$textCopy('Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments.'),
+						_0: intro,
 						_1: {ctor: '[]'}
 					}
 				}
 			}
 		});
-};
-var _user$project$Main$main = _elm_lang$html$Html$beginnerProgram(
-	{model: 0, view: _user$project$Main$view, update: _user$project$Main$update})();
-var _user$project$Main$Decrement = {ctor: 'Decrement'};
-var _user$project$Main$Increment = {ctor: 'Increment'};
+}();
+var _user$project$Main$main = _elm_lang$virtual_dom$Native_VirtualDom.staticProgram(_user$project$Main$view);
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
