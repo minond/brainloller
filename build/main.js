@@ -10306,10 +10306,10 @@ var _user$project$Main$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: _user$project$Main$stylesheet('/build/tachyons.min.css'),
+			_0: _user$project$Main$stylesheet('build/tachyons.min.css'),
 			_1: {
 				ctor: '::',
-				_0: _user$project$Main$stylesheet('/assets/styles/editor.css'),
+				_0: _user$project$Main$stylesheet('assets/styles/editor.css'),
 				_1: {
 					ctor: '::',
 					_0: _user$project$Main$mainTitle('Brainloller'),
