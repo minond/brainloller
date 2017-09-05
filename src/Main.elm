@@ -2,16 +2,20 @@ module Main exposing (main)
 
 import Canvas exposing (Canvas, DrawImageParams(..), DrawOp(..), Error, Point, Size)
 import Collage exposing (collage, toForm)
+import Debug
 import Element exposing (Element, image, toHtml)
-import Html exposing (Html, div, h1, node, p, text)
+import Html exposing (Html, Attribute, div, h1, node, p, text, button)
 import Html.Attributes exposing (class, href, rel)
-import Tachyons exposing (classes, tachyons)
-import Tachyons.Classes exposing (baskerville, cf, f1_l, f2_m, f3, fw1, helvetica, lh_copy, mt0, pa3, pa4_ns)
+import Html.Events exposing (onClick)
+import Tachyons exposing (classes)
+import Tachyons.Classes as Tac
 import Task
 
 
 type Msg
     = ImageLoaded (Result Error Canvas)
+    | Start
+    | Stop
 
 
 type Model
@@ -38,6 +42,10 @@ update message model =
             in
             ( GotCanvas canvas size, Cmd.none )
 
+        ( Start, _ ) ->
+            Debug.log "Start"
+            ( model, Cmd.none )
+
         _ ->
             ( Loading, loadCode )
 
@@ -52,8 +60,15 @@ view model =
     let
         title =
             mainTitle "Brainloller"
+
+        containerClasses =
+            [ "container"
+            , Tac.cf
+            , Tac.pa3
+            , Tac.pa4_ns
+            ]
     in
-    div [ classes [ cf, pa3, pa4_ns, "container" ] ]
+    div [ classes containerClasses ]
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
@@ -72,12 +87,37 @@ codeEditor model =
                 draw =
                     Scaled (Point 0 0) (Size size size)
                         |> DrawImage canvas
+
+                startBtn =
+                    btn [ onClick Start ]
+                        [ text "Start" ]
             in
-            div [ class "canvas-container" ]
-                [ Canvas.initialize (Size size size)
+            div [ class Tac.tc ]
+                [ startBtn
+                , Canvas.initialize (Size size size)
                     |> Canvas.draw draw
                     |> Canvas.toHtml []
                 ]
+
+
+btn : List (Attribute msg) -> List (Html msg) -> Html msg
+btn attrs =
+    let
+        classList =
+            [ Tac.f6
+            , Tac.link
+            , Tac.dim
+            , Tac.ba
+            , Tac.ph3
+            , Tac.pv2
+            , Tac.dib
+            , Tac.black
+            , Tac.ttu
+            , Tac.bg_white
+            , Tac.courier
+            ]
+    in
+    button (classes classList :: attrs)
 
 
 loadCode : Cmd Msg
@@ -98,11 +138,27 @@ stylesheet url =
 
 mainTitle : String -> Html msg
 mainTitle title =
-    h1 [ classes [ mt0, f3, f2_m, f1_l, fw1, baskerville ] ]
+    let
+        h1Classes =
+            [ Tac.mt0
+            , Tac.f3
+            , Tac.f2_m
+            , Tac.f1_l
+            , Tac.fw1
+            , Tac.baskerville
+            ]
+    in
+    h1 [ classes h1Classes ]
         [ text title ]
 
 
 textCopy : String -> Html msg
 textCopy copy =
-    p [ classes [ lh_copy, helvetica ] ]
+    let
+        pClasses =
+            [ Tac.lh_copy
+            , Tac.helvetica
+            ]
+    in
+    p [ classes pClasses ]
         [ text copy ]

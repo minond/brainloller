@@ -8645,6 +8645,121 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
+var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$html$Html_Events$targetChecked = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'checked',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$bool);
+var _elm_lang$html$Html_Events$targetValue = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'value',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$string);
+var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
+var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
+var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$html$Html_Events$onFocus = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'focus',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onBlur = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
+	_elm_lang$html$Html_Events$defaultOptions,
+	{preventDefault: true});
+var _elm_lang$html$Html_Events$onSubmit = function (msg) {
+	return A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'submit',
+		_elm_lang$html$Html_Events$onSubmitOptions,
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onCheck = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'change',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
+};
+var _elm_lang$html$Html_Events$onInput = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'input',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseout',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseover',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseleave',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseenter',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseup',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mousedown',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'dblclick',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'click',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
+
 var _evancz$elm_graphics$Native_Element = function()
 {
 
@@ -13843,20 +13958,20 @@ var _minond$brainloller$Canvas$At = function (a) {
 };
 
 var _minond$brainloller$Main$textCopy = function (copy) {
+	var pClasses = {
+		ctor: '::',
+		_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
+		_1: {
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
+			_1: {ctor: '[]'}
+		}
+	};
 	return A2(
 		_elm_lang$html$Html$p,
 		{
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(
-				{
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
-						_1: {ctor: '[]'}
-					}
-				}),
+			_0: _justgage$tachyons_elm$Tachyons$classes(pClasses),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -13866,36 +13981,36 @@ var _minond$brainloller$Main$textCopy = function (copy) {
 		});
 };
 var _minond$brainloller$Main$mainTitle = function (title) {
+	var h1Classes = {
+		ctor: '::',
+		_0: _justgage$tachyons_elm$Tachyons_Classes$mt0,
+		_1: {
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons_Classes$f3,
+			_1: {
+				ctor: '::',
+				_0: _justgage$tachyons_elm$Tachyons_Classes$f2_m,
+				_1: {
+					ctor: '::',
+					_0: _justgage$tachyons_elm$Tachyons_Classes$f1_l,
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons_Classes$fw1,
+						_1: {
+							ctor: '::',
+							_0: _justgage$tachyons_elm$Tachyons_Classes$baskerville,
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}
+	};
 	return A2(
 		_elm_lang$html$Html$h1,
 		{
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(
-				{
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$mt0,
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$f3,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$f2_m,
-							_1: {
-								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$f1_l,
-								_1: {
-									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$fw1,
-									_1: {
-										ctor: '::',
-										_0: _justgage$tachyons_elm$Tachyons_Classes$baskerville,
-										_1: {ctor: '[]'}
-									}
-								}
-							}
-						}
-					}
-				}),
+			_0: _justgage$tachyons_elm$Tachyons$classes(h1Classes),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -13919,59 +14034,138 @@ var _minond$brainloller$Main$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
+var _minond$brainloller$Main$btn = function (attrs) {
+	var classList = {
+		ctor: '::',
+		_0: _justgage$tachyons_elm$Tachyons_Classes$f6,
+		_1: {
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons_Classes$link,
+			_1: {
+				ctor: '::',
+				_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
+				_1: {
+					ctor: '::',
+					_0: _justgage$tachyons_elm$Tachyons_Classes$ba,
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons_Classes$ph3,
+						_1: {
+							ctor: '::',
+							_0: _justgage$tachyons_elm$Tachyons_Classes$pv2,
+							_1: {
+								ctor: '::',
+								_0: _justgage$tachyons_elm$Tachyons_Classes$dib,
+								_1: {
+									ctor: '::',
+									_0: _justgage$tachyons_elm$Tachyons_Classes$black,
+									_1: {
+										ctor: '::',
+										_0: _justgage$tachyons_elm$Tachyons_Classes$ttu,
+										_1: {
+											ctor: '::',
+											_0: _justgage$tachyons_elm$Tachyons_Classes$bg_white,
+											_1: {
+												ctor: '::',
+												_0: _justgage$tachyons_elm$Tachyons_Classes$courier,
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+	return _elm_lang$html$Html$button(
+		{
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons$classes(classList),
+			_1: attrs
+		});
+};
+var _minond$brainloller$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
+};
+var _minond$brainloller$Main$Stop = {ctor: 'Stop'};
+var _minond$brainloller$Main$Start = {ctor: 'Start'};
 var _minond$brainloller$Main$codeEditor = function (model) {
 	var _p0 = model;
 	if (_p0.ctor === 'Loading') {
 		return _minond$brainloller$Main$textCopy('Loading code');
 	} else {
+		var _p1 = _p0._1;
+		var startBtn = A2(
+			_minond$brainloller$Main$btn,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Start),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Start'),
+				_1: {ctor: '[]'}
+			});
 		var draw = A2(
 			_minond$brainloller$Canvas$DrawImage,
 			_p0._0,
 			A2(
 				_minond$brainloller$Canvas$Scaled,
 				A2(_minond$brainloller$Canvas$Point, 0, 0),
-				A2(_minond$brainloller$Canvas$Size, 300, 300)));
+				A2(_minond$brainloller$Canvas$Size, _p1, _p1)));
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: A2(
-					_minond$brainloller$Canvas$toHtml,
-					{ctor: '[]'},
-					A2(
-						_minond$brainloller$Canvas$draw,
-						draw,
-						_minond$brainloller$Canvas$initialize(
-							A2(_minond$brainloller$Canvas$Size, 800, 800)))),
+				_0: _elm_lang$html$Html_Attributes$class('canvas-container'),
 				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: startBtn,
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_minond$brainloller$Canvas$toHtml,
+						{ctor: '[]'},
+						A2(
+							_minond$brainloller$Canvas$draw,
+							draw,
+							_minond$brainloller$Canvas$initialize(
+								A2(_minond$brainloller$Canvas$Size, _p1, _p1)))),
+					_1: {ctor: '[]'}
+				}
 			});
 	}
 };
 var _minond$brainloller$Main$view = function (model) {
+	var containerClasses = {
+		ctor: '::',
+		_0: 'container',
+		_1: {
+			ctor: '::',
+			_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
+			_1: {
+				ctor: '::',
+				_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
+				_1: {
+					ctor: '::',
+					_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
 	var title = _minond$brainloller$Main$mainTitle('Brainloller');
 	return A2(
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(
-				{
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
-							_1: {
-								ctor: '::',
-								_0: 'container',
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}),
+			_0: _justgage$tachyons_elm$Tachyons$classes(containerClasses),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -13992,9 +14186,6 @@ var _minond$brainloller$Main$view = function (model) {
 			}
 		});
 };
-var _minond$brainloller$Main$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
-};
 var _minond$brainloller$Main$ImageLoaded = function (a) {
 	return {ctor: 'ImageLoaded', _0: a};
 };
@@ -14003,21 +14194,41 @@ var _minond$brainloller$Main$loadCode = A2(
 	_minond$brainloller$Main$ImageLoaded,
 	_minond$brainloller$Canvas$loadImage('brainloller/helloworldlarge.png'));
 var _minond$brainloller$Main$Loading = {ctor: 'Loading'};
-var _minond$brainloller$Main$GotCanvas = function (a) {
-	return {ctor: 'GotCanvas', _0: a};
-};
+var _minond$brainloller$Main$GotCanvas = F2(
+	function (a, b) {
+		return {ctor: 'GotCanvas', _0: a, _1: b};
+	});
 var _minond$brainloller$Main$update = F2(
 	function (message, model) {
-		var _p1 = {ctor: '_Tuple2', _0: message, _1: model};
-		if ((_p1.ctor === '_Tuple2') && (_p1._0._0.ctor === 'Ok')) {
-			return {
-				ctor: '_Tuple2',
-				_0: _minond$brainloller$Main$GotCanvas(_p1._0._0._0),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
-		} else {
-			return {ctor: '_Tuple2', _0: _minond$brainloller$Main$Loading, _1: _minond$brainloller$Main$loadCode};
-		}
+		var _p2 = {ctor: '_Tuple2', _0: message, _1: model};
+		_v1_2:
+		do {
+			if (_p2.ctor === '_Tuple2') {
+				switch (_p2._0.ctor) {
+					case 'ImageLoaded':
+						if (_p2._0._0.ctor === 'Ok') {
+							var size = 300;
+							return {
+								ctor: '_Tuple2',
+								_0: A2(_minond$brainloller$Main$GotCanvas, _p2._0._0._0, size),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						} else {
+							break _v1_2;
+						}
+					case 'Start':
+						return A2(
+							_elm_lang$core$Debug$log,
+							'Start',
+							{ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none});
+					default:
+						break _v1_2;
+				}
+			} else {
+				break _v1_2;
+			}
+		} while(false);
+		return {ctor: '_Tuple2', _0: _minond$brainloller$Main$Loading, _1: _minond$brainloller$Main$loadCode};
 	});
 var _minond$brainloller$Main$main = _elm_lang$html$Html$program(
 	{
