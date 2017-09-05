@@ -104,7 +104,8 @@ btn : List (Attribute msg) -> List (Html msg) -> Html msg
 btn attrs =
     let
         classList =
-            [ Tac.f6
+            [ "monospace"
+            , Tac.f6
             , Tac.link
             , Tac.dim
             , Tac.ba

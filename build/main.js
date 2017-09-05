@@ -14037,38 +14037,42 @@ var _minond$brainloller$Main$stylesheet = function (url) {
 var _minond$brainloller$Main$btn = function (attrs) {
 	var classList = {
 		ctor: '::',
-		_0: _justgage$tachyons_elm$Tachyons_Classes$f6,
+		_0: 'monospace',
 		_1: {
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$link,
+			_0: _justgage$tachyons_elm$Tachyons_Classes$f6,
 			_1: {
 				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
+				_0: _justgage$tachyons_elm$Tachyons_Classes$link,
 				_1: {
 					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$ba,
+					_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
 					_1: {
 						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$ph3,
+						_0: _justgage$tachyons_elm$Tachyons_Classes$ba,
 						_1: {
 							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$pv2,
+							_0: _justgage$tachyons_elm$Tachyons_Classes$ph3,
 							_1: {
 								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$dib,
+								_0: _justgage$tachyons_elm$Tachyons_Classes$pv2,
 								_1: {
 									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$black,
+									_0: _justgage$tachyons_elm$Tachyons_Classes$dib,
 									_1: {
 										ctor: '::',
-										_0: _justgage$tachyons_elm$Tachyons_Classes$ttu,
+										_0: _justgage$tachyons_elm$Tachyons_Classes$black,
 										_1: {
 											ctor: '::',
-											_0: _justgage$tachyons_elm$Tachyons_Classes$bg_white,
+											_0: _justgage$tachyons_elm$Tachyons_Classes$ttu,
 											_1: {
 												ctor: '::',
-												_0: _justgage$tachyons_elm$Tachyons_Classes$courier,
-												_1: {ctor: '[]'}
+												_0: _justgage$tachyons_elm$Tachyons_Classes$bg_white,
+												_1: {
+													ctor: '::',
+													_0: _justgage$tachyons_elm$Tachyons_Classes$courier,
+													_1: {ctor: '[]'}
+												}
 											}
 										}
 									}
@@ -14121,7 +14125,7 @@ var _minond$brainloller$Main$codeEditor = function (model) {
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('canvas-container'),
+				_0: _elm_lang$html$Html_Attributes$class(_justgage$tachyons_elm$Tachyons_Classes$tc),
 				_1: {ctor: '[]'}
 			},
 			{
