@@ -1,6 +1,6 @@
 module Program exposing (progHelloWorld)
 
-import Pixel exposing (Pixels)
+import Brainloller.Pixel exposing (Pixels)
 
 
 progHelloWorld : Pixels

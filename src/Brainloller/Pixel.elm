@@ -1,4 +1,4 @@
-module Pixel exposing (Pixel, Pixels, pixelsForm)
+module Brainloller.Pixel exposing (Pixel, Pixels, pixelsForm)
 
 import Collage exposing (Form, filled, move, square)
 import Color exposing (rgb)

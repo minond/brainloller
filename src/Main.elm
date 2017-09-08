@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Array
+import Brainloller.Pixel exposing (pixelsForm)
 import Collage exposing (collage)
 import Debug
 import Dict
@@ -9,7 +10,6 @@ import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
-import Pixel exposing (pixelsForm)
 import Program exposing (progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
