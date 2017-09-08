@@ -86,7 +86,7 @@ codeEditor : Model -> Html Msg
 codeEditor model =
     let
         size =
-            600
+            1000
     in
     case model of
         Loading ->
@@ -191,19 +191,19 @@ drawPixels pixels =
 
         asList =
             List.foldl (++) [] pixels
+
+        processPixel =
+            \index pixel ->
+                let
+                    x =
+                        toFloat ((rem index width) * cellSize - startX)
+
+                    y =
+                        toFloat ((index // width) * cellSize + startY)
+
+                    color =
+                        rgb pixel.r pixel.g pixel.b
+                in
+                move ( x, y ) (filled color (square 20))
     in
-    List.indexedMap
-        (\index pixel ->
-            let
-                x =
-                    toFloat (index * cellSize)
-
-                y =
-                    20
-
-                color =
-                    rgb pixel.r pixel.g pixel.b
-            in
-            move ( x, y ) (filled color (square 20))
-        )
-        asList
+    List.indexedMap processPixel asList
