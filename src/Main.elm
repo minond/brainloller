@@ -1,17 +1,18 @@
 module Main exposing (main)
 
-import Collage exposing (Form, collage, filled, move, square, toForm)
-import Color exposing (blue, red, rgb)
+import Array
+import Collage exposing (Form, collage, filled, move, square)
+import Color exposing (Color, rgb)
 import Debug
 import Dict
 import Element exposing (Element, image, toHtml)
 import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
+import List
 import Programs exposing (Pixels, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
-import Task
 
 
 type Msg
@@ -167,6 +168,42 @@ textCopy copy =
 
 drawPixels : Pixels -> List Form
 drawPixels pixels =
-    [ move ( 0, 0 ) (filled blue (square 50))
-    , move ( 20, 20 ) (filled red (square 20))
-    ]
+    let
+        cellSize =
+            20
+
+        width =
+            List.length pixels
+
+        height =
+            case List.head pixels of
+                Just row ->
+                    List.length row
+
+                Nothing ->
+                    0
+
+        startX =
+            width // 2 * cellSize
+
+        startY =
+            height // 2 * cellSize
+
+        asList =
+            List.foldl (++) [] pixels
+    in
+    List.indexedMap
+        (\index pixel ->
+            let
+                x =
+                    toFloat (index * cellSize)
+
+                y =
+                    20
+
+                color =
+                    rgb pixel.r pixel.g pixel.b
+            in
+            move ( x, y ) (filled color (square 20))
+        )
+        asList
