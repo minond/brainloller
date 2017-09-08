@@ -19,9 +19,9 @@ type Msg
     = Start
 
 
-type Model
-    = Loading
-    | Draw Pixels
+type alias Model =
+    { pixels : Pixels
+    }
 
 
 commands =
@@ -41,7 +41,7 @@ commands =
 
 main =
     Html.program
-        { init = ( Draw progHelloWorld, Cmd.none )
+        { init = ( { pixels = progHelloWorld }, Cmd.none )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -83,25 +83,20 @@ view model =
 
 codeEditor : Model -> Html Msg
 codeEditor model =
-    case model of
-        Loading ->
-            textCopy "Processing image"
+    let
+        startBtn =
+            btn [ onClick Start ]
+                [ text "Start" ]
 
-        Draw pixels ->
-            let
-                startBtn =
-                    btn [ onClick Start ]
-                        [ text "Start" ]
-
-                size =
-                    List.length pixels * 40
-            in
-            div []
-                [ startBtn
-                , div
-                    [ class "container" ]
-                    [ toHtml <| collage size size <| pixelsForm pixels ]
-                ]
+        size =
+            List.length model.pixels * 40
+    in
+    div []
+        [ startBtn
+        , div
+            [ class "container" ]
+            [ toHtml <| collage size size <| pixelsForm model.pixels ]
+        ]
 
 
 btn : List (Attribute msg) -> List (Html msg) -> Html msg
