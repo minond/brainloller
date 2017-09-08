@@ -3912,203 +3912,6 @@ var _elm_lang$core$Result$fromMaybe = F2(
 		}
 	});
 
-var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
-var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
-var _elm_lang$core$Task$spawnCmd = F2(
-	function (router, _p0) {
-		var _p1 = _p0;
-		return _elm_lang$core$Native_Scheduler.spawn(
-			A2(
-				_elm_lang$core$Task$andThen,
-				_elm_lang$core$Platform$sendToApp(router),
-				_p1._0));
-	});
-var _elm_lang$core$Task$fail = _elm_lang$core$Native_Scheduler.fail;
-var _elm_lang$core$Task$mapError = F2(
-	function (convert, task) {
-		return A2(
-			_elm_lang$core$Task$onError,
-			function (_p2) {
-				return _elm_lang$core$Task$fail(
-					convert(_p2));
-			},
-			task);
-	});
-var _elm_lang$core$Task$succeed = _elm_lang$core$Native_Scheduler.succeed;
-var _elm_lang$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return _elm_lang$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return _elm_lang$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map3 = F4(
-	function (func, taskA, taskB, taskC) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return _elm_lang$core$Task$succeed(
-									A3(func, a, b, c));
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map4 = F5(
-	function (func, taskA, taskB, taskC, taskD) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									function (d) {
-										return _elm_lang$core$Task$succeed(
-											A4(func, a, b, c, d));
-									},
-									taskD);
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$map5 = F6(
-	function (func, taskA, taskB, taskC, taskD, taskE) {
-		return A2(
-			_elm_lang$core$Task$andThen,
-			function (a) {
-				return A2(
-					_elm_lang$core$Task$andThen,
-					function (b) {
-						return A2(
-							_elm_lang$core$Task$andThen,
-							function (c) {
-								return A2(
-									_elm_lang$core$Task$andThen,
-									function (d) {
-										return A2(
-											_elm_lang$core$Task$andThen,
-											function (e) {
-												return _elm_lang$core$Task$succeed(
-													A5(func, a, b, c, d, e));
-											},
-											taskE);
-									},
-									taskD);
-							},
-							taskC);
-					},
-					taskB);
-			},
-			taskA);
-	});
-var _elm_lang$core$Task$sequence = function (tasks) {
-	var _p3 = tasks;
-	if (_p3.ctor === '[]') {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '[]'});
-	} else {
-		return A3(
-			_elm_lang$core$Task$map2,
-			F2(
-				function (x, y) {
-					return {ctor: '::', _0: x, _1: y};
-				}),
-			_p3._0,
-			_elm_lang$core$Task$sequence(_p3._1));
-	}
-};
-var _elm_lang$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			_elm_lang$core$Task$map,
-			function (_p4) {
-				return {ctor: '_Tuple0'};
-			},
-			_elm_lang$core$Task$sequence(
-				A2(
-					_elm_lang$core$List$map,
-					_elm_lang$core$Task$spawnCmd(router),
-					commands)));
-	});
-var _elm_lang$core$Task$init = _elm_lang$core$Task$succeed(
-	{ctor: '_Tuple0'});
-var _elm_lang$core$Task$onSelfMsg = F3(
-	function (_p7, _p6, _p5) {
-		return _elm_lang$core$Task$succeed(
-			{ctor: '_Tuple0'});
-	});
-var _elm_lang$core$Task$command = _elm_lang$core$Native_Platform.leaf('Task');
-var _elm_lang$core$Task$Perform = function (a) {
-	return {ctor: 'Perform', _0: a};
-};
-var _elm_lang$core$Task$perform = F2(
-	function (toMessage, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$Perform(
-				A2(_elm_lang$core$Task$map, toMessage, task)));
-	});
-var _elm_lang$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return _elm_lang$core$Task$command(
-			_elm_lang$core$Task$Perform(
-				A2(
-					_elm_lang$core$Task$onError,
-					function (_p8) {
-						return _elm_lang$core$Task$succeed(
-							resultToMessage(
-								_elm_lang$core$Result$Err(_p8)));
-					},
-					A2(
-						_elm_lang$core$Task$andThen,
-						function (_p9) {
-							return _elm_lang$core$Task$succeed(
-								resultToMessage(
-									_elm_lang$core$Result$Ok(_p9)));
-						},
-						task))));
-	});
-var _elm_lang$core$Task$cmdMap = F2(
-	function (tagger, _p10) {
-		var _p11 = _p10;
-		return _elm_lang$core$Task$Perform(
-			A2(_elm_lang$core$Task$map, tagger, _p11._0));
-	});
-_elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
-
 //import Native.Utils //
 
 var _elm_lang$core$Native_Debug = function() {
@@ -13256,50 +13059,105 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
-var _minond$brainloller$Programs$progHelloWorld = {
+var _minond$brainloller$Pixel$pixelForm = F3(
+	function (board, index, pixel) {
+		var color = A3(_elm_lang$core$Color$rgb, pixel.r, pixel.g, pixel.b);
+		var y = (((index / board.width) | 0) * board.cellSize) + board.startY;
+		var x = (A2(_elm_lang$core$Basics$rem, index, board.width) * board.cellSize) - board.startX;
+		var point = {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Basics$toFloat(x),
+			_1: _elm_lang$core$Basics$toFloat(y)
+		};
+		return A2(
+			_evancz$elm_graphics$Collage$move,
+			point,
+			A2(
+				_evancz$elm_graphics$Collage$filled,
+				color,
+				_evancz$elm_graphics$Collage$square(20)));
+	});
+var _minond$brainloller$Pixel$pixelsForm = function (pixels) {
+	var continuous = A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (x, y) {
+				return A2(_elm_lang$core$Basics_ops['++'], x, y);
+			}),
+		{ctor: '[]'},
+		pixels);
+	var height = function () {
+		var _p0 = _elm_lang$core$List$head(pixels);
+		if (_p0.ctor === 'Just') {
+			return _elm_lang$core$List$length(_p0._0);
+		} else {
+			return 0;
+		}
+	}();
+	var width = _elm_lang$core$List$length(pixels);
+	var cellSize = 20;
+	var startX = ((width / 2) | 0) * cellSize;
+	var startY = ((height / 2) | 0) * cellSize;
+	var board = {cellSize: cellSize, width: width, startX: ((width / 2) | 0) * cellSize, startY: startY};
+	var processPixel = F2(
+		function (index, pixel) {
+			return A3(_minond$brainloller$Pixel$pixelForm, board, index, pixel);
+		});
+	return A2(_elm_lang$core$List$indexedMap, processPixel, continuous);
+};
+var _minond$brainloller$Pixel$Pixel = F3(
+	function (a, b, c) {
+		return {r: a, g: b, b: c};
+	});
+var _minond$brainloller$Pixel$BoardConfig = F4(
+	function (a, b, c, d) {
+		return {cellSize: a, width: b, startX: c, startY: d};
+	});
+
+var _minond$brainloller$Program$progHelloWorld = {
 	ctor: '::',
 	_0: {
 		ctor: '::',
-		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+		_0: {r: 255, g: 0, b: 0},
 		_1: {
 			ctor: '::',
-			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+			_0: {r: 0, g: 255, b: 0},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+				_0: {r: 0, g: 255, b: 0},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+					_0: {r: 0, g: 255, b: 0},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_0: {r: 0, g: 255, b: 0},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_0: {r: 0, g: 255, b: 0},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_0: {r: 0, g: 255, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_0: {r: 0, g: 255, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+												_0: {r: 255, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+													_0: {r: 128, g: 0, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+															_0: {r: 0, g: 255, b: 255},
 															_1: {ctor: '[]'}
 														}
 													}
@@ -13319,46 +13177,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 		ctor: '::',
 		_0: {
 			ctor: '::',
-			_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+			_0: {r: 0, g: 128, b: 128},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+				_0: {r: 0, g: 0, b: 255},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+					_0: {r: 128, g: 0, b: 0},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+						_0: {r: 128, g: 128, b: 0},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+							_0: {r: 0, g: 128, b: 0},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+								_0: {r: 255, g: 0, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_0: {r: 0, g: 255, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_0: {r: 0, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_0: {r: 0, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																_0: {r: 0, g: 255, b: 255},
 																_1: {ctor: '[]'}
 															}
 														}
@@ -13378,46 +13236,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 			ctor: '::',
 			_0: {
 				ctor: '::',
-				_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+				_0: {r: 0, g: 128, b: 128},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+					_0: {r: 255, g: 0, b: 0},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_0: {r: 0, g: 255, b: 0},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_0: {r: 0, g: 255, b: 0},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_0: {r: 0, g: 255, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_0: {r: 0, g: 255, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_0: {r: 0, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+													_0: {r: 255, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+														_0: {r: 128, g: 0, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_0: {r: 0, g: 255, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																	_0: {r: 0, g: 255, b: 255},
 																	_1: {ctor: '[]'}
 																}
 															}
@@ -13437,46 +13295,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 				ctor: '::',
 				_0: {
 					ctor: '::',
-					_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+					_0: {r: 0, g: 128, b: 128},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_0: {r: 0, g: 255, b: 0},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_0: {r: 0, g: 255, b: 0},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_0: {r: 0, g: 255, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+										_0: {r: 0, g: 0, b: 255},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+												_0: {r: 128, g: 0, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+													_0: {r: 128, g: 128, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+														_0: {r: 0, g: 128, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+															_0: {r: 255, g: 0, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_0: {r: 0, g: 255, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_0: {r: 0, g: 255, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																		_0: {r: 0, g: 255, b: 255},
 																		_1: {ctor: '[]'}
 																	}
 																}
@@ -13496,46 +13354,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 					ctor: '::',
 					_0: {
 						ctor: '::',
-						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+						_0: {r: 0, g: 128, b: 128},
 						_1: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_0: {r: 0, g: 255, b: 0},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_0: {r: 0, g: 255, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+										_0: {r: 0, g: 0, b: 255},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+											_0: {r: 0, g: 0, b: 255},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_0: {r: 0, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_0: {r: 0, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+															_0: {r: 0, g: 0, b: 255},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																_0: {r: 255, g: 0, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																	_0: {r: 255, g: 0, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_0: {r: 255, g: 0, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																			_0: {r: 0, g: 255, b: 255},
 																			_1: {ctor: '[]'}
 																		}
 																	}
@@ -13555,46 +13413,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 						ctor: '::',
 						_0: {
 							ctor: '::',
-							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+							_0: {r: 0, g: 128, b: 128},
 							_1: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_0: {r: 0, g: 255, b: 0},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+										_0: {r: 128, g: 0, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+											_0: {r: 255, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_0: {r: 0, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_0: {r: 0, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_0: {r: 0, g: 255, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_0: {r: 0, g: 255, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																		_0: {r: 0, g: 255, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_0: {r: 0, g: 255, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																				_0: {r: 0, g: 255, b: 255},
 																				_1: {ctor: '[]'}
 																			}
 																		}
@@ -13614,46 +13472,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 							ctor: '::',
 							_0: {
 								ctor: '::',
-								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+								_0: {r: 0, g: 128, b: 128},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_0: {r: 0, g: 255, b: 0},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_0: {r: 0, g: 255, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+											_0: {r: 255, g: 0, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+												_0: {r: 0, g: 128, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+													_0: {r: 128, g: 128, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+														_0: {r: 128, g: 0, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+															_0: {r: 0, g: 0, b: 255},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																_0: {r: 255, g: 0, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																	_0: {r: 255, g: 0, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_0: {r: 255, g: 0, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_0: {r: 0, g: 255, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																				_0: {r: 0, g: 255, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																					_0: {r: 0, g: 255, b: 255},
 																					_1: {ctor: '[]'}
 																				}
 																			}
@@ -13673,46 +13531,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 								ctor: '::',
 								_0: {
 									ctor: '::',
-									_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+									_0: {r: 0, g: 128, b: 128},
 									_1: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_0: {r: 0, g: 255, b: 0},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+												_0: {r: 128, g: 0, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+													_0: {r: 255, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_0: {r: 0, g: 255, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_0: {r: 0, g: 255, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																		_0: {r: 0, g: 255, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_0: {r: 0, g: 255, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																				_0: {r: 0, g: 255, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																					_0: {r: 0, g: 255, b: 0},
 																					_1: {
 																						ctor: '::',
-																						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																						_0: {r: 0, g: 255, b: 255},
 																						_1: {ctor: '[]'}
 																					}
 																				}
@@ -13732,46 +13590,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 									ctor: '::',
 									_0: {
 										ctor: '::',
-										_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+										_0: {r: 0, g: 128, b: 128},
 										_1: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_0: {r: 0, g: 255, b: 0},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_0: {r: 0, g: 255, b: 0},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_0: {r: 0, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_0: {r: 0, g: 255, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_0: {r: 0, g: 255, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_0: {r: 255, g: 0, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																			_0: {r: 0, g: 128, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+																				_0: {r: 128, g: 128, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																					_0: {r: 128, g: 0, b: 0},
 																					_1: {
 																						ctor: '::',
-																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_0: {r: 0, g: 128, b: 0},
 																						_1: {
 																							ctor: '::',
-																							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																							_0: {r: 0, g: 255, b: 255},
 																							_1: {ctor: '[]'}
 																						}
 																					}
@@ -13791,46 +13649,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 										ctor: '::',
 										_0: {
 											ctor: '::',
-											_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+											_0: {r: 0, g: 128, b: 128},
 											_1: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+												_0: {r: 0, g: 0, b: 255},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_0: {r: 0, g: 255, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_0: {r: 0, g: 255, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_0: {r: 0, g: 255, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																_0: {r: 0, g: 0, b: 255},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																	_0: {r: 128, g: 0, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																		_0: {r: 128, g: 0, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																			_0: {r: 128, g: 0, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																				_0: {r: 128, g: 0, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																					_0: {r: 0, g: 0, b: 255},
 																					_1: {
 																						ctor: '::',
-																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_0: {r: 0, g: 128, b: 0},
 																						_1: {
 																							ctor: '::',
-																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_0: {r: 0, g: 128, b: 0},
 																							_1: {
 																								ctor: '::',
-																								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																								_0: {r: 0, g: 255, b: 255},
 																								_1: {ctor: '[]'}
 																							}
 																						}
@@ -13850,46 +13708,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 											ctor: '::',
 											_0: {
 												ctor: '::',
-												_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+												_0: {r: 0, g: 128, b: 128},
 												_1: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+													_0: {r: 0, g: 128, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+														_0: {r: 0, g: 128, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+															_0: {r: 0, g: 128, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																_0: {r: 0, g: 128, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																	_0: {r: 0, g: 128, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																		_0: {r: 0, g: 128, b: 0},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																			_0: {r: 0, g: 0, b: 255},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																				_0: {r: 0, g: 128, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																					_0: {r: 0, g: 128, b: 0},
 																					_1: {
 																						ctor: '::',
-																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_0: {r: 0, g: 128, b: 0},
 																						_1: {
 																							ctor: '::',
-																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_0: {r: 0, g: 128, b: 0},
 																							_1: {
 																								ctor: '::',
-																								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																								_0: {r: 0, g: 128, b: 0},
 																								_1: {
 																									ctor: '::',
-																									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																									_0: {r: 0, g: 255, b: 255},
 																									_1: {ctor: '[]'}
 																								}
 																							}
@@ -13909,46 +13767,46 @@ var _minond$brainloller$Programs$progHelloWorld = {
 												ctor: '::',
 												_0: {
 													ctor: '::',
-													_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+													_0: {r: 0, g: 0, b: 0},
 													_1: {
 														ctor: '::',
-														_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+														_0: {r: 0, g: 0, b: 0},
 														_1: {
 															ctor: '::',
-															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+															_0: {r: 0, g: 0, b: 0},
 															_1: {
 																ctor: '::',
-																_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+																_0: {r: 0, g: 0, b: 0},
 																_1: {
 																	ctor: '::',
-																	_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+																	_0: {r: 0, g: 0, b: 0},
 																	_1: {
 																		ctor: '::',
-																		_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																		_0: {r: 0, g: 0, b: 255},
 																		_1: {
 																			ctor: '::',
-																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_0: {r: 0, g: 255, b: 0},
 																			_1: {
 																				ctor: '::',
-																				_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																				_0: {r: 255, g: 0, b: 0},
 																				_1: {
 																					ctor: '::',
-																					_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																					_0: {r: 255, g: 0, b: 0},
 																					_1: {
 																						ctor: '::',
-																						_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																						_0: {r: 0, g: 0, b: 255},
 																						_1: {
 																							ctor: '::',
-																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_0: {r: 0, g: 128, b: 0},
 																							_1: {
 																								ctor: '::',
-																								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																								_0: {r: 0, g: 128, b: 0},
 																								_1: {
 																									ctor: '::',
-																									_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																									_0: {r: 0, g: 128, b: 0},
 																									_1: {
 																										ctor: '::',
-																										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																										_0: {r: 0, g: 255, b: 255},
 																										_1: {ctor: '[]'}
 																									}
 																								}
@@ -14207,11 +14065,12 @@ var _minond$brainloller$Main$commands = _elm_lang$core$Dict$fromList(
 	});
 var _minond$brainloller$Main$Start = {ctor: 'Start'};
 var _minond$brainloller$Main$codeEditor = function (model) {
+	var size = 1000;
 	var _p1 = model;
 	if (_p1.ctor === 'Loading') {
 		return _minond$brainloller$Main$textCopy('Processing image');
 	} else {
-		var pixels = _minond$brainloller$Programs$progHelloWorld;
+		var pixels = _minond$brainloller$Program$progHelloWorld;
 		var startBtn = A2(
 			_minond$brainloller$Main$btn,
 			{
@@ -14239,16 +14098,9 @@ var _minond$brainloller$Main$codeEditor = function (model) {
 					_0: _evancz$elm_graphics$Element$toHtml(
 						A3(
 							_evancz$elm_graphics$Collage$collage,
-							600,
-							600,
-							{
-								ctor: '::',
-								_0: A2(
-									_evancz$elm_graphics$Collage$filled,
-									_elm_lang$core$Color$blue,
-									_evancz$elm_graphics$Collage$square(50)),
-								_1: {ctor: '[]'}
-							})),
+							size,
+							size,
+							_minond$brainloller$Pixel$pixelsForm(pixels))),
 					_1: {ctor: '[]'}
 				}
 			});
