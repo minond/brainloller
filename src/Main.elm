@@ -1,8 +1,7 @@
 module Main exposing (main)
 
 import Array
-import Collage exposing (Form, collage, filled, move, square)
-import Color exposing (Color, rgb)
+import Collage exposing (collage)
 import Debug
 import Dict
 import Element exposing (Element, image, toHtml)
@@ -10,7 +9,8 @@ import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
-import Programs exposing (Pixels, progHelloWorld)
+import Pixel exposing (pixelsForm)
+import Program exposing (progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 
@@ -104,7 +104,7 @@ codeEditor model =
             div
                 [ class Tac.tc ]
                 [ startBtn
-                , toHtml (collage size size (drawPixels pixels))
+                , toHtml (collage size size (pixelsForm pixels))
                 ]
 
 
@@ -164,46 +164,3 @@ textCopy copy =
     in
     p [ classes pClasses ]
         [ text copy ]
-
-
-drawPixels : Pixels -> List Form
-drawPixels pixels =
-    let
-        cellSize =
-            20
-
-        width =
-            List.length pixels
-
-        height =
-            case List.head pixels of
-                Just row ->
-                    List.length row
-
-                Nothing ->
-                    0
-
-        startX =
-            width // 2 * cellSize
-
-        startY =
-            height // 2 * cellSize
-
-        asList =
-            List.foldl (++) [] pixels
-
-        processPixel =
-            \index pixel ->
-                let
-                    x =
-                        toFloat ((rem index width) * cellSize - startX)
-
-                    y =
-                        toFloat ((index // width) * cellSize + startY)
-
-                    color =
-                        rgb pixel.r pixel.g pixel.b
-                in
-                move ( x, y ) (filled color (square 20))
-    in
-    List.indexedMap processPixel asList

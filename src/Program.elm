@@ -1,15 +1,6 @@
-module Programs exposing (Pixels, progHelloWorld)
+module Program exposing (progHelloWorld)
 
-
-type alias Pixel =
-    { r : Int
-    , g : Int
-    , b : Int
-    }
-
-
-type alias Pixels =
-    List (List Pixel)
+import Pixel exposing (Pixels)
 
 
 progHelloWorld : Pixels
