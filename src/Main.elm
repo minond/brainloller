@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Array
-import Brainloller.Pixel exposing (pixelsForm)
+import Brainloller.Pixel exposing (Pixels, pixelsForm)
 import Collage exposing (collage)
 import Debug
 import Dict
@@ -21,7 +21,7 @@ type Msg
 
 type Model
     = Loading
-    | DrawHelloWorld
+    | Draw Pixels
 
 
 commands =
@@ -41,7 +41,7 @@ commands =
 
 main =
     Html.program
-        { init = ( DrawHelloWorld, Cmd.none )
+        { init = ( Draw progHelloWorld, Cmd.none )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -87,14 +87,11 @@ codeEditor model =
         Loading ->
             textCopy "Processing image"
 
-        DrawHelloWorld ->
+        Draw pixels ->
             let
                 startBtn =
                     btn [ onClick Start ]
                         [ text "Start" ]
-
-                pixels =
-                    progHelloWorld
 
                 size =
                     List.length pixels * 40
