@@ -1,8 +1,7 @@
 module Main exposing (main)
 
-import Canvas exposing (Canvas, DrawImageParams(..), DrawOp(..), Error, Point, Size)
-import Collage exposing (collage, toForm)
-import Color exposing (rgb)
+import Collage exposing (collage, filled, square, toForm)
+import Color exposing (blue, rgb)
 import Debug
 import Dict
 import Element exposing (Element, image, toHtml)
@@ -14,15 +13,17 @@ import Tachyons.Classes as Tac
 import Task
 
 
+type alias Program =
+    List (List ( Int, Int, Int ))
+
+
 type Msg
-    = ImageLoaded (Result Error Canvas)
-    | Start
-    | Stop
+    = Start
 
 
 type Model
-    = GotCanvas Canvas Int
-    | Loading
+    = Loading
+    | DrawHelloWorld
 
 
 commands =
@@ -42,7 +43,7 @@ commands =
 
 main =
     Html.program
-        { init = ( Loading, loadCode )
+        { init = ( DrawHelloWorld, Cmd.none )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -52,19 +53,9 @@ main =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model ) of
-        ( ImageLoaded (Ok canvas), _ ) ->
-            let
-                size =
-                    300
-            in
-            ( GotCanvas canvas size, Cmd.none )
-
         ( Start, _ ) ->
             Debug.log "Start"
                 ( model, Cmd.none )
-
-        _ ->
-            ( Loading, loadCode )
 
 
 subscriptions : Model -> Sub msg
@@ -97,23 +88,21 @@ codeEditor : Model -> Html Msg
 codeEditor model =
     case model of
         Loading ->
-            textCopy "Loading code"
+            textCopy "Processing image"
 
-        GotCanvas canvas size ->
+        DrawHelloWorld ->
             let
-                draw =
-                    Scaled (Point 0 0) (Size 14 12)
-                        |> DrawImage canvas
-
                 startBtn =
                     btn [ onClick Start ]
                         [ text "Start" ]
+
+                pixels =
+                    loadHelloWorld
             in
-            div [ class Tac.tc ]
+            div
+                [ class Tac.tc ]
                 [ startBtn
-                , Canvas.initialize (Size size size)
-                    |> Canvas.draw draw
-                    |> Canvas.toHtml []
+                , toHtml (collage 600 600 [ filled blue (square 50) ])
                 ]
 
 
@@ -136,13 +125,6 @@ btn attrs =
             ]
     in
     button (classes classList :: attrs)
-
-
-loadCode : Cmd Msg
-loadCode =
-    Task.attempt
-        ImageLoaded
-        (Canvas.loadImage "brainloller/helloworld.png")
 
 
 stylesheet : String -> Html msg
@@ -180,3 +162,20 @@ textCopy copy =
     in
     p [ classes pClasses ]
         [ text copy ]
+
+
+loadHelloWorld : Program
+loadHelloWorld =
+    [ [ ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 255, 255, 0 ), ( 128, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 0, 255 ), ( 128, 0, 0 ), ( 128, 128, 0 ), ( 0, 128, 0 ), ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 255, 255, 0 ), ( 128, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 0, 255 ), ( 0, 255, 0 ), ( 128, 0, 0 ), ( 128, 128, 0 ), ( 0, 128, 0 ), ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 0, 255 ), ( 0, 0, 255 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 0, 255 ), ( 255, 0, 0 ), ( 255, 0, 0 ), ( 255, 0, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 128, 0, 0 ), ( 255, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 255, 0, 0 ), ( 0, 128, 0 ), ( 128, 128, 0 ), ( 128, 0, 0 ), ( 0, 0, 255 ), ( 255, 0, 0 ), ( 255, 0, 0 ), ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 128, 0, 0 ), ( 255, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 255, 0, 0 ), ( 0, 128, 0 ), ( 128, 128, 0 ), ( 128, 0, 0 ), ( 0, 128, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 0, 255 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 0, 255 ), ( 128, 0, 0 ), ( 128, 0, 0 ), ( 128, 0, 0 ), ( 128, 0, 0 ), ( 0, 0, 255 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 128, 128 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 0, 255 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 255, 255 ) ]
+    , [ ( 0, 0, 0 ), ( 0, 0, 0 ), ( 0, 0, 0 ), ( 0, 0, 0 ), ( 0, 0, 0 ), ( 0, 0, 255 ), ( 0, 255, 0 ), ( 255, 0, 0 ), ( 255, 0, 0 ), ( 0, 0, 255 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 128, 0 ), ( 0, 255, 255 ) ]
+    ]
