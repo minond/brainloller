@@ -13256,705 +13256,726 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
-/*global _elm_lang$core$Native_List */
-/*global _elm_lang$core$Color$toRgb */
-/*global _elm_lang$core$Native_Scheduler */
-/*global _elm_lang$virtual_dom$Native_VirtualDom */
-
-var _minond$brainloller$Native_Canvas = function () {  // eslint-disable-line no-unused-vars
-
-
-  function LOG(msg) { // eslint-disable-line no-unused-vars
-    // console.log(msg);
-  }
-
-
-  function makeModel(canvas) {
-
-    // The elm debugger crashes when it tries to
-    // traverse an html object. So instead
-    // of passing along a canvas element, we
-    // pass along a function that returns it
-    function getCanvas() {
-      return canvas;
-    }
-
-    return {
-      ctor: "Canvas",
-      canvas: getCanvas,
-      width: canvas.width,
-      height: canvas.height
-    };
-  }
-
-  // This is how we ensure immutability.
-  // Canvas elements are never modified
-  // and passed along. They are copied,
-  // and the clone is passed along.
-  function cloneModel(model) {
-
-    var canvas = document.createElement("canvas");
-    canvas.width = model.width;
-    canvas.height = model.height;
-
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(model.canvas(), 0, 0);
-
-    return makeModel(canvas);
-
-  }
-
-
-  function initialize(size) {
-
-    var canvas = document.createElement("canvas");
-    canvas.width = size.width;
-    canvas.height = size.height;
-
-    return makeModel(canvas);
-
-  }
-
-
-  function draw(drawOp, model) {
-    model = cloneModel(model);
-
-    var ctx = model.canvas().getContext("2d");
-
-    handleDrawOp(ctx, drawOp);
-
-    return model;
-  }
-
-
-  function handleDrawOp (ctx, drawOp) {
-    var point, point1, size, color;
-
-    switch (drawOp.ctor) {
-    case "Batch" :
-      var drawOps = drawOp._0;
-
-      while (drawOps.ctor !== "[]") {
-        handleDrawOp(ctx, drawOps._0);
-
-        drawOps = drawOps._1;
-      } 
-
-      break;
-
-    case "Font" :
-
-      ctx.font = drawOp._0;
-      break;
-
-    case "Arc" :
-
-      point = drawOp._0;
-
-      ctx.arc(point.x, point.y, drawOp._1, drawOp._2, drawOp._3);
-      break;
-
-    case "ArcTo" :
-
-      point = drawOp._0;
-      point1 = drawOp._1;
-
-      ctx.arcTo(point.x, point.y, point1.x, point1.y, drawOp._2);
-      break;
-
-    case "StrokeText" :
-
-      point = drawOp._1;
-
-      ctx.strokeText(drawOp._0, point.x, point.y);
-      break;
-
-    case "FillText" :
-
-      point = drawOp._1;
-
-      ctx.fillText(drawOp._0, point.x, point.y);
-      break;
-
-    case "GlobalCompositionOp" :
-
-      ctx.globalCompositeOperation = drawOp._0;
-      break;
-
-    case "LineCap" :
-
-      ctx.lineCap = drawOp._0;
-      break;
-
-    case "LineJoin" :
-    
-      ctx.lineJoin = drawOp._0;
-      break;
-
-    case "GlobalAlpha" :
-
-      ctx.globalAlpha = drawOp._0;
-      break;
-
-    case "LineDashOffset" :
-    
-      ctx.lineDashOffset = drawOp._0;
-      break;
-
-    case "LineWidth" :
-
-      ctx.lineWidth = drawOp._0;
-      break;
-
-    case "MiterLimit" :
-
-      ctx.miterLimit = drawOp._0;
-      break;
-
-    case "LineTo" :
-
-      point = drawOp._0;
-
-      ctx.lineTo(point.x, point.y);
-      break;
-
-    case "MoveTo" :
-
-      point = drawOp._0;
-
-      ctx.moveTo(point.x, point.y);
-      break;
-
-    case "ShadowBlur" :
-
-      ctx.shadowBlur = drawOp._0;
-      break;
-
-    case "ShadowColor" :
-
-      color = _elm_lang$core$Color$toRgb(drawOp._0);
-
-      ctx.shadowColor = getCssString(color);
-      break;
-
-    case "ShadowOffsetX" :
-
-      ctx.shadowOffsetX = drawOp._0;
-      break;
-
-    case "ShadowOffsetY" :
-
-      ctx.shadowOffsetY = drawOp._0;
-      break;
-
-    case "Stroke" :
-
-      ctx.stroke();
-      break;
-
-    case "BeginPath" :
-
-      ctx.beginPath();
-      break;
-
-    case "BezierCurveTo" :
-
-      point = drawOp._0;
-      point1 = drawOp._1;
-      var point2 = drawOp._2;
-
-      ctx.bezierCurveTo(point.x, point.y, point1.x, point1.y, point2.x, point2.y);
-      break;
-
-    case "QuadraticCurveTo" :
-
-      point = drawOp._0;
-      point1 = drawOp._1;
-
-      ctx.quadraticCurveTo(point.x, point.y, point1.x, point1.y);
-      break;
-
-    case "Rect" :
-
-      point = drawOp._0;
-      size = drawOp._1;
-
-      ctx.rect(point.x, point.y, size.width, size.height);
-      break;
-
-    case "Rotate" :
-
-      ctx.rotate(drawOp._0);
-      break;
-
-    case "Scale" :
-
-      ctx.scale(drawOp._0, drawOp._1);
-      break;
-
-    case "SetLineDash" :
-
-      ctx.setLineDash(_elm_lang$core$Native_List.toArray(drawOp._0));
-      break;
-
-    case "SetTransform" :
-
-      ctx.setTransform(
-        drawOp._0, 
-        drawOp._1, 
-        drawOp._2,
-        drawOp._3,
-        drawOp._4,
-        drawOp._5
-      );
-      break;
-
-    case "Transform" :
-
-      ctx.transform(
-        drawOp._0, 
-        drawOp._1, 
-        drawOp._2,
-        drawOp._3,
-        drawOp._4,
-        drawOp._5
-      );
-      break;
-
-    case "Translate" :
-
-      point = drawOp._0;
-      ctx.translate(point.x, point.y);
-      break;
-
-    case "StrokeRect" :
-
-      point = drawOp._0;
-      size = drawOp._1;
-
-      ctx.strokeRect(point.x, point.y, size.width, size.height);
-      break;
-
-    case "StrokeStyle" :
-
-      color = _elm_lang$core$Color$toRgb(drawOp._0);
-
-      ctx.strokeStyle = getCssString(color);
-      break;
-
-    case "TextAlign" :
-
-      ctx.textAlign = drawOp._0;
-      break;
-
-    case "TextBaseline" :
-
-      ctx.textBaseline = drawOp._0;
-      break;
-
-    case "FillStyle" :
-
-      color = _elm_lang$core$Color$toRgb(drawOp._0);
-
-      ctx.fillStyle = getCssString(color);
-      break;
-
-    case "Fill" :
-
-      ctx.fill();
-      break;
-
-    case "FillRect" :
-
-      point = drawOp._0;
-      size = drawOp._1;
-
-      ctx.fillRect(point.x, point.y, size.width, size.height);
-      break;
-
-    case "PutImageData" :
-
-      point = drawOp._2;
-      size = drawOp._1;
-      var data = _elm_lang$core$Native_List.toArray(drawOp._0);
-
-      var imageData = ctx.createImageData(size.width, size.height);
-
-      for (var index = 0; index < data.length; index++) {
-        imageData.data[ index ] = data[ index ];
-      }
-
-      ctx.putImageData(imageData, point.x, point.y);
-      break;
-
-    case "ClearRect" :
-
-      point = drawOp._0;
-      size = drawOp._1;
-
-      ctx.clearRect(point.x, point.y, size.width, size.height);
-      break;
-
-    case "Clip" :
-
-      ctx.clip();
-      break;
-
-    case "ClosePath" : 
-
-      ctx.clearPath();
-      break;
-
-    case "DrawImage":
-
-      var srcCanvas = drawOp._0.canvas();
-      var drawImageOp = drawOp._1;
-      var srcPoint, srcSize, destPoint, destSize;
-
-      switch (drawOp._1.ctor) {
-      case "At":
-
-        destPoint = drawImageOp._0;
-        ctx.drawImage(
-          srcCanvas,
-          destPoint.x,
-          destPoint.y
-        );
-        break;
-
-      case "Scaled":
-
-        destPoint = drawImageOp._0;
-        destSize = drawImageOp._1;
-        ctx.drawImage(
-          srcCanvas,
-          destPoint.x, destPoint.y,
-          destSize.width, destSize.height
-        );
-        break;
-
-      case "CropScaled":
-
-        srcPoint = drawImageOp._0;
-        srcSize = drawImageOp._1;
-        destPoint = drawImageOp._2;
-        destSize = drawImageOp._3;
-
-        ctx.drawImage(
-          srcCanvas,
-          srcPoint.x, srcPoint.y,
-          srcSize.width, srcSize.height,
-          destPoint.x, destPoint.y,
-          destSize.width, destSize.height
-        );
-        break;
-      }
-
-      break;
-    }
-  }
-
-
-  function toDataURL (mimetype, quality, model) {
-    return model.canvas().toDataURL(mimetype, quality);
-  }
-
-
-  function getCssString (color) {
-    return "rgba(" + [ color.red, color.green, color.blue, color.alpha ].join(",") + ")";
-  }
-
-
-  function loadImage(source) {
-    LOG("LOAD IMAGE");
-
-    var Scheduler = _elm_lang$core$Native_Scheduler;
-    return Scheduler.nativeBinding(function (callback) {
-      var img = new Image();
-
-      img.onload = function () {
-        var canvas = document.createElement("canvas");
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        var ctx = canvas.getContext("2d");
-
-        ctx.drawImage(img, 0, 0);
-
-        callback(Scheduler.succeed(makeModel(canvas)));
-      };
-
-      img.onerror = function () {
-        callback(Scheduler.fail({ ctor: "Error" }));
-      };
-
-      if (source.slice(0,5) !== "data:") {
-        img.crossOrigin = "Anonymous";
-      }
-      img.src = source;
-    });
-  }
-
-
-  function getImageData(point, size, model) {
-    LOG("GET IMAGE DATA");
-
-    var canvas = model.canvas();
-    var ctx = canvas.getContext("2d");
-    var imageData = ctx.getImageData(
-      point.x, 
-      point.y,
-      size.width,
-      size.height
-    );
-
-    return _elm_lang$core$Native_List.fromArray(imageData.data);
-  }
-
-
-  function setSize(size, model) {
-    var canvas = cloneModel(model).canvas();
-    canvas.width = size.width;
-    canvas.height = size.height;
-
-    return makeModel(canvas);
-  }
-
-
-  function getSize(model) {
-    return {
-      width: model.width,
-      height: model.height
-    };
-  }
-
-
-
-  function toHtml(factList, model) {
-    LOG("TO HTML");
-
-    return _elm_lang$virtual_dom$Native_VirtualDom.custom(factList, model, implementation);
-
-  }
-
-
-  var implementation = {
-    render: renderCanvas,
-    diff: diff
-  };
-
-
-  function renderCanvas(model) {
-    LOG("RENDER CANVAS");
-    return cloneModel(model).canvas();
-  }
-
-
-  function diff(old, new_) {
-    LOG("DIFF");
-
-
-    var diffCanvases = old.model.canvas() !== new_.model.canvas();
-
-    return {
-      applyPatch: function(domNode, data) {
-        LOG("APPLY PATCH");
-
-        if (diffCanvases) {
-
-          var model = data.model;
-
-          domNode.width = model.width;
-          domNode.height = model.height;
-
-          var ctx = domNode.getContext("2d");
-          ctx.clearRect(0, 0, domNode.width, domNode.height);
-          ctx.drawImage(data.model.canvas(), 0, 0);
-        }
-
-        return domNode;
-
-      },
-      data: new_
-    };
-
-  }
-
-
-  return {
-    initialize: initialize,
-    setSize: F2(setSize), // eslint-disable-line no-undef
-    getSize: getSize,
-    loadImage: loadImage,
-    toHtml: F2(toHtml), // eslint-disable-line no-undef
-    getImageData: F3(getImageData), // eslint-disable-line no-undef
-    clone: cloneModel,
-    draw: F2(draw),
-    toDataURL: F3(toDataURL) // eslint-disable-line no-undef
-  };
-}();
-
-var _minond$brainloller$Canvas$toDataUrl = _minond$brainloller$Native_Canvas.toDataURL;
-var _minond$brainloller$Canvas$setSize = _minond$brainloller$Native_Canvas.setSize;
-var _minond$brainloller$Canvas$getSize = _minond$brainloller$Native_Canvas.getSize;
-var _minond$brainloller$Canvas$getImageData = _minond$brainloller$Native_Canvas.getImageData;
-var _minond$brainloller$Canvas$loadImage = _minond$brainloller$Native_Canvas.loadImage;
-var _minond$brainloller$Canvas$draw = _minond$brainloller$Native_Canvas.draw;
-var _minond$brainloller$Canvas$toHtml = _minond$brainloller$Native_Canvas.toHtml;
-var _minond$brainloller$Canvas$initialize = _minond$brainloller$Native_Canvas.initialize;
-var _minond$brainloller$Canvas$Size = F2(
-	function (a, b) {
-		return {width: a, height: b};
-	});
-var _minond$brainloller$Canvas$Point = F2(
-	function (a, b) {
-		return {x: a, y: b};
-	});
-var _minond$brainloller$Canvas$Canvas = {ctor: 'Canvas'};
-var _minond$brainloller$Canvas$Error = {ctor: 'Error'};
-var _minond$brainloller$Canvas$Batch = function (a) {
-	return {ctor: 'Batch', _0: a};
-};
-var _minond$brainloller$Canvas$batch = _minond$brainloller$Canvas$Batch;
-var _minond$brainloller$Canvas$DrawImage = F2(
-	function (a, b) {
-		return {ctor: 'DrawImage', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$ClosePath = {ctor: 'ClosePath'};
-var _minond$brainloller$Canvas$Clip = {ctor: 'Clip'};
-var _minond$brainloller$Canvas$ClearRect = F2(
-	function (a, b) {
-		return {ctor: 'ClearRect', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$PutImageData = F3(
-	function (a, b, c) {
-		return {ctor: 'PutImageData', _0: a, _1: b, _2: c};
-	});
-var _minond$brainloller$Canvas$QuadraticCurveTo = F2(
-	function (a, b) {
-		return {ctor: 'QuadraticCurveTo', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$BezierCurveTo = F3(
-	function (a, b, c) {
-		return {ctor: 'BezierCurveTo', _0: a, _1: b, _2: c};
-	});
-var _minond$brainloller$Canvas$BeginPath = {ctor: 'BeginPath'};
-var _minond$brainloller$Canvas$FillStyle = function (a) {
-	return {ctor: 'FillStyle', _0: a};
-};
-var _minond$brainloller$Canvas$TextBaseline = function (a) {
-	return {ctor: 'TextBaseline', _0: a};
-};
-var _minond$brainloller$Canvas$TextAlign = function (a) {
-	return {ctor: 'TextAlign', _0: a};
-};
-var _minond$brainloller$Canvas$StrokeStyle = function (a) {
-	return {ctor: 'StrokeStyle', _0: a};
-};
-var _minond$brainloller$Canvas$StrokeRect = F2(
-	function (a, b) {
-		return {ctor: 'StrokeRect', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$Translate = function (a) {
-	return {ctor: 'Translate', _0: a};
-};
-var _minond$brainloller$Canvas$Transform = F6(
-	function (a, b, c, d, e, f) {
-		return {ctor: 'Transform', _0: a, _1: b, _2: c, _3: d, _4: e, _5: f};
-	});
-var _minond$brainloller$Canvas$SetTransform = F6(
-	function (a, b, c, d, e, f) {
-		return {ctor: 'SetTransform', _0: a, _1: b, _2: c, _3: d, _4: e, _5: f};
-	});
-var _minond$brainloller$Canvas$SetLineDash = function (a) {
-	return {ctor: 'SetLineDash', _0: a};
-};
-var _minond$brainloller$Canvas$Scale = F2(
-	function (a, b) {
-		return {ctor: 'Scale', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$Rotate = function (a) {
-	return {ctor: 'Rotate', _0: a};
-};
-var _minond$brainloller$Canvas$Rect = F2(
-	function (a, b) {
-		return {ctor: 'Rect', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$FillRect = F2(
-	function (a, b) {
-		return {ctor: 'FillRect', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$Fill = {ctor: 'Fill'};
-var _minond$brainloller$Canvas$Stroke = {ctor: 'Stroke'};
-var _minond$brainloller$Canvas$ShadowOffsetY = function (a) {
-	return {ctor: 'ShadowOffsetY', _0: a};
-};
-var _minond$brainloller$Canvas$ShadowOffsetX = function (a) {
-	return {ctor: 'ShadowOffsetX', _0: a};
-};
-var _minond$brainloller$Canvas$ShadowColor = function (a) {
-	return {ctor: 'ShadowColor', _0: a};
-};
-var _minond$brainloller$Canvas$ShadowBlur = function (a) {
-	return {ctor: 'ShadowBlur', _0: a};
-};
-var _minond$brainloller$Canvas$MoveTo = function (a) {
-	return {ctor: 'MoveTo', _0: a};
-};
-var _minond$brainloller$Canvas$LineTo = function (a) {
-	return {ctor: 'LineTo', _0: a};
-};
-var _minond$brainloller$Canvas$LineJoin = function (a) {
-	return {ctor: 'LineJoin', _0: a};
-};
-var _minond$brainloller$Canvas$MiterLimit = function (a) {
-	return {ctor: 'MiterLimit', _0: a};
-};
-var _minond$brainloller$Canvas$LineWidth = function (a) {
-	return {ctor: 'LineWidth', _0: a};
-};
-var _minond$brainloller$Canvas$LineDashOffset = function (a) {
-	return {ctor: 'LineDashOffset', _0: a};
-};
-var _minond$brainloller$Canvas$LineCap = function (a) {
-	return {ctor: 'LineCap', _0: a};
-};
-var _minond$brainloller$Canvas$GlobalCompositionOp = function (a) {
-	return {ctor: 'GlobalCompositionOp', _0: a};
-};
-var _minond$brainloller$Canvas$GlobalAlpha = function (a) {
-	return {ctor: 'GlobalAlpha', _0: a};
-};
-var _minond$brainloller$Canvas$FillText = F2(
-	function (a, b) {
-		return {ctor: 'FillText', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$StrokeText = F2(
-	function (a, b) {
-		return {ctor: 'StrokeText', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$ArcTo = F3(
-	function (a, b, c) {
-		return {ctor: 'ArcTo', _0: a, _1: b, _2: c};
-	});
-var _minond$brainloller$Canvas$Arc = F4(
-	function (a, b, c, d) {
-		return {ctor: 'Arc', _0: a, _1: b, _2: c, _3: d};
-	});
-var _minond$brainloller$Canvas$Font = function (a) {
-	return {ctor: 'Font', _0: a};
-};
-var _minond$brainloller$Canvas$CropScaled = F4(
-	function (a, b, c, d) {
-		return {ctor: 'CropScaled', _0: a, _1: b, _2: c, _3: d};
-	});
-var _minond$brainloller$Canvas$Scaled = F2(
-	function (a, b) {
-		return {ctor: 'Scaled', _0: a, _1: b};
-	});
-var _minond$brainloller$Canvas$At = function (a) {
-	return {ctor: 'At', _0: a};
+var _minond$brainloller$Programs$progHelloWorld = {
+	ctor: '::',
+	_0: {
+		ctor: '::',
+		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	_1: {
+		ctor: '::',
+		_0: {
+			ctor: '::',
+			_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '::',
+				_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																	_1: {ctor: '[]'}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '::',
+					_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																		_1: {ctor: '[]'}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '::',
+						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																			_1: {ctor: '[]'}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '::',
+							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																				_1: {ctor: '[]'}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '::',
+								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																					_1: {ctor: '[]'}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '::',
+									_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																						_1: {ctor: '[]'}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '::',
+										_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_1: {
+																							ctor: '::',
+																							_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																							_1: {ctor: '[]'}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '::',
+											_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_1: {
+																							ctor: '::',
+																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_1: {
+																								ctor: '::',
+																								_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																								_1: {ctor: '[]'}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										},
+										_1: {
+											ctor: '::',
+											_0: {
+												ctor: '::',
+												_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																						_1: {
+																							ctor: '::',
+																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_1: {
+																								ctor: '::',
+																								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																								_1: {
+																									ctor: '::',
+																									_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																									_1: {ctor: '[]'}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											},
+											_1: {
+												ctor: '::',
+												_0: {
+													ctor: '::',
+													_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+													_1: {
+														ctor: '::',
+														_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+														_1: {
+															ctor: '::',
+															_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+															_1: {
+																ctor: '::',
+																_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+																_1: {
+																	ctor: '::',
+																	_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0},
+																	_1: {
+																		ctor: '::',
+																		_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0},
+																			_1: {
+																				ctor: '::',
+																				_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																				_1: {
+																					ctor: '::',
+																					_0: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0},
+																					_1: {
+																						ctor: '::',
+																						_0: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255},
+																						_1: {
+																							ctor: '::',
+																							_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																							_1: {
+																								ctor: '::',
+																								_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																								_1: {
+																									ctor: '::',
+																									_0: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0},
+																									_1: {
+																										ctor: '::',
+																										_0: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255},
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												},
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 };
 
 var _minond$brainloller$Main$textCopy = function (copy) {
@@ -14094,14 +14115,103 @@ var _minond$brainloller$Main$btn = function (attrs) {
 var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _minond$brainloller$Main$Stop = {ctor: 'Stop'};
+var _minond$brainloller$Main$update = F2(
+	function (message, model) {
+		var _p0 = {ctor: '_Tuple2', _0: message, _1: model};
+		return A2(
+			_elm_lang$core$Debug$log,
+			'Start',
+			{ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none});
+	});
+var _minond$brainloller$Main$commands = _elm_lang$core$Dict$fromList(
+	{
+		ctor: '::',
+		_0: {
+			ctor: '_Tuple2',
+			_0: '>',
+			_1: {ctor: '_Tuple3', _0: 255, _1: 0, _2: 0}
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: '<',
+				_1: {ctor: '_Tuple3', _0: 128, _1: 0, _2: 0}
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: '+',
+					_1: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 0}
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: '-',
+						_1: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 0}
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: '.',
+							_1: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 255}
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: ',',
+								_1: {ctor: '_Tuple3', _0: 0, _1: 0, _2: 128}
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: '[',
+									_1: {ctor: '_Tuple3', _0: 255, _1: 255, _2: 0}
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: ']',
+										_1: {ctor: '_Tuple3', _0: 128, _1: 128, _2: 0}
+									},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '_Tuple2',
+											_0: '+90',
+											_1: {ctor: '_Tuple3', _0: 0, _1: 255, _2: 255}
+										},
+										_1: {
+											ctor: '::',
+											_0: {
+												ctor: '_Tuple2',
+												_0: '-90',
+												_1: {ctor: '_Tuple3', _0: 0, _1: 128, _2: 128}
+											},
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
 var _minond$brainloller$Main$Start = {ctor: 'Start'};
 var _minond$brainloller$Main$codeEditor = function (model) {
-	var _p0 = model;
-	if (_p0.ctor === 'Loading') {
-		return _minond$brainloller$Main$textCopy('Loading code');
+	var _p1 = model;
+	if (_p1.ctor === 'Loading') {
+		return _minond$brainloller$Main$textCopy('Processing image');
 	} else {
-		var _p1 = _p0._1;
+		var pixels = _minond$brainloller$Programs$progHelloWorld;
 		var startBtn = A2(
 			_minond$brainloller$Main$btn,
 			{
@@ -14114,13 +14224,6 @@ var _minond$brainloller$Main$codeEditor = function (model) {
 				_0: _elm_lang$html$Html$text('Start'),
 				_1: {ctor: '[]'}
 			});
-		var draw = A2(
-			_minond$brainloller$Canvas$DrawImage,
-			_p0._0,
-			A2(
-				_minond$brainloller$Canvas$Scaled,
-				A2(_minond$brainloller$Canvas$Point, 0, 0),
-				A2(_minond$brainloller$Canvas$Size, _p1, _p1)));
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -14133,14 +14236,19 @@ var _minond$brainloller$Main$codeEditor = function (model) {
 				_0: startBtn,
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_minond$brainloller$Canvas$toHtml,
-						{ctor: '[]'},
-						A2(
-							_minond$brainloller$Canvas$draw,
-							draw,
-							_minond$brainloller$Canvas$initialize(
-								A2(_minond$brainloller$Canvas$Size, _p1, _p1)))),
+					_0: _evancz$elm_graphics$Element$toHtml(
+						A3(
+							_evancz$elm_graphics$Collage$collage,
+							600,
+							600,
+							{
+								ctor: '::',
+								_0: A2(
+									_evancz$elm_graphics$Collage$filled,
+									_elm_lang$core$Color$blue,
+									_evancz$elm_graphics$Collage$square(50)),
+								_1: {ctor: '[]'}
+							})),
 					_1: {ctor: '[]'}
 				}
 			});
@@ -14190,57 +14298,15 @@ var _minond$brainloller$Main$view = function (model) {
 			}
 		});
 };
-var _minond$brainloller$Main$ImageLoaded = function (a) {
-	return {ctor: 'ImageLoaded', _0: a};
-};
-var _minond$brainloller$Main$loadCode = A2(
-	_elm_lang$core$Task$attempt,
-	_minond$brainloller$Main$ImageLoaded,
-	_minond$brainloller$Canvas$loadImage('brainloller/helloworldlarge.png'));
-var _minond$brainloller$Main$Loading = {ctor: 'Loading'};
-var _minond$brainloller$Main$GotCanvas = F2(
-	function (a, b) {
-		return {ctor: 'GotCanvas', _0: a, _1: b};
-	});
-var _minond$brainloller$Main$update = F2(
-	function (message, model) {
-		var _p2 = {ctor: '_Tuple2', _0: message, _1: model};
-		_v1_2:
-		do {
-			if (_p2.ctor === '_Tuple2') {
-				switch (_p2._0.ctor) {
-					case 'ImageLoaded':
-						if (_p2._0._0.ctor === 'Ok') {
-							var size = 300;
-							return {
-								ctor: '_Tuple2',
-								_0: A2(_minond$brainloller$Main$GotCanvas, _p2._0._0._0, size),
-								_1: _elm_lang$core$Platform_Cmd$none
-							};
-						} else {
-							break _v1_2;
-						}
-					case 'Start':
-						return A2(
-							_elm_lang$core$Debug$log,
-							'Start',
-							{ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none});
-					default:
-						break _v1_2;
-				}
-			} else {
-				break _v1_2;
-			}
-		} while(false);
-		return {ctor: '_Tuple2', _0: _minond$brainloller$Main$Loading, _1: _minond$brainloller$Main$loadCode};
-	});
+var _minond$brainloller$Main$DrawHelloWorld = {ctor: 'DrawHelloWorld'};
 var _minond$brainloller$Main$main = _elm_lang$html$Html$program(
 	{
-		init: {ctor: '_Tuple2', _0: _minond$brainloller$Main$Loading, _1: _minond$brainloller$Main$loadCode},
+		init: {ctor: '_Tuple2', _0: _minond$brainloller$Main$DrawHelloWorld, _1: _elm_lang$core$Platform_Cmd$none},
 		view: _minond$brainloller$Main$view,
 		update: _minond$brainloller$Main$update,
 		subscriptions: _minond$brainloller$Main$subscriptions
 	})();
+var _minond$brainloller$Main$Loading = {ctor: 'Loading'};
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
