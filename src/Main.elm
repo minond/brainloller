@@ -12,8 +12,11 @@ import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
+import List.Extra exposing (getAt, setAt)
+import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
+import Util exposing (asList)
 
 
 type Msg
@@ -52,9 +55,27 @@ main =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model ) of
-        ( Start, _ ) ->
-            Debug.log "Start"
-                ( model, Cmd.none )
+        ( Start, { program } ) ->
+            let
+                x =
+                    0
+
+                y =
+                    0
+
+                row =
+                    asList (getAt y program)
+
+                updatedRow =
+                    asList (setAt x { r = 0, g = 0, b = 0 } row)
+
+                updatedProgram =
+                    asList (setAt y updatedRow program)
+
+                update =
+                    { model | program = updatedProgram }
+            in
+            ( update, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -88,15 +109,12 @@ codeEditor model =
         startBtn =
             btn [ onClick Start ]
                 [ text "Start" ]
-
-        size =
-            List.length model.program * 40
     in
     div []
         [ startBtn
         , div
             [ class "container" ]
-            [ toHtml <| collage size size <| programForm model.program ]
+            [ toHtml <| collage 600 400 <| programForm model.program ]
         ]
 
 

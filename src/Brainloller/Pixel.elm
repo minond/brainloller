@@ -3,6 +3,7 @@ module Brainloller.Pixel exposing (programForm)
 import Brainloller.Lang exposing (BLProgram, Pixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (rgb)
+import Maybe
 
 
 type alias BoardConfig =
@@ -41,12 +42,10 @@ programForm program =
             List.length program
 
         width =
-            case List.head program of
-                Just row ->
-                    List.length row
-
-                Nothing ->
-                    0
+            Maybe.withDefault 0 <|
+                Maybe.andThen
+                    (\row -> Just <| List.length row)
+                    (List.head program)
 
         startX =
             width // 2 * cellSize
