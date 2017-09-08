@@ -68,8 +68,7 @@ view model =
             mainTitle "Brainloller"
 
         containerClasses =
-            [ "container"
-            , Tac.cf
+            [ Tac.cf
             , Tac.pa3
             , Tac.pa4_ns
             ]
@@ -84,10 +83,6 @@ view model =
 
 codeEditor : Model -> Html Msg
 codeEditor model =
-    let
-        size =
-            500
-    in
     case model of
         Loading ->
             textCopy "Processing image"
@@ -100,11 +95,15 @@ codeEditor model =
 
                 pixels =
                     progHelloWorld
+
+                size =
+                    List.length pixels * 40
             in
-            div
-                [ class Tac.tc ]
+            div []
                 [ startBtn
-                , toHtml <| collage size size <| pixelsForm pixels
+                , div
+                    [ class "container" ]
+                    [ toHtml <| collage size size <| pixelsForm pixels ]
                 ]
 
 
