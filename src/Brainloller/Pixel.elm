@@ -1,18 +1,8 @@
-module Brainloller.Pixel exposing (Pixel, Pixels, pixelsForm)
+module Brainloller.Pixel exposing (programForm)
 
+import Brainloller.Lang exposing (BLProgram, Pixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (rgb)
-
-
-type alias Pixel =
-    { r : Int
-    , g : Int
-    , b : Int
-    }
-
-
-type alias Pixels =
-    List (List Pixel)
 
 
 type alias BoardConfig =
@@ -41,17 +31,17 @@ pixelForm board index pixel =
     move point (filled color (square 20))
 
 
-pixelsForm : Pixels -> List Form
-pixelsForm pixels =
+programForm : BLProgram -> List Form
+programForm program =
     let
         cellSize =
             20
 
         height =
-            List.length pixels
+            List.length program
 
         width =
-            case List.head pixels of
+            case List.head program of
                 Just row ->
                     List.length row
 
@@ -65,7 +55,7 @@ pixelsForm pixels =
             height // 2 * cellSize * -1
 
         continuous =
-            List.foldl (++) [] pixels
+            List.foldl (++) [] program
 
         board =
             { cellSize = cellSize

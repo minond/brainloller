@@ -1,7 +1,9 @@
 module Main exposing (main)
 
 import Array
-import Brainloller.Pixel exposing (Pixels, pixelsForm)
+import Brainloller.Lang exposing (BLProgram)
+import Brainloller.Pixel exposing (programForm)
+import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
 import Debug
 import Dict
@@ -10,7 +12,6 @@ import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
-import Program exposing (progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 
@@ -20,7 +21,7 @@ type Msg
 
 
 type alias Model =
-    { pixels : Pixels
+    { program : BLProgram
     }
 
 
@@ -41,7 +42,7 @@ commands =
 
 main =
     Html.program
-        { init = ( { pixels = progHelloWorld }, Cmd.none )
+        { init = ( { program = progHelloWorld }, Cmd.none )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -89,13 +90,13 @@ codeEditor model =
                 [ text "Start" ]
 
         size =
-            List.length model.pixels * 40
+            List.length model.program * 40
     in
     div []
         [ startBtn
         , div
             [ class "container" ]
-            [ toHtml <| collage size size <| pixelsForm model.pixels ]
+            [ toHtml <| collage size size <| programForm model.program ]
         ]
 
 

@@ -1,9 +1,9 @@
-module Program exposing (progHelloWorld)
+module Brainloller.Program exposing (progHelloWorld)
 
-import Brainloller.Pixel exposing (Pixels)
+import Brainloller.Lang exposing (BLProgram)
 
 
-progHelloWorld : Pixels
+progHelloWorld : BLProgram
 progHelloWorld =
     [ [ { r = 255, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 255, g = 255, b = 0 }, { r = 128, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
     , [ { r = 0, g = 128, b = 128 }, { r = 0, g = 0, b = 255 }, { r = 128, g = 0, b = 0 }, { r = 128, g = 128, b = 0 }, { r = 0, g = 128, b = 0 }, { r = 255, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
