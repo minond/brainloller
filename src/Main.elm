@@ -2,9 +2,11 @@ module Main exposing (main)
 
 import Canvas exposing (Canvas, DrawImageParams(..), DrawOp(..), Error, Point, Size)
 import Collage exposing (collage, toForm)
+import Color exposing (rgb)
 import Debug
+import Dict
 import Element exposing (Element, image, toHtml)
-import Html exposing (Html, Attribute, div, h1, node, p, text, button)
+import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import Tachyons exposing (classes)
@@ -21,6 +23,21 @@ type Msg
 type Model
     = GotCanvas Canvas Int
     | Loading
+
+
+commands =
+    Dict.fromList
+        [ ( ">", ( 255, 0, 0 ) ) -- red
+        , ( "<", ( 128, 0, 0 ) ) -- dark red
+        , ( "+", ( 0, 255, 0 ) ) -- green
+        , ( "-", ( 0, 128, 0 ) ) -- dark green
+        , ( ".", ( 0, 0, 255 ) ) -- blue
+        , ( ",", ( 0, 0, 128 ) ) -- dark blue
+        , ( "[", ( 255, 255, 0 ) ) -- yellow
+        , ( "]", ( 128, 128, 0 ) ) -- dark yellow
+        , ( "+90", ( 0, 255, 255 ) ) -- cyan
+        , ( "-90", ( 0, 128, 128 ) ) -- dark cyan
+        ]
 
 
 main =
@@ -44,7 +61,7 @@ update message model =
 
         ( Start, _ ) ->
             Debug.log "Start"
-            ( model, Cmd.none )
+                ( model, Cmd.none )
 
         _ ->
             ( Loading, loadCode )
@@ -85,7 +102,7 @@ codeEditor model =
         GotCanvas canvas size ->
             let
                 draw =
-                    Scaled (Point 0 0) (Size size size)
+                    Scaled (Point 0 0) (Size 14 12)
                         |> DrawImage canvas
 
                 startBtn =
@@ -125,7 +142,7 @@ loadCode : Cmd Msg
 loadCode =
     Task.attempt
         ImageLoaded
-        (Canvas.loadImage "brainloller/helloworldlarge.png")
+        (Canvas.loadImage "brainloller/helloworld.png")
 
 
 stylesheet : String -> Html msg
