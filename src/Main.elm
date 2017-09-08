@@ -86,7 +86,7 @@ codeEditor : Model -> Html Msg
 codeEditor model =
     let
         size =
-            1000
+            500
     in
     case model of
         Loading ->
@@ -104,7 +104,7 @@ codeEditor model =
             div
                 [ class Tac.tc ]
                 [ startBtn
-                , toHtml (collage size size (pixelsForm pixels))
+                , toHtml <| collage size size <| pixelsForm pixels
                 ]
 
 

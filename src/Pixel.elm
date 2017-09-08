@@ -1,4 +1,4 @@
-module Pixel exposing (Pixels, Pixel, pixelsForm)
+module Pixel exposing (Pixel, Pixels, pixelsForm)
 
 import Collage exposing (Form, filled, move, square)
 import Color exposing (rgb)
@@ -27,12 +27,12 @@ pixelForm : BoardConfig -> Int -> Pixel -> Form
 pixelForm board index pixel =
     let
         x =
-            (rem index board.width) * board.cellSize - board.startX
+            rem index board.width * board.cellSize - board.startX
 
         y =
             (index // board.width) * board.cellSize + board.startY
 
-        point = 
+        point =
             ( toFloat x, toFloat y )
 
         color =
@@ -47,10 +47,10 @@ pixelsForm pixels =
         cellSize =
             20
 
-        width =
+        height =
             List.length pixels
 
-        height =
+        width =
             case List.head pixels of
                 Just row ->
                     List.length row
@@ -62,7 +62,7 @@ pixelsForm pixels =
             width // 2 * cellSize
 
         startY =
-            height // 2 * cellSize
+            height // 2 * cellSize * -1
 
         continuous =
             List.foldl (++) [] pixels
@@ -78,4 +78,5 @@ pixelsForm pixels =
             \index pixel ->
                 pixelForm board index pixel
     in
+    Debug.log (toString height)
     List.indexedMap processPixel continuous
