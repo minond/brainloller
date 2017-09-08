@@ -1,14 +1,14 @@
 module Main exposing (main)
 
-import Collage exposing (collage, filled, square, toForm)
-import Color exposing (blue, rgb)
+import Collage exposing (Form, collage, filled, move, square, toForm)
+import Color exposing (blue, red, rgb)
 import Debug
 import Dict
 import Element exposing (Element, image, toHtml)
 import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
-import Programs exposing (Program, progHelloWorld)
+import Programs exposing (Pixels, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Task
@@ -83,6 +83,10 @@ view model =
 
 codeEditor : Model -> Html Msg
 codeEditor model =
+    let
+        size =
+            600
+    in
     case model of
         Loading ->
             textCopy "Processing image"
@@ -99,7 +103,7 @@ codeEditor model =
             div
                 [ class Tac.tc ]
                 [ startBtn
-                , toHtml (collage 600 600 [ filled blue (square 50) ])
+                , toHtml (collage size size (drawPixels pixels))
                 ]
 
 
@@ -159,3 +163,10 @@ textCopy copy =
     in
     p [ classes pClasses ]
         [ text copy ]
+
+
+drawPixels : Pixels -> List Form
+drawPixels pixels =
+    [ move ( 0, 0 ) (filled blue (square 50))
+    , move ( 20, 20 ) (filled red (square 20))
+    ]

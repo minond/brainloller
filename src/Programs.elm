@@ -1,11 +1,11 @@
-module Programs exposing (Program, progHelloWorld)
+module Programs exposing (Pixels, progHelloWorld)
 
 
-type alias Program =
+type alias Pixels =
     List (List ( Int, Int, Int ))
 
 
-progHelloWorld : Program
+progHelloWorld : Pixels
 progHelloWorld =
     [ [ ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 255, 255, 0 ), ( 128, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
     , [ ( 0, 128, 128 ), ( 0, 0, 255 ), ( 128, 0, 0 ), ( 128, 128, 0 ), ( 0, 128, 0 ), ( 255, 0, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 0 ), ( 0, 255, 255 ) ]
