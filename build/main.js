@@ -13086,7 +13086,7 @@ var _minond$brainloller$Pixel$pixelsForm = function (pixels) {
 			}),
 		{ctor: '[]'},
 		pixels);
-	var height = function () {
+	var width = function () {
 		var _p0 = _elm_lang$core$List$head(pixels);
 		if (_p0.ctor === 'Just') {
 			return _elm_lang$core$List$length(_p0._0);
@@ -13094,10 +13094,10 @@ var _minond$brainloller$Pixel$pixelsForm = function (pixels) {
 			return 0;
 		}
 	}();
-	var width = _elm_lang$core$List$length(pixels);
+	var height = _elm_lang$core$List$length(pixels);
 	var cellSize = 20;
 	var startX = ((width / 2) | 0) * cellSize;
-	var startY = ((height / 2) | 0) * cellSize;
+	var startY = (((height / 2) | 0) * cellSize) * -1;
 	var board = {cellSize: cellSize, width: width, startX: ((width / 2) | 0) * cellSize, startY: startY};
 	var processPixel = F2(
 		function (index, pixel) {
@@ -14065,7 +14065,7 @@ var _minond$brainloller$Main$commands = _elm_lang$core$Dict$fromList(
 	});
 var _minond$brainloller$Main$Start = {ctor: 'Start'};
 var _minond$brainloller$Main$codeEditor = function (model) {
-	var size = 1000;
+	var size = 500;
 	var _p1 = model;
 	if (_p1.ctor === 'Loading') {
 		return _minond$brainloller$Main$textCopy('Processing image');
