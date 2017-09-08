@@ -78,5 +78,4 @@ pixelsForm pixels =
             \index pixel ->
                 pixelForm board index pixel
     in
-    Debug.log (toString height)
     List.indexedMap processPixel continuous
