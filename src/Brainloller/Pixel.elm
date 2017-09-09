@@ -1,8 +1,9 @@
-module Brainloller.Pixel exposing (programForm)
+module Brainloller.Pixel exposing (commandsForm, programForm)
 
-import Brainloller.Lang exposing (BLProgram, Pixel)
+import Brainloller.Lang exposing (BLProgram, Pixel, cmdPixel)
 import Collage exposing (Form, filled, move, square)
-import Color exposing (rgb)
+import Color exposing (Color, rgb)
+import Html exposing (Html, div, text)
 import Maybe
 
 
@@ -12,6 +13,11 @@ type alias BoardConfig =
     , startX : Int
     , startY : Int
     }
+
+
+pixelColor : Pixel -> Color
+pixelColor pixel =
+    rgb pixel.r pixel.g pixel.b
 
 
 pixelForm : BoardConfig -> Int -> Pixel -> Form
@@ -29,7 +35,7 @@ pixelForm board index pixel =
         color =
             rgb pixel.r pixel.g pixel.b
     in
-    move point (filled color (square 20))
+    move point <| filled color <| square 20
 
 
 programForm : BLProgram -> List Form
@@ -68,3 +74,14 @@ programForm program =
                 pixelForm board index pixel
     in
     List.indexedMap processPixel continuous
+
+
+
+-- [ move (0, 0) <| filled (pixelColor cmdPixel.shiftRight) (square 30)
+-- ]
+
+
+commandsForm : Html a
+commandsForm =
+    div []
+        [ text "Controls go here" ]

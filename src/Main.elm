@@ -2,11 +2,10 @@ module Main exposing (main)
 
 import Array
 import Brainloller.Lang exposing (BLProgram)
-import Brainloller.Pixel exposing (programForm)
+import Brainloller.Pixel exposing (commandsForm, programForm)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
 import Debug
-import Dict
 import Element exposing (Element, image, toHtml)
 import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
@@ -26,21 +25,6 @@ type Msg
 type alias Model =
     { program : BLProgram
     }
-
-
-commands =
-    Dict.fromList
-        [ ( ">", ( 255, 0, 0 ) ) -- red
-        , ( "<", ( 128, 0, 0 ) ) -- dark red
-        , ( "+", ( 0, 255, 0 ) ) -- green
-        , ( "-", ( 0, 128, 0 ) ) -- dark green
-        , ( ".", ( 0, 0, 255 ) ) -- blue
-        , ( ",", ( 0, 0, 128 ) ) -- dark blue
-        , ( "[", ( 255, 255, 0 ) ) -- yellow
-        , ( "]", ( 128, 128, 0 ) ) -- dark yellow
-        , ( "+90", ( 0, 255, 255 ) ) -- cyan
-        , ( "-90", ( 0, 128, 128 ) ) -- dark cyan
-        ]
 
 
 main =
@@ -90,32 +74,38 @@ view model =
             mainTitle "Brainloller"
 
         containerClasses =
-            [ Tac.cf
+            [ "program-container"
+            , Tac.cf
             , Tac.pa3
             , Tac.pa4_ns
             ]
+
+        startBtn =
+            btn [ onClick Start ]
+                [ text "Start" ]
     in
     div [ classes containerClasses ]
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
-        , codeEditor model
+        , textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
+
+        -- , startBtn
+        , programCommands model
+        , programOutput model
         ]
 
 
-codeEditor : Model -> Html Msg
-codeEditor model =
-    let
-        startBtn =
-            btn [ onClick Start ]
-                [ text "Start" ]
-    in
-    div []
-        [ startBtn
-        , div
-            [ class "container" ]
-            [ toHtml <| collage 600 400 <| programForm model.program ]
-        ]
+programOutput : Model -> Html Msg
+programOutput model =
+    div [ class "program-output" ]
+        [ toHtml <| collage 600 400 <| programForm model.program ]
+
+
+programCommands : Model -> Html Msg
+programCommands _ =
+    div [ class "program-commands" ]
+        [ commandsForm ]
 
 
 btn : List (Attribute msg) -> List (Html msg) -> Html msg

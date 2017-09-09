@@ -1,4 +1,15 @@
-.container > div {
+.program-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.program-output {
+  box-shadow: 4px 5px 8px #bfbfbf;
+  border: 1px solid #c3c3c3;
+  overflow: auto;
+}
+
+.program-output > div {
   margin: 0 auto !important;
 }
 
