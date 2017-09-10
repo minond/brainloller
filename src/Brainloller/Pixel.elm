@@ -1,10 +1,10 @@
 module Brainloller.Pixel exposing (commandsForm, programForm)
 
-import Brainloller.Lang exposing (BLProgram, Pixel, cmdPixel)
+import Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Maybe
 
@@ -85,19 +85,22 @@ commandsForm cmdSetter =
             \cmd ->
                 div
                     [ onClick (cmdSetter cmd)
-                    , class ("program-command program-command--" ++ cmd)
+                    , classList
+                        [ ( "program-command", True )
+                        , ( "program-command--" ++ cmd, True )
+                        ]
                     ]
                     []
     in
     div [ class "cf" ]
-        [ picker "shiftRight"
-        , picker "shiftLeft"
-        , picker "increment"
-        , picker "decrement"
-        , picker "ioWrite"
-        , picker "ioRead"
-        , picker "loopOpen"
-        , picker "loopClose"
-        , picker "rotateClockwise"
-        , picker "rotateCounterClockwise"
+        [ picker blCmd.shiftRight
+        , picker blCmd.shiftLeft
+        , picker blCmd.increment
+        , picker blCmd.decrement
+        , picker blCmd.ioWrite
+        , picker blCmd.ioRead
+        , picker blCmd.loopOpen
+        , picker blCmd.loopClose
+        , picker blCmd.rotateClockwise
+        , picker blCmd.rotateCounterClockwise
         ]

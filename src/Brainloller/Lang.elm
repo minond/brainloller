@@ -1,4 +1,4 @@
-module Brainloller.Lang exposing (BLProgram, Pixel, cmdPixel)
+module Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel)
 
 
 type alias Pixel =
@@ -12,6 +12,20 @@ type alias BLProgram =
     List (List Pixel)
 
 
+type alias BLCmd a =
+    { shiftRight : a
+    , shiftLeft : a
+    , increment : a
+    , decrement : a
+    , ioWrite : a
+    , ioRead : a
+    , loopOpen : a
+    , loopClose : a
+    , rotateClockwise : a
+    , rotateCounterClockwise : a
+    }
+
+
 pixel : Int -> Int -> Int -> Pixel
 pixel r g b =
     { r = r
@@ -20,7 +34,23 @@ pixel r g b =
     }
 
 
-cmdPixel =
+blCmd : BLCmd String
+blCmd =
+    { shiftRight = "shiftRight"
+    , shiftLeft = "shiftLeft"
+    , increment = "increment"
+    , decrement = "decrement"
+    , ioWrite = "ioWrite"
+    , ioRead = "ioRead"
+    , loopOpen = "loopOpen"
+    , loopClose = "loopClose"
+    , rotateClockwise = "rotateClockwise"
+    , rotateCounterClockwise = "rotateCounterClockwise"
+    }
+
+
+blCmdPixel : BLCmd Pixel
+blCmdPixel =
     { shiftRight = pixel 255 0 0 -- >, red
     , shiftLeft = pixel 128 0 0 -- <, dark red
     , increment = pixel 0 255 0 -- +, green

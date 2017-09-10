@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Array
-import Brainloller.Lang exposing (BLProgram)
+import Brainloller.Lang exposing (BLProgram, blCmd)
 import Brainloller.Pixel exposing (commandsForm, programForm)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
@@ -25,16 +25,24 @@ type Msg
 
 type alias Model =
     { program : BLProgram
+    , activeCmd : Maybe String
     }
 
 
 main =
     Html.program
-        { init = ( { program = progHelloWorld }, Cmd.none )
+        { init = ( initialModel, Cmd.none )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+initialModel : Model
+initialModel =
+    { program = progHelloWorld
+    , activeCmd = Nothing
+    }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,7 +71,7 @@ update message model =
             ( update, Cmd.none )
 
         ( SetCmd cmd, _ ) ->
-            ( model, Cmd.none )
+            ( { model | activeCmd = Just cmd }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
