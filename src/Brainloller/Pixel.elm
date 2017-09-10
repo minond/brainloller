@@ -4,6 +4,8 @@ import Brainloller.Lang exposing (BLProgram, Pixel, cmdPixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Maybe
 
 
@@ -16,8 +18,8 @@ type alias BoardConfig =
 
 
 pixelColor : Pixel -> Color
-pixelColor pixel =
-    rgb pixel.r pixel.g pixel.b
+pixelColor { r, g, b } =
+    rgb r g b
 
 
 pixelForm : BoardConfig -> Int -> Pixel -> Form
@@ -76,12 +78,26 @@ programForm program =
     List.indexedMap processPixel continuous
 
 
-
--- [ move (0, 0) <| filled (pixelColor cmdPixel.shiftRight) (square 30)
--- ]
-
-
-commandsForm : Html a
-commandsForm =
-    div []
-        [ text "Controls go here" ]
+commandsForm : (String -> msg) -> Html msg
+commandsForm cmdSetter =
+    let
+        picker =
+            \cmd ->
+                div
+                    [ onClick (cmdSetter cmd)
+                    , class ("program-command program-command--" ++ cmd)
+                    ]
+                    []
+    in
+    div [ class "cf" ]
+        [ picker "shiftRight"
+        , picker "shiftLeft"
+        , picker "increment"
+        , picker "decrement"
+        , picker "ioWrite"
+        , picker "ioRead"
+        , picker "loopOpen"
+        , picker "loopClose"
+        , picker "rotateClockwise"
+        , picker "rotateCounterClockwise"
+        ]

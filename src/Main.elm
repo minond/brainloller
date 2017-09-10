@@ -20,6 +20,7 @@ import Util exposing (asList)
 
 type Msg
     = Start
+    | SetCmd String
 
 
 type alias Model =
@@ -61,6 +62,9 @@ update message model =
             in
             ( update, Cmd.none )
 
+        ( SetCmd cmd, _ ) ->
+            ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub msg
 subscriptions model =
@@ -88,9 +92,7 @@ view model =
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
-        , textCopy "Brainloller is a Brainfuck clone designed by Lode Vandevenne in 2005. Commands are read from the pixels of a .png image (like Piet), with 2 extra commands. The extra commands change the instruction pointer direction so that you can compact the 1D Brainfuck code into a 2D image. You can hide Brainloller code in a photo or draw comments."
-
-        -- , startBtn
+        , startBtn
         , programCommands model
         , programOutput model
         ]
@@ -105,7 +107,7 @@ programOutput model =
 programCommands : Model -> Html Msg
 programCommands _ =
     div [ class "program-commands" ]
-        [ commandsForm ]
+        [ commandsForm (\cmd -> SetCmd cmd) ]
 
 
 btn : List (Attribute msg) -> List (Html msg) -> Html msg
