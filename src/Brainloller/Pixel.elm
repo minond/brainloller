@@ -1,6 +1,6 @@
 module Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
 
-import Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div, table, td, text, tr)
@@ -95,7 +95,7 @@ programForm program =
     List.indexedMap processPixel continuous
 
 
-commandsForm : (String -> msg) -> String -> Html msg
+commandsForm : (BLOptCode -> msg) -> BLOptCode -> Html msg
 commandsForm cmdSetter activeCmd =
     let
         picker =

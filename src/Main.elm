@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Array
-import Brainloller.Lang exposing (BLProgram, blCmd, blCmdPixel, getBlCmd)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
@@ -12,18 +12,19 @@ import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
 import Maybe
+import MouseEvents exposing (MouseEvent)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 
 
 type Msg
-    = Start
-    | SetCmd String
+    = SetCmd BLOptCode
+    | WriteCmd MouseEvent
 
 
 type alias Model =
     { program : BLProgram
-    , activeCmd : Maybe String
+    , activeCmd : Maybe BLOptCode
     }
 
 
@@ -46,7 +47,7 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
-        ( Start, { program }, Just activeCmd ) ->
+        ( WriteCmd ev, { program }, Just activeCmd ) ->
             let
                 x =
                     0
@@ -62,7 +63,7 @@ update message model =
             in
             ( { model | program = updated }, Cmd.none )
 
-        ( Start, _, Nothing ) ->
+        ( WriteCmd _, _, Nothing ) ->
             ( model, Cmd.none )
 
         ( SetCmd cmd, _, _ ) ->
@@ -88,7 +89,7 @@ view model =
             ]
 
         startBtn =
-            btn [ onClick Start ]
+            btn []
                 [ text "Start" ]
     in
     div [ classes containerClasses ]
@@ -103,7 +104,10 @@ view model =
 
 programOutput : Model -> Html Msg
 programOutput model =
-    div [ class "program-output" ]
+    div
+        [ class "program-output"
+        , MouseEvents.onClick WriteCmd
+        ]
         [ toHtml <| collage 600 400 <| programForm model.program ]
 
 

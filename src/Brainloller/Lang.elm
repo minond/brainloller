@@ -1,11 +1,8 @@
-module Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel, getBlCmd)
+module Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel, getBlCmd)
 
 
-type alias Pixel =
-    { r : Int
-    , g : Int
-    , b : Int
-    }
+type alias BLOptCode =
+    String
 
 
 type alias BLProgram =
@@ -24,6 +21,13 @@ type alias BLCmd a =
     , rotateClockwise : a
     , rotateCounterClockwise : a
     , noop : a
+    }
+
+
+type alias Pixel =
+    { r : Int
+    , g : Int
+    , b : Int
     }
 
 
@@ -67,7 +71,7 @@ blCmdPixel =
     }
 
 
-getBlCmd : String -> BLCmd a -> a
+getBlCmd : BLOptCode -> BLCmd a -> a
 getBlCmd key dict =
     case key of
         "shiftRight" ->
