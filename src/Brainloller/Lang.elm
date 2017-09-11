@@ -1,4 +1,4 @@
-module Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel)
+module Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel, getBlCmd)
 
 
 type alias Pixel =
@@ -23,6 +23,7 @@ type alias BLCmd a =
     , loopClose : a
     , rotateClockwise : a
     , rotateCounterClockwise : a
+    , noop : a
     }
 
 
@@ -46,6 +47,7 @@ blCmd =
     , loopClose = "loopClose"
     , rotateClockwise = "rotateClockwise"
     , rotateCounterClockwise = "rotateCounterClockwise"
+    , noop = "noop"
     }
 
 
@@ -61,4 +63,42 @@ blCmdPixel =
     , loopClose = pixel 128 128 0 -- ], dark yellow
     , rotateClockwise = pixel 0 255 255 -- +90, cyan
     , rotateCounterClockwise = pixel 0 128 128 -- -90, dark cyan
+    , noop = pixel 0 0 0 -- noop, white
     }
+
+
+getBlCmd : String -> BLCmd a -> a
+getBlCmd key dict =
+    case key of
+        "shiftRight" ->
+            dict.shiftRight
+
+        "shiftLeft" ->
+            dict.shiftLeft
+
+        "increment" ->
+            dict.increment
+
+        "decrement" ->
+            dict.decrement
+
+        "ioWrite" ->
+            dict.ioWrite
+
+        "ioRead" ->
+            dict.ioRead
+
+        "loopOpen" ->
+            dict.loopOpen
+
+        "loopClose" ->
+            dict.loopClose
+
+        "rotateClockwise" ->
+            dict.rotateClockwise
+
+        "rotateCounterClockwise" ->
+            dict.rotateCounterClockwise
+
+        _ ->
+            dict.noop

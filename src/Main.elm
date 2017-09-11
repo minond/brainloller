@@ -1,8 +1,8 @@
 module Main exposing (main)
 
 import Array
-import Brainloller.Lang exposing (BLProgram, blCmd)
-import Brainloller.Pixel exposing (commandsForm, programForm)
+import Brainloller.Lang exposing (BLProgram, blCmd, blCmdPixel, getBlCmd)
+import Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
 import Debug
@@ -11,11 +11,9 @@ import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
-import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
-import Util exposing (asList)
 
 
 type Msg
@@ -47,8 +45,8 @@ initialModel =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
-    case ( message, model ) of
-        ( Start, { program } ) ->
+    case ( message, model, model.activeCmd ) of
+        ( Start, { program }, Just activeCmd ) ->
             let
                 x =
                     0
@@ -56,21 +54,18 @@ update message model =
                 y =
                     0
 
-                row =
-                    asList (getAt y program)
+                pixel =
+                    getBlCmd activeCmd blCmdPixel
 
-                updatedRow =
-                    asList (setAt x { r = 0, g = 0, b = 0 } row)
-
-                updatedProgram =
-                    asList (setAt y updatedRow program)
-
-                update =
-                    { model | program = updatedProgram }
+                updated =
+                    updateProgram program x y pixel
             in
-            ( update, Cmd.none )
+            ( { model | program = updated }, Cmd.none )
 
-        ( SetCmd cmd, _ ) ->
+        ( Start, _, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( SetCmd cmd, _, _ ) ->
             ( { model | activeCmd = Just cmd }, Cmd.none )
 
 

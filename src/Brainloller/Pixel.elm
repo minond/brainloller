@@ -1,4 +1,4 @@
-module Brainloller.Pixel exposing (commandsForm, programForm)
+module Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
 
 import Brainloller.Lang exposing (BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
@@ -6,7 +6,9 @@ import Color exposing (Color, rgb)
 import Html exposing (Html, div, table, td, text, tr)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import List.Extra exposing (getAt, setAt)
 import Maybe
+import Util exposing (asList)
 
 
 type alias BoardConfig =
@@ -20,6 +22,21 @@ type alias BoardConfig =
 pixelColor : Pixel -> Color
 pixelColor { r, g, b } =
     rgb r g b
+
+
+updateProgram : BLProgram -> Int -> Int -> Pixel -> BLProgram
+updateProgram program x y p =
+    let
+        row =
+            asList (getAt y program)
+
+        updatedRow =
+            asList (setAt x p row)
+
+        updatedProgram =
+            asList (setAt y updatedRow program)
+    in
+    updatedProgram
 
 
 pixelForm : BoardConfig -> Int -> Pixel -> Form
