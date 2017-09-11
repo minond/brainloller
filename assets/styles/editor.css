@@ -17,52 +17,81 @@
   margin: 0 auto !important;
 }
 
+.program-active-command {
+  height: 50px;
+  width: 50px;
+}
+
+.program-commands {
+  display: inline-block;
+  width: 150px;
+}
+
+.program-command,
+.program-active-command {
+  box-shadow: inset 2px 2px 3px #4c4c4c;
+  border: 1px solid #bfbfbf;
+  margin: 3px;
+}
+
+.program-commands td:first-child {
+  vertical-align: top;
+}
+
 .program-command {
   cursor: pointer;
   height: 20px;
   float: left;
   width: 20px;
   box-sizing: content-box;
-  margin: 3px;
-  box-shadow: inset 2px 2px 3px #4c4c4c;
 }
 
+.program-active-command--shiftRight,
 .program-command--shiftRight {
   background-color: rgb(255, 0, 0);
 }
 
+.program-active-command--shiftLeft,
 .program-command--shiftLeft {
   background-color: rgb(128, 0, 0);
 }
 
+.program-active-command--increment,
 .program-command--increment {
   background-color: rgb(0, 255, 0);
 }
 
+.program-active-command--decrement,
 .program-command--decrement {
   background-color: rgb(0, 128, 0);
 }
 
+.program-active-command--ioWrite,
 .program-command--ioWrite {
   background-color: rgb(0, 0, 255);
 }
 
+.program-active-command--ioRead,
 .program-command--ioRead {
   background-color: rgb(0, 0, 128);
 }
 
+.program-active-command--loopOpen,
 .program-command--loopOpen {
   background-color: rgb(255, 255, 0);
 }
 
+.program-active-command--loopClose,
 .program-command--loopClose {
   background-color: rgb(128, 128, 0);
 }
 
+.program-active-command--rotateClockwise,
 .program-command--rotateClockwise {
   background-color: rgb(0, 255, 255);
 }
 
+.program-active-command--rotateCounterClockwise,
 .program-command--rotateCounterClockwise {
   background-color: rgb(0, 128, 128);
 }
