@@ -93,7 +93,7 @@ commandsForm cmdSetter activeCmd =
                     ]
                     []
     in
-    div []
+    div [ class "program-commands-container" ]
         [ table
             []
             [ tr

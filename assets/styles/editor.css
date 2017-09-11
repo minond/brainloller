@@ -1,3 +1,7 @@
+body {
+  cursor: default;
+}
+
 .monospace {
   font-family: monospace;
 }
@@ -22,6 +26,13 @@
   width: 50px;
 }
 
+.program-commands-container table,
+.program-commands-container table td {
+  border-collapse: collapse;
+  padding: 0;
+}
+
+
 .program-commands {
   display: inline-block;
   width: 150px;
@@ -29,9 +40,9 @@
 
 .program-command,
 .program-active-command {
-  box-shadow: inset 2px 2px 3px #4c4c4c;
-  border: 1px solid #bfbfbf;
-  margin: 3px;
+  box-shadow: inset 1px 1px 0px #969696;
+  border: 2px inset #e8e8e8;
+  margin: 1px;
 }
 
 .program-commands td:first-child {
