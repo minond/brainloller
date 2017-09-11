@@ -78,8 +78,8 @@ programForm program =
     List.indexedMap processPixel continuous
 
 
-commandsForm : (String -> msg) -> Html msg
-commandsForm cmdSetter =
+commandsForm : (String -> msg) -> String -> Html msg
+commandsForm cmdSetter activeCmd =
     let
         picker =
             \cmd ->
@@ -87,6 +87,7 @@ commandsForm cmdSetter =
                     [ onClick (cmdSetter cmd)
                     , classList
                         [ ( "program-command", True )
+                        , ( "program-command-active", cmd == activeCmd )
                         , ( "program-command--" ++ cmd, True )
                         ]
                     ]

@@ -113,9 +113,16 @@ programOutput model =
 
 
 programCommands : Model -> Html Msg
-programCommands _ =
+programCommands model =
+    let
+        setCmd =
+            \cmd -> SetCmd cmd
+
+        activeCmd =
+            Maybe.withDefault "" model.activeCmd
+    in
     div [ class "program-commands" ]
-        [ commandsForm (\cmd -> SetCmd cmd) ]
+        [ commandsForm setCmd activeCmd ]
 
 
 btn : List (Attribute msg) -> List (Html msg) -> Html msg
