@@ -4,9 +4,8 @@ import Array
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, programCells, programDimensions, programForm, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Collage exposing (collage)
 import Debug
-import Element exposing (Element, image, toHtml)
+import Element exposing (Element, image)
 import Html exposing (Attribute, Html, button, div, h1, node, p, text)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
@@ -136,9 +135,7 @@ programOutput model =
         [ class "program-output"
         , MouseEvents.onClick WriteCmd
         ]
-        [ toHtml <| collage 600 400 <| programForm model.program
-        , programCells width height model.program
-        ]
+        [ programCells width height model.program ]
 
 
 programCommands : Model -> Html Msg

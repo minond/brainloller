@@ -4,7 +4,7 @@ import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div, table, td, text, tr)
-import Html.Attributes exposing (class, classList)
+import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick)
 import List.Extra exposing (getAt, setAt)
 import Maybe
@@ -22,6 +22,11 @@ type alias BoardConfig =
 pixelColor : Pixel -> Color
 pixelColor { r, g, b } =
     rgb r g b
+
+
+pixelStyle : Pixel -> ( String, String )
+pixelStyle p =
+    ( "backgroundColor", "rgb(" ++ toString p.r ++ ", " ++ toString p.g ++ ", " ++ toString p.b ++ ")" )
 
 
 setCellAt : BLProgram -> Int -> Int -> Pixel -> BLProgram
@@ -43,7 +48,7 @@ getCellAt : BLProgram -> Int -> Int -> Pixel
 getCellAt program x y =
     getAt x (asList (getAt y program))
         |> Maybe.withDefault
-            { r = 0, g = 0, b = 0 }
+            { r = 255, g = 255, b = 255 }
 
 
 programDimensions : BLProgram -> ( Int, Int )
@@ -62,14 +67,28 @@ programDimensions program =
 
 
 programCells : Int -> Int -> BLProgram -> Html msg
-programCells width height board =
+programCells width height program =
     div [ class "program-rows" ] <|
-        List.repeat height <|
-            div [ class "program-row" ] <|
-                List.repeat width <|
-                    div
-                        [ class "program-cell" ]
-                        []
+        List.indexedMap
+            (\rowIndex row ->
+                row <|
+                    List.indexedMap
+                        (\cellIndex cell ->
+                            let
+                                pixel =
+                                    getCellAt program cellIndex rowIndex
+                            in
+                            cell
+                                [ class "program-cell"
+                                , style [ pixelStyle pixel ]
+                                ]
+                                []
+                        )
+                        (List.repeat width div)
+            )
+        <|
+            List.repeat height <|
+                div [ class "program-row" ]
 
 
 pixelForm : BoardConfig -> Int -> Pixel -> Form
