@@ -6,7 +6,7 @@ import Brainloller.Pixel exposing (commandsForm, programCells, programDimensions
 import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
-import Html exposing (Attribute, Html, button, div, h1, node, p, text)
+import Html exposing (Attribute, Html, button, div, h1, node, p, table, td, text, tr)
 import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
@@ -89,23 +89,42 @@ view model =
             , Tac.pa3
             , Tac.pa4_ns
             ]
-
-        growBtn =
-            btn [ onClick IncreaseSize ]
-                [ text "Grow" ]
-
-        shrinkBtn =
-            btn [ onClick DecreaseSize ]
-                [ text "Shrink" ]
     in
     div [ classes containerClasses ]
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
-        , growBtn
-        , shrinkBtn
+        , programContainer model
+        ]
+
+
+programContainer : Model -> Html Msg
+programContainer model =
+    let
+        growBtn =
+            btn [ onClick IncreaseSize ]
+                [ text "G" ]
+
+        shrinkBtn =
+            btn [ onClick DecreaseSize ]
+                [ text "S" ]
+    in
+    div []
+        [ table
+            []
+            [ tr
+                []
+                [ td
+                    []
+                    [ growBtn
+                    , shrinkBtn
+                    ]
+                , td
+                    []
+                    [ programOutput model ]
+                ]
+            ]
         , programCommands model
-        , programOutput model
         ]
 
 
