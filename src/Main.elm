@@ -20,6 +20,8 @@ import Tachyons.Classes as Tac
 type Msg
     = SetCmd BLOptCode
     | WriteCmd MouseEvent
+    | IncreaseSize
+    | DecreaseSize
 
 
 type alias Model =
@@ -71,6 +73,12 @@ update message model =
         ( SetCmd cmd, _, _ ) ->
             ( { model | activeCmd = Just cmd }, Cmd.none )
 
+        ( IncreaseSize, { sizeIncrease }, _ ) ->
+            ( { model | sizeIncrease = sizeIncrease + 1 }, Cmd.none )
+
+        ( DecreaseSize, { sizeIncrease }, _ ) ->
+            ( { model | sizeIncrease = sizeIncrease - 1 }, Cmd.none )
+
 
 subscriptions : Model -> Sub msg
 subscriptions model =
@@ -90,15 +98,20 @@ view model =
             , Tac.pa4_ns
             ]
 
-        startBtn =
-            btn []
-                [ text "Start" ]
+        growBtn =
+            btn [ onClick IncreaseSize ]
+                [ text "Grow" ]
+
+        shrinkBtn =
+            btn [ onClick DecreaseSize ]
+                [ text "Shrink" ]
     in
     div [ classes containerClasses ]
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
-        , startBtn
+        , growBtn
+        , shrinkBtn
         , programCommands model
         , programOutput model
         ]
