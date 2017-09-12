@@ -118,6 +118,13 @@ body {
   height: 20px;
   width: 20px;
   display: inline-block;
-  border: 1px solid #dedede;
-  margin: -1px -1px 0 0;
+  border: 1px solid rgba(222, 222, 222, 0.35);
+}
+
+.program-cell + .program-cell {
+  border-left: 0;
+}
+
+.program-row + .program-row .program-cell {
+  border-top: 0;
 }
