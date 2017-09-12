@@ -5757,135 +5757,6 @@ var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
 
-var _debois$elm_dom$DOM$className = A2(
-	_elm_lang$core$Json_Decode$at,
-	{
-		ctor: '::',
-		_0: 'className',
-		_1: {ctor: '[]'}
-	},
-	_elm_lang$core$Json_Decode$string);
-var _debois$elm_dom$DOM$scrollTop = A2(_elm_lang$core$Json_Decode$field, 'scrollTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$scrollLeft = A2(_elm_lang$core$Json_Decode$field, 'scrollLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetTop = A2(_elm_lang$core$Json_Decode$field, 'offsetTop', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetLeft = A2(_elm_lang$core$Json_Decode$field, 'offsetLeft', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetHeight = A2(_elm_lang$core$Json_Decode$field, 'offsetHeight', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$offsetWidth = A2(_elm_lang$core$Json_Decode$field, 'offsetWidth', _elm_lang$core$Json_Decode$float);
-var _debois$elm_dom$DOM$childNodes = function (decoder) {
-	var loop = F2(
-		function (idx, xs) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (_p0) {
-					return A2(
-						_elm_lang$core$Maybe$withDefault,
-						_elm_lang$core$Json_Decode$succeed(xs),
-						A2(
-							_elm_lang$core$Maybe$map,
-							function (x) {
-								return A2(
-									loop,
-									idx + 1,
-									{ctor: '::', _0: x, _1: xs});
-							},
-							_p0));
-				},
-				_elm_lang$core$Json_Decode$maybe(
-					A2(
-						_elm_lang$core$Json_Decode$field,
-						_elm_lang$core$Basics$toString(idx),
-						decoder)));
-		});
-	return A2(
-		_elm_lang$core$Json_Decode$map,
-		_elm_lang$core$List$reverse,
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'childNodes',
-			A2(
-				loop,
-				0,
-				{ctor: '[]'})));
-};
-var _debois$elm_dom$DOM$childNode = function (idx) {
-	return _elm_lang$core$Json_Decode$at(
-		{
-			ctor: '::',
-			_0: 'childNodes',
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$core$Basics$toString(idx),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _debois$elm_dom$DOM$parentElement = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode$field, 'parentElement', decoder);
-};
-var _debois$elm_dom$DOM$previousSibling = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode$field, 'previousSibling', decoder);
-};
-var _debois$elm_dom$DOM$nextSibling = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode$field, 'nextSibling', decoder);
-};
-var _debois$elm_dom$DOM$offsetParent = F2(
-	function (x, decoder) {
-		return _elm_lang$core$Json_Decode$oneOf(
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$core$Json_Decode$field,
-					'offsetParent',
-					_elm_lang$core$Json_Decode$null(x)),
-				_1: {
-					ctor: '::',
-					_0: A2(_elm_lang$core$Json_Decode$field, 'offsetParent', decoder),
-					_1: {ctor: '[]'}
-				}
-			});
-	});
-var _debois$elm_dom$DOM$position = F2(
-	function (x, y) {
-		return A2(
-			_elm_lang$core$Json_Decode$andThen,
-			function (_p1) {
-				var _p2 = _p1;
-				var _p4 = _p2._1;
-				var _p3 = _p2._0;
-				return A2(
-					_debois$elm_dom$DOM$offsetParent,
-					{ctor: '_Tuple2', _0: _p3, _1: _p4},
-					A2(_debois$elm_dom$DOM$position, _p3, _p4));
-			},
-			A5(
-				_elm_lang$core$Json_Decode$map4,
-				F4(
-					function (scrollLeft, scrollTop, offsetLeft, offsetTop) {
-						return {ctor: '_Tuple2', _0: (x + offsetLeft) - scrollLeft, _1: (y + offsetTop) - scrollTop};
-					}),
-				_debois$elm_dom$DOM$scrollLeft,
-				_debois$elm_dom$DOM$scrollTop,
-				_debois$elm_dom$DOM$offsetLeft,
-				_debois$elm_dom$DOM$offsetTop));
-	});
-var _debois$elm_dom$DOM$boundingClientRect = A4(
-	_elm_lang$core$Json_Decode$map3,
-	F3(
-		function (_p5, width, height) {
-			var _p6 = _p5;
-			return {top: _p6._1, left: _p6._0, width: width, height: height};
-		}),
-	A2(_debois$elm_dom$DOM$position, 0, 0),
-	_debois$elm_dom$DOM$offsetWidth,
-	_debois$elm_dom$DOM$offsetHeight);
-var _debois$elm_dom$DOM$target = function (decoder) {
-	return A2(_elm_lang$core$Json_Decode$field, 'target', decoder);
-};
-var _debois$elm_dom$DOM$Rectangle = F4(
-	function (a, b, c, d) {
-		return {top: a, left: b, width: c, height: d};
-	});
-
 var _elm_lang$core$Set$foldr = F3(
 	function (f, b, _p0) {
 		var _p1 = _p0;
@@ -14527,118 +14398,6 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
-var _mbr$elm_mouse_events$MouseEvents$Position = F2(
-	function (a, b) {
-		return {x: a, y: b};
-	});
-var _mbr$elm_mouse_events$MouseEvents$relPos = function (ev) {
-	return A2(_mbr$elm_mouse_events$MouseEvents$Position, ev.clientPos.x - ev.targetPos.x, ev.clientPos.y - ev.targetPos.y);
-};
-var _mbr$elm_mouse_events$MouseEvents$mouseEvent = F3(
-	function (clientX, clientY, target) {
-		return {
-			clientPos: A2(_mbr$elm_mouse_events$MouseEvents$Position, clientX, clientY),
-			targetPos: A2(
-				_mbr$elm_mouse_events$MouseEvents$Position,
-				_elm_lang$core$Basics$truncate(target.left),
-				_elm_lang$core$Basics$truncate(target.top))
-		};
-	});
-var _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder = A4(
-	_elm_lang$core$Json_Decode$map3,
-	_mbr$elm_mouse_events$MouseEvents$mouseEvent,
-	A2(_elm_lang$core$Json_Decode$field, 'clientX', _elm_lang$core$Json_Decode$int),
-	A2(_elm_lang$core$Json_Decode$field, 'clientY', _elm_lang$core$Json_Decode$int),
-	A2(_elm_lang$core$Json_Decode$field, 'target', _debois$elm_dom$DOM$boundingClientRect));
-var _mbr$elm_mouse_events$MouseEvents$onMouseEnter = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseenter',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseOver = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseover',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseMove = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mousemove',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseDown = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mousedown',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseUp = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseup',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onClick = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'click',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onDoubleClick = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'dblclick',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onContextMenu = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'contextmenu',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onWheel = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'wheel',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseLeave = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseleave',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onMouseOut = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'mouseout',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onSelect = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'select',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onPointerLockChange = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'pointerlockchange',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$onPointerLockError = function (target) {
-	return A2(
-		_elm_lang$html$Html_Events$on,
-		'pointerlockerror',
-		A2(_elm_lang$core$Json_Decode$map, target, _mbr$elm_mouse_events$MouseEvents$mouseEventDecoder));
-};
-var _mbr$elm_mouse_events$MouseEvents$MouseEvent = F2(
-	function (a, b) {
-		return {clientPos: a, targetPos: b};
-	});
-
 var _minond$brainloller$Brainloller_Lang$getBlCmd = F2(
 	function (key, dict) {
 		var _p0 = key;
@@ -14978,8 +14737,8 @@ var _minond$brainloller$Brainloller_Pixel$pixelStyle = function (p) {
 								')'))))))
 	};
 };
-var _minond$brainloller$Brainloller_Pixel$programCells = F3(
-	function (width, height, program) {
+var _minond$brainloller$Brainloller_Pixel$programCells = F4(
+	function (width, height, program, clickHandler) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -15004,13 +14763,18 @@ var _minond$brainloller$Brainloller_Pixel$programCells = F3(
 												_0: _elm_lang$html$Html_Attributes$class('program-cell'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$style(
-														{
-															ctor: '::',
-															_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
+													_0: _elm_lang$html$Html_Events$onClick(
+														A2(clickHandler, cellIndex, rowIndex)),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$style(
+															{
+																ctor: '::',
+																_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
 												}
 											},
 											{ctor: '[]'});
@@ -15902,9 +15666,7 @@ var _minond$brainloller$Main$update = F2(
 			case 'WriteCmd':
 				if (_p0._2.ctor === 'Just') {
 					var pixel = A2(_minond$brainloller$Brainloller_Lang$getBlCmd, _p0._2._0, _minond$brainloller$Brainloller_Lang$blCmdPixel);
-					var y = 0;
-					var x = 0;
-					var updated = A4(_minond$brainloller$Brainloller_Pixel$setCellAt, _p0._1.program, x, y, pixel);
+					var updated = A4(_minond$brainloller$Brainloller_Pixel$setCellAt, _p0._1.program, _p0._0._0, _p0._0._1, pixel);
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -15950,10 +15712,15 @@ var _minond$brainloller$Main$Model = F3(
 	});
 var _minond$brainloller$Main$DecreaseSize = {ctor: 'DecreaseSize'};
 var _minond$brainloller$Main$IncreaseSize = {ctor: 'IncreaseSize'};
-var _minond$brainloller$Main$WriteCmd = function (a) {
-	return {ctor: 'WriteCmd', _0: a};
-};
+var _minond$brainloller$Main$WriteCmd = F2(
+	function (a, b) {
+		return {ctor: 'WriteCmd', _0: a, _1: b};
+	});
 var _minond$brainloller$Main$programOutput = function (model) {
+	var click = F2(
+		function (x, y) {
+			return A2(_minond$brainloller$Main$WriteCmd, x, y);
+		});
 	var program = model.program;
 	var dim = _minond$brainloller$Brainloller_Pixel$programDimensions(program);
 	var width = _elm_lang$core$Tuple$first(dim) + model.sizeIncrease;
@@ -15963,15 +15730,11 @@ var _minond$brainloller$Main$programOutput = function (model) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$class('program-output'),
-			_1: {
-				ctor: '::',
-				_0: _mbr$elm_mouse_events$MouseEvents$onClick(_minond$brainloller$Main$WriteCmd),
-				_1: {ctor: '[]'}
-			}
+			_1: {ctor: '[]'}
 		},
 		{
 			ctor: '::',
-			_0: A3(_minond$brainloller$Brainloller_Pixel$programCells, width, height, model.program),
+			_0: A4(_minond$brainloller$Brainloller_Pixel$programCells, width, height, model.program, click),
 			_1: {ctor: '[]'}
 		});
 };
