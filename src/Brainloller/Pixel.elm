@@ -66,8 +66,8 @@ programDimensions program =
     ( width, height )
 
 
-programCells : Int -> Int -> BLProgram -> Html msg
-programCells width height program =
+programCells : Int -> Int -> BLProgram -> (Int -> Int -> msg) -> Html msg
+programCells width height program clickHandler =
     div [ class "program-rows" ] <|
         List.indexedMap
             (\rowIndex row ->
@@ -80,6 +80,7 @@ programCells width height program =
                             in
                             cell
                                 [ class "program-cell"
+                                , onClick (clickHandler cellIndex rowIndex)
                                 , style [ pixelStyle pixel ]
                                 ]
                                 []

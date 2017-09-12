@@ -11,14 +11,13 @@ import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (onClick)
 import List
 import Maybe
-import MouseEvents exposing (MouseEvent)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 
 
 type Msg
     = SetCmd BLOptCode
-    | WriteCmd MouseEvent
+    | WriteCmd Int Int
     | IncreaseSize
     | DecreaseSize
 
@@ -50,14 +49,8 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
-        ( WriteCmd ev, { program }, Just activeCmd ) ->
+        ( WriteCmd x y, { program }, Just activeCmd ) ->
             let
-                x =
-                    0
-
-                y =
-                    0
-
                 pixel =
                     getBlCmd activeCmd blCmdPixel
 
@@ -66,7 +59,7 @@ update message model =
             in
             ( { model | program = updated }, Cmd.none )
 
-        ( WriteCmd _, _, Nothing ) ->
+        ( WriteCmd _ _, _, Nothing ) ->
             ( model, Cmd.none )
 
         ( SetCmd cmd, _, _ ) ->
@@ -130,12 +123,13 @@ programOutput model =
 
         height =
             Tuple.second dim + model.sizeIncrease
+
+        click =
+            \x y -> WriteCmd x y
     in
     div
-        [ class "program-output"
-        , MouseEvents.onClick WriteCmd
-        ]
-        [ programCells width height model.program ]
+        [ class "program-output" ]
+        [ programCells width height model.program click ]
 
 
 programCommands : Model -> Html Msg
