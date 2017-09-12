@@ -15,10 +15,7 @@ body {
   box-shadow: 4px 5px 8px #bfbfbf;
   border: 1px solid #c3c3c3;
   overflow: auto;
-}
-
-.program-output > div {
-  margin: 0 auto !important;
+  max-height: 800px;
 }
 
 .program-active-command {
