@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Array
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, programCells, programForm, setCellAt)
+import Brainloller.Pixel exposing (commandsForm, programCells, programDimensions, programForm, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
 import Debug
@@ -25,6 +25,7 @@ type Msg
 type alias Model =
     { program : BLProgram
     , activeCmd : Maybe BLOptCode
+    , sizeIncrease : Int
     }
 
 
@@ -41,6 +42,7 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
+    , sizeIncrease = 10
     }
 
 
@@ -104,12 +106,25 @@ view model =
 
 programOutput : Model -> Html Msg
 programOutput model =
+    let
+        program =
+            model.program
+
+        dim =
+            programDimensions program
+
+        width =
+            Tuple.first dim + model.sizeIncrease
+
+        height =
+            Tuple.second dim + model.sizeIncrease
+    in
     div
         [ class "program-output"
         , MouseEvents.onClick WriteCmd
         ]
         [ toHtml <| collage 600 400 <| programForm model.program
-        , programCells 50 50 model.program
+        , programCells width height model.program
         ]
 
 

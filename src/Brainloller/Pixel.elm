@@ -1,4 +1,4 @@
-module Brainloller.Pixel exposing (commandsForm, programCells, programForm, setCellAt)
+module Brainloller.Pixel exposing (commandsForm, programCells, programDimensions, programForm, setCellAt)
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
@@ -44,6 +44,21 @@ getCellAt program x y =
     getAt x (asList (getAt y program))
         |> Maybe.withDefault
             { r = 0, g = 0, b = 0 }
+
+
+programDimensions : BLProgram -> ( Int, Int )
+programDimensions program =
+    let
+        height =
+            List.length program
+
+        width =
+            Maybe.withDefault 0 <|
+                Maybe.andThen
+                    (\row -> Just <| List.length row)
+                    (List.head program)
+    in
+    ( width, height )
 
 
 programCells : Int -> Int -> BLProgram -> Html msg
