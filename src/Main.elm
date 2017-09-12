@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Array
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
+import Brainloller.Pixel exposing (commandsForm, programCells, programForm, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Collage exposing (collage)
 import Debug
@@ -59,7 +59,7 @@ update message model =
                     getBlCmd activeCmd blCmdPixel
 
                 updated =
-                    updateProgram program x y pixel
+                    setCellAt program x y pixel
             in
             ( { model | program = updated }, Cmd.none )
 
@@ -108,7 +108,9 @@ programOutput model =
         [ class "program-output"
         , MouseEvents.onClick WriteCmd
         ]
-        [ toHtml <| collage 600 400 <| programForm model.program ]
+        [ toHtml <| collage 600 400 <| programForm model.program
+        , programCells 50 50 model.program
+        ]
 
 
 programCommands : Model -> Html Msg

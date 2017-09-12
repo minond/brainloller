@@ -106,3 +106,22 @@ body {
 .program-command--rotateCounterClockwise {
   background-color: rgb(0, 128, 128);
 }
+
+.program-rows {
+  font-size: 0;
+  overflow: auto;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
+.program-cell {
+  height: 20px;
+  width: 20px;
+  display: inline-block;
+  border-right: 1px solid #dedede;
+  border-top: 1px solid #dedede;
+}
+
+.program-cell:last-child {
+  border-right: 0;
+}

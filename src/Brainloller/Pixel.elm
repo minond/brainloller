@@ -1,4 +1,4 @@
-module Brainloller.Pixel exposing (commandsForm, programForm, updateProgram)
+module Brainloller.Pixel exposing (commandsForm, programCells, programForm, setCellAt)
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
@@ -24,8 +24,8 @@ pixelColor { r, g, b } =
     rgb r g b
 
 
-updateProgram : BLProgram -> Int -> Int -> Pixel -> BLProgram
-updateProgram program x y p =
+setCellAt : BLProgram -> Int -> Int -> Pixel -> BLProgram
+setCellAt program x y p =
     let
         row =
             asList (getAt y program)
@@ -37,6 +37,24 @@ updateProgram program x y p =
             asList (setAt y updatedRow program)
     in
     updatedProgram
+
+
+getCellAt : BLProgram -> Int -> Int -> Pixel
+getCellAt program x y =
+    getAt x (asList (getAt y program))
+        |> Maybe.withDefault
+            { r = 0, g = 0, b = 0 }
+
+
+programCells : Int -> Int -> BLProgram -> Html msg
+programCells width height board =
+    div [ class "program-rows" ] <|
+        List.repeat height <|
+            div [ class "program-row" ] <|
+                List.repeat width <|
+                    div
+                        [ class "program-cell" ]
+                        []
 
 
 pixelForm : BoardConfig -> Int -> Pixel -> Form
