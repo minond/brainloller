@@ -1,11 +1,11 @@
-module Brainloller.Pixel exposing (commandsForm, programCells, programDimensions, programForm, setCellAt)
+module Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, setCellAt)
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, classList, style)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
 import Maybe
 import Util exposing (asList)
@@ -46,9 +46,14 @@ setCellAt program x y p =
 
 getCellAt : BLProgram -> Int -> Int -> Pixel
 getCellAt program x y =
-    getAt x (asList (getAt y program))
+    getCellMaybe program x y
         |> Maybe.withDefault
             { r = 255, g = 255, b = 255 }
+
+
+getCellMaybe : BLProgram -> Int -> Int -> Maybe Pixel
+getCellMaybe program x y =
+    getAt x (asList (getAt y program))
 
 
 programDimensions : BLProgram -> ( Int, Int )
@@ -66,9 +71,14 @@ programDimensions program =
     ( width, height )
 
 
-programCells : Int -> Int -> BLProgram -> (Int -> Int -> msg) -> Html msg
-programCells width height program clickHandler =
-    div [ class "program-rows" ] <|
+programCells : Int -> Int -> BLProgram -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
+programCells width height program writeHandler enableHandler disableHandler =
+    div
+        [ class "program-rows"
+        , onMouseDown enableHandler
+        , onMouseUp disableHandler
+        ]
+    <|
         List.indexedMap
             (\rowIndex row ->
                 row <|
@@ -80,7 +90,8 @@ programCells width height program clickHandler =
                             in
                             cell
                                 [ class "program-cell"
-                                , onClick (clickHandler cellIndex rowIndex)
+                                , onClick (writeHandler cellIndex rowIndex True)
+                                , onMouseOver (writeHandler cellIndex rowIndex False)
                                 , style [ pixelStyle pixel ]
                                 ]
                                 []

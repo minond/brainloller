@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Array
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, programCells, programDimensions, programForm, setCellAt)
+import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
@@ -17,7 +17,9 @@ import Tachyons.Classes as Tac
 
 type Msg
     = SetCmd BLOptCode
-    | WriteCmd Int Int
+    | WriteCmd Int Int Bool
+    | EnableWrite
+    | DisableWrite
     | IncreaseSize
     | DecreaseSize
 
@@ -26,6 +28,7 @@ type alias Model =
     { program : BLProgram
     , activeCmd : Maybe BLOptCode
     , sizeIncrease : Int
+    , writeEnabled : Bool
     }
 
 
@@ -43,27 +46,39 @@ initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
     , sizeIncrease = 10
+    , writeEnabled = False
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
-        ( WriteCmd x y, { program }, Just activeCmd ) ->
+        ( WriteCmd x y force, { writeEnabled, program }, Just activeCmd ) ->
             let
                 pixel =
                     getBlCmd activeCmd blCmdPixel
 
                 updated =
-                    setCellAt program x y pixel
+                    case ( force || writeEnabled, getCellMaybe program x y ) of
+                        ( True, Just _ ) ->
+                            setCellAt program x y pixel
+
+                        _ ->
+                            program
             in
             ( { model | program = updated }, Cmd.none )
 
-        ( WriteCmd _ _, _, Nothing ) ->
+        ( WriteCmd _ _ _, _, Nothing ) ->
             ( model, Cmd.none )
 
         ( SetCmd cmd, _, _ ) ->
             ( { model | activeCmd = Just cmd }, Cmd.none )
+
+        ( EnableWrite, _, _ ) ->
+            ( { model | writeEnabled = True }, Cmd.none )
+
+        ( DisableWrite, _, _ ) ->
+            ( { model | writeEnabled = False }, Cmd.none )
 
         ( IncreaseSize, { sizeIncrease }, _ ) ->
             ( { model | sizeIncrease = sizeIncrease + 1 }, Cmd.none )
@@ -141,12 +156,12 @@ programOutput model =
         height =
             Tuple.second dim + model.sizeIncrease
 
-        click =
-            \x y -> WriteCmd x y
+        write =
+            \x y f -> WriteCmd x y f
     in
     div
         [ class "program-output" ]
-        [ programCells width height model.program click ]
+        [ programCells width height model.program write EnableWrite DisableWrite ]
 
 
 programCommands : Model -> Html Msg
