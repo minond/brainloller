@@ -126,10 +126,10 @@ programContainer : Model -> Html Msg
 programContainer model =
     let
         growBtn =
-            cmdBtn "/assets/images/increase.svg" [ onClick IncreaseSize ]
+            cmdBtn "assets/images/increase.svg" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            cmdBtn "/assets/images/decrease.svg" [ onClick DecreaseSize ]
+            cmdBtn "assets/images/decrease.svg" [ onClick DecreaseSize ]
     in
     div []
         [ table
