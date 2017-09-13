@@ -14678,6 +14678,31 @@ var _minond$brainloller$Brainloller_Pixel$getCellAt = F3(
 			{r: 255, g: 255, b: 255},
 			A3(_minond$brainloller$Brainloller_Pixel$getCellMaybe, program, x, y));
 	});
+var _minond$brainloller$Brainloller_Pixel$resizeProgram = F3(
+	function (program, x, y) {
+		var dims = _minond$brainloller$Brainloller_Pixel$programDimensions(program);
+		var width = A2(
+			_elm_lang$core$Basics$max,
+			x + 1,
+			_elm_lang$core$Tuple$first(dims));
+		var height = A2(
+			_elm_lang$core$Basics$max,
+			y + 1,
+			_elm_lang$core$Tuple$second(dims));
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			F2(
+				function (y, _p0) {
+					return A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (x, _p1) {
+								return A3(_minond$brainloller$Brainloller_Pixel$getCellAt, program, x, y);
+							}),
+						A2(_elm_lang$core$List$repeat, width, _elm_lang$core$Maybe$Nothing));
+				}),
+			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
+	});
 var _minond$brainloller$Brainloller_Pixel$setCellAt = F4(
 	function (program, x, y, p) {
 		var row = _minond$brainloller$Util$asList(
@@ -14780,9 +14805,9 @@ var _minond$brainloller$Brainloller_Pixel$programCells = F6(
 							_1: {ctor: '[]'}
 						}))));
 	});
-var _minond$brainloller$Brainloller_Pixel$pixelColor = function (_p0) {
-	var _p1 = _p0;
-	return A3(_elm_lang$core$Color$rgb, _p1.r, _p1.g, _p1.b);
+var _minond$brainloller$Brainloller_Pixel$pixelColor = function (_p2) {
+	var _p3 = _p2;
+	return A3(_elm_lang$core$Color$rgb, _p3.r, _p3.g, _p3.b);
 };
 var _minond$brainloller$Brainloller_Pixel$BoardConfig = F4(
 	function (a, b, c, d) {
@@ -15622,15 +15647,17 @@ var _minond$brainloller$Main$update = F2(
 					var _p4 = _p0._0._1;
 					var _p3 = _p0._0._0;
 					var _p2 = _p0._1.program;
+					var rewrite = _p0._0._2 || _p0._1.writeEnabled;
+					var resized = rewrite ? A3(_minond$brainloller$Brainloller_Pixel$resizeProgram, _p2, _p3, _p4) : _p2;
 					var pixel = A2(_minond$brainloller$Brainloller_Lang$getBlCmd, _p0._2._0, _minond$brainloller$Brainloller_Lang$blCmdPixel);
 					var updated = function () {
 						var _p1 = {
 							ctor: '_Tuple2',
-							_0: _p0._0._2 || _p0._1.writeEnabled,
-							_1: A3(_minond$brainloller$Brainloller_Pixel$getCellMaybe, _p2, _p3, _p4)
+							_0: rewrite,
+							_1: A3(_minond$brainloller$Brainloller_Pixel$getCellMaybe, resized, _p3, _p4)
 						};
 						if (((_p1.ctor === '_Tuple2') && (_p1._0 === true)) && (_p1._1.ctor === 'Just')) {
-							return A4(_minond$brainloller$Brainloller_Pixel$setCellAt, _p2, _p3, _p4, pixel);
+							return A4(_minond$brainloller$Brainloller_Pixel$setCellAt, resized, _p3, _p4, pixel);
 						} else {
 							return _p2;
 						}
@@ -15689,7 +15716,7 @@ var _minond$brainloller$Main$update = F2(
 				};
 		}
 	});
-var _minond$brainloller$Main$initialModel = {program: _minond$brainloller$Brainloller_Program$progHelloWorld, activeCmd: _elm_lang$core$Maybe$Nothing, sizeIncrease: 10, writeEnabled: false};
+var _minond$brainloller$Main$initialModel = {program: _minond$brainloller$Brainloller_Program$progHelloWorld, activeCmd: _elm_lang$core$Maybe$Nothing, sizeIncrease: 5, writeEnabled: false};
 var _minond$brainloller$Main$Model = F4(
 	function (a, b, c, d) {
 		return {program: a, activeCmd: b, sizeIncrease: c, writeEnabled: d};
