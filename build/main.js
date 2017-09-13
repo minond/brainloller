@@ -14776,17 +14776,22 @@ var _minond$brainloller$Brainloller_Pixel$programCells = F6(
 														A3(writeHandler, cellIndex, rowIndex, true)),
 													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onMouseOver(
-															A3(writeHandler, cellIndex, rowIndex, false)),
+														_0: _elm_lang$html$Html_Events$onMouseDown(
+															A3(writeHandler, cellIndex, rowIndex, true)),
 														_1: {
 															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$style(
-																{
-																	ctor: '::',
-																	_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {ctor: '[]'}
+															_0: _elm_lang$html$Html_Events$onMouseOver(
+																A3(writeHandler, cellIndex, rowIndex, false)),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$style(
+																	{
+																		ctor: '::',
+																		_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
+																		_1: {ctor: '[]'}
+																	}),
+																_1: {ctor: '[]'}
+															}
 														}
 													}
 												}
@@ -15775,7 +15780,7 @@ var _minond$brainloller$Main$programCommands = function (model) {
 var _minond$brainloller$Main$programContainer = function (model) {
 	var shrinkBtn = A2(
 		_minond$brainloller$Main$cmdBtn,
-		'/assets/images/decrease.svg',
+		'assets/images/decrease.svg',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DecreaseSize),
@@ -15783,7 +15788,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 	var growBtn = A2(
 		_minond$brainloller$Main$cmdBtn,
-		'/assets/images/increase.svg',
+		'assets/images/increase.svg',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$IncreaseSize),
