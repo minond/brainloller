@@ -1,4 +1,13 @@
-module Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, setCellAt)
+module Brainloller.Pixel
+    exposing
+        ( commandsForm
+        , getCellMaybe
+        , programCells
+        , programDimensions
+        , programForm
+        , resizeProgram
+        , setCellAt
+        )
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
@@ -54,6 +63,29 @@ getCellAt program x y =
 getCellMaybe : BLProgram -> Int -> Int -> Maybe Pixel
 getCellMaybe program x y =
     getAt x (asList (getAt y program))
+
+
+resizeProgram : BLProgram -> Int -> Int -> BLProgram
+resizeProgram program x y =
+    let
+        dims =
+            programDimensions program
+
+        width =
+            max (x + 1) (Tuple.first dims)
+
+        height =
+            max (y + 1) (Tuple.second dims)
+    in
+    List.indexedMap
+        (\y _ ->
+            List.indexedMap
+                (\x _ ->
+                    getCellAt program x y
+                )
+                (List.repeat width Nothing)
+        )
+        (List.repeat height Nothing)
 
 
 programDimensions : BLProgram -> ( Int, Int )

@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Array
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, setCellAt)
+import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
@@ -45,7 +45,7 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
-    , sizeIncrease = 10
+    , sizeIncrease = 5
     , writeEnabled = False
     }
 
@@ -58,10 +58,19 @@ update message model =
                 pixel =
                     getBlCmd activeCmd blCmdPixel
 
+                rewrite =
+                    force || writeEnabled
+
+                resized =
+                    if rewrite then
+                        resizeProgram program x y
+                    else
+                        program
+
                 updated =
-                    case ( force || writeEnabled, getCellMaybe program x y ) of
+                    case ( rewrite, getCellMaybe resized x y ) of
                         ( True, Just _ ) ->
-                            setCellAt program x y pixel
+                            setCellAt resized x y pixel
 
                         _ ->
                             program
