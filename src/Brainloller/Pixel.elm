@@ -123,6 +123,7 @@ programCells width height program writeHandler enableHandler disableHandler =
                             cell
                                 [ class "program-cell"
                                 , onClick (writeHandler cellIndex rowIndex True)
+                                , onMouseDown (writeHandler cellIndex rowIndex True)
                                 , onMouseOver (writeHandler cellIndex rowIndex False)
                                 , style [ pixelStyle pixel ]
                                 ]
