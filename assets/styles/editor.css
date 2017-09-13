@@ -1,5 +1,6 @@
 body {
   cursor: default;
+  background: rgba(236, 233, 216, 0.2);
 }
 
 .program-container {
@@ -8,6 +9,7 @@ body {
 }
 
 .program-output {
+  background-color: white;
   box-shadow: 4px 5px 8px #bfbfbf;
   border: 1px solid #c3c3c3;
   overflow: auto;
@@ -17,6 +19,7 @@ body {
 .program-active-command {
   height: 50px;
   width: 50px;
+  background-color: white;
 }
 
 .program-commands-container table,
@@ -28,7 +31,6 @@ body {
 
 .program-commands {
   display: inline-block;
-  width: 150px;
 }
 
 .program-command,
@@ -123,7 +125,7 @@ body {
 }
 
 .program-buttons {
-  width: 100px;
+  width: 60px;
 }
 
 .program-container-table {
@@ -148,7 +150,8 @@ body {
   outline: 0;
   padding: 0;
   box-sizing: border-box;
-  border-radius: 2px;
+  border-radius: 5px;
+  margin: 0 0 .5rem 1px;
   height: 50px;
   width: 50px;
   cursor: pointer;
@@ -157,7 +160,8 @@ body {
 .cmd-button:hover,
 .cmd-button:active,
 .cmd-button:focus {
-  border-color: #b9b9b9;
+  border-color: #c4c8c6;
+  background: #fbfcfe;
 }
 
 .cmd-button img {

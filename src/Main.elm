@@ -116,13 +116,13 @@ programContainer model =
                     [ class "program-buttons" ]
                     [ growBtn
                     , shrinkBtn
+                    , programCommands model
                     ]
                 , td
                     [ class Tac.pl5 ]
                     [ programOutput model ]
                 ]
             ]
-        , programCommands model
         ]
 
 

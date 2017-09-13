@@ -3,7 +3,7 @@ module Brainloller.Pixel exposing (commandsForm, programCells, programDimensions
 import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
-import Html exposing (Html, div, table, td, text, tr)
+import Html exposing (Html, div)
 import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick)
 import List.Extra exposing (getAt, setAt)
@@ -164,36 +164,24 @@ commandsForm cmdSetter activeCmd =
                     []
     in
     div [ class "program-commands-container" ]
-        [ table
-            []
-            [ tr
-                []
-                [ td
-                    []
-                    [ div
-                        [ classList
-                            [ ( "program-active-command", True )
-                            , ( "program-active-command--" ++ activeCmd, True )
-                            ]
-                        ]
-                        []
-                    ]
-                , td
-                    []
-                    [ div
-                        [ class "program-commands" ]
-                        [ picker blCmd.shiftRight
-                        , picker blCmd.shiftLeft
-                        , picker blCmd.increment
-                        , picker blCmd.decrement
-                        , picker blCmd.ioWrite
-                        , picker blCmd.ioRead
-                        , picker blCmd.loopOpen
-                        , picker blCmd.loopClose
-                        , picker blCmd.rotateClockwise
-                        , picker blCmd.rotateCounterClockwise
-                        ]
-                    ]
+        [ div
+            [ classList
+                [ ( "program-active-command", True )
+                , ( "program-active-command--" ++ activeCmd, True )
                 ]
+            ]
+            []
+        , div
+            [ class "program-commands" ]
+            [ picker blCmd.shiftRight
+            , picker blCmd.shiftLeft
+            , picker blCmd.increment
+            , picker blCmd.decrement
+            , picker blCmd.ioWrite
+            , picker blCmd.ioRead
+            , picker blCmd.loopOpen
+            , picker blCmd.loopClose
+            , picker blCmd.rotateClockwise
+            , picker blCmd.rotateCounterClockwise
             ]
         ]
