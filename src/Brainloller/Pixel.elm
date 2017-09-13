@@ -200,7 +200,7 @@ commandsForm cmdSetter activeCmd =
                 div
                     [ onClick (cmdSetter cmd)
                     , classList
-                        [ ( "program-command", True )
+                        [ ( "cmd-button", True )
                         , ( "program-command-active", cmd == activeCmd )
                         , ( "program-command--" ++ cmd, True )
                         ]
@@ -209,13 +209,6 @@ commandsForm cmdSetter activeCmd =
     in
     div [ class "program-commands-container" ]
         [ div
-            [ classList
-                [ ( "program-active-command", True )
-                , ( "program-active-command--" ++ activeCmd, True )
-                ]
-            ]
-            []
-        , div
             [ class "program-commands" ]
             [ picker blCmd.shiftRight
             , picker blCmd.shiftLeft

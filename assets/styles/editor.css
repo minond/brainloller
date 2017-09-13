@@ -1,6 +1,5 @@
 body {
   cursor: default;
-  background: rgba(236, 233, 216, 0.2);
 }
 
 .program-container {
@@ -16,88 +15,73 @@ body {
   height: 500px;
 }
 
-.program-active-command {
-  height: 50px;
-  width: 50px;
-  background-color: white;
-}
-
-.program-commands-container table,
-.program-commands-container table td {
-  border-collapse: collapse;
-  padding: 0;
-}
-
-
 .program-commands {
   display: inline-block;
 }
 
-.program-command,
-.program-active-command {
-  box-shadow: inset 1px 1px 0px #969696;
-  border: 2px inset #e8e8e8;
-  margin: 1px;
-}
-
-.program-commands td:first-child {
-  vertical-align: top;
-}
-
-.program-command {
-  cursor: pointer;
-  height: 20px;
-  float: left;
-  width: 20px;
+.cmd-button {
   box-sizing: content-box;
+  outline: 0;
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+  margin: 0 0 .5rem 1px;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  border-width: 2px;
+  border-style: outset;
+  border-color: #afafaf;
+  background: #fbfcfe;
+  box-shadow: 2px 2px 0px #c7c7c7;
 }
 
-.program-active-command--shiftRight,
+.cmd-button:hover,
+.cmd-button:active {
+  box-shadow: none;
+}
+
+.cmd-button img {
+  height: 100%;
+  width: 100%;
+}
+
 .program-command--shiftRight {
   background-color: rgb(255, 0, 0);
 }
 
-.program-active-command--shiftLeft,
 .program-command--shiftLeft {
   background-color: rgb(128, 0, 0);
 }
 
-.program-active-command--increment,
 .program-command--increment {
   background-color: rgb(0, 255, 0);
 }
 
-.program-active-command--decrement,
 .program-command--decrement {
   background-color: rgb(0, 128, 0);
 }
 
-.program-active-command--ioWrite,
 .program-command--ioWrite {
   background-color: rgb(0, 0, 255);
 }
 
-.program-active-command--ioRead,
 .program-command--ioRead {
   background-color: rgb(0, 0, 128);
 }
 
-.program-active-command--loopOpen,
 .program-command--loopOpen {
   background-color: rgb(255, 255, 0);
 }
 
-.program-active-command--loopClose,
 .program-command--loopClose {
   background-color: rgb(128, 128, 0);
 }
 
-.program-active-command--rotateClockwise,
 .program-command--rotateClockwise {
   background-color: rgb(0, 255, 255);
 }
 
-.program-active-command--rotateCounterClockwise,
 .program-command--rotateCounterClockwise {
   background-color: rgb(0, 128, 128);
 }
@@ -143,29 +127,4 @@ body {
 
 .program-container-table > tr > td:last-child {
   padding-left: .5rem;
-}
-
-.cmd-button {
-  background: transparent;
-  border: 1px solid transparent;
-  outline: 0;
-  padding: 0;
-  box-sizing: border-box;
-  border-radius: 5px;
-  margin: 0 0 .5rem 1px;
-  height: 50px;
-  width: 50px;
-  cursor: pointer;
-}
-
-.cmd-button:hover,
-.cmd-button:active,
-.cmd-button:focus {
-  border-color: #c4c8c6;
-  background: #fbfcfe;
-}
-
-.cmd-button img {
-  height: 100%;
-  width: 100%;
 }
