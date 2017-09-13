@@ -6,8 +6,8 @@ import Brainloller.Pixel exposing (commandsForm, programCells, programDimensions
 import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
-import Html exposing (Attribute, Html, button, div, h1, node, p, table, td, text, tr)
-import Html.Attributes exposing (class, href, rel)
+import Html exposing (Attribute, Html, button, div, h1, img, node, p, table, td, text, tr)
+import Html.Attributes exposing (class, href, rel, src)
 import Html.Events exposing (onClick)
 import List
 import Maybe
@@ -102,25 +102,23 @@ programContainer : Model -> Html Msg
 programContainer model =
     let
         growBtn =
-            btn [ onClick IncreaseSize ]
-                [ text "G" ]
+            cmdBtn "/assets/images/increase.svg" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            btn [ onClick DecreaseSize ]
-                [ text "S" ]
+            cmdBtn "/assets/images/decrease.svg" [ onClick DecreaseSize ]
     in
     div []
         [ table
-            []
+            [ class "program-container-table" ]
             [ tr
                 []
                 [ td
-                    []
+                    [ class "program-buttons" ]
                     [ growBtn
                     , shrinkBtn
                     ]
                 , td
-                    []
+                    [ class Tac.pl5 ]
                     [ programOutput model ]
                 ]
             ]
@@ -164,25 +162,13 @@ programCommands model =
         [ commandsForm setCmd activeCmd ]
 
 
-btn : List (Attribute msg) -> List (Html msg) -> Html msg
-btn attrs =
-    let
-        classList =
-            [ "monospace"
-            , Tac.f6
-            , Tac.link
-            , Tac.dim
-            , Tac.ba
-            , Tac.ph3
-            , Tac.pv2
-            , Tac.dib
-            , Tac.black
-            , Tac.ttu
-            , Tac.bg_white
-            , Tac.courier
-            ]
-    in
-    button (classes classList :: attrs)
+cmdBtn : String -> List (Attribute msg) -> Html msg
+cmdBtn imgSrc attrs =
+    button (class "cmd-button" :: attrs)
+        [ img
+            [ src imgSrc ]
+            []
+        ]
 
 
 stylesheet : String -> Html msg

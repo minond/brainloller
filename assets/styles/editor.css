@@ -2,10 +2,6 @@ body {
   cursor: default;
 }
 
-.monospace {
-  font-family: monospace;
-}
-
 .program-container {
   max-width: 900px;
   margin: 0 auto;
@@ -15,7 +11,7 @@ body {
   box-shadow: 4px 5px 8px #bfbfbf;
   border: 1px solid #c3c3c3;
   overflow: auto;
-  max-height: 800px;
+  height: 500px;
 }
 
 .program-active-command {
@@ -124,4 +120,47 @@ body {
 
 .program-row + .program-row .program-cell {
   border-top: 0;
+}
+
+.program-buttons {
+  width: 100px;
+}
+
+.program-container-table {
+  width: 100%;
+  border-collapse: collapse
+}
+
+.program-container-table,
+.program-container-table > tr > td {
+  border-collapse: collapse;
+  padding: 0;
+  vertical-align: top;
+}
+
+.program-container-table > tr > td:last-child {
+  padding-left: .5rem;
+}
+
+.cmd-button {
+  background: transparent;
+  border: 1px solid transparent;
+  outline: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 2px;
+  height: 50px;
+  width: 50px;
+  cursor: pointer;
+}
+
+.cmd-button:hover,
+.cmd-button:active,
+.cmd-button:focus {
+  border-color: #b9b9b9;
+}
+
+.cmd-button img {
+  height: 100%;
+  width: 100%;
 }
