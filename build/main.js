@@ -15599,63 +15599,28 @@ var _minond$brainloller$Main$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
-var _minond$brainloller$Main$btn = function (attrs) {
-	var classList = {
-		ctor: '::',
-		_0: 'monospace',
-		_1: {
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$f6,
-			_1: {
+var _minond$brainloller$Main$cmdBtn = F2(
+	function (imgSrc, attrs) {
+		return A2(
+			_elm_lang$html$Html$button,
+			{
 				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons_Classes$link,
-				_1: {
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
-					_1: {
+				_0: _elm_lang$html$Html_Attributes$class('cmd-button'),
+				_1: attrs
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$img,
+					{
 						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$ba,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$ph3,
-							_1: {
-								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$pv2,
-								_1: {
-									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$dib,
-									_1: {
-										ctor: '::',
-										_0: _justgage$tachyons_elm$Tachyons_Classes$black,
-										_1: {
-											ctor: '::',
-											_0: _justgage$tachyons_elm$Tachyons_Classes$ttu,
-											_1: {
-												ctor: '::',
-												_0: _justgage$tachyons_elm$Tachyons_Classes$bg_white,
-												_1: {
-													ctor: '::',
-													_0: _justgage$tachyons_elm$Tachyons_Classes$courier,
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	};
-	return _elm_lang$html$Html$button(
-		{
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(classList),
-			_1: attrs
-		});
-};
+						_0: _elm_lang$html$Html_Attributes$src(imgSrc),
+						_1: {ctor: '[]'}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			});
+	});
 var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
@@ -15759,31 +15724,85 @@ var _minond$brainloller$Main$programCommands = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
-var _minond$brainloller$Main$view = function (model) {
+var _minond$brainloller$Main$programContainer = function (model) {
 	var shrinkBtn = A2(
-		_minond$brainloller$Main$btn,
+		_minond$brainloller$Main$cmdBtn,
+		'/assets/images/decrease.svg',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DecreaseSize),
 			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Shrink'),
-			_1: {ctor: '[]'}
 		});
 	var growBtn = A2(
-		_minond$brainloller$Main$btn,
+		_minond$brainloller$Main$cmdBtn,
+		'/assets/images/increase.svg',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$IncreaseSize),
 			_1: {ctor: '[]'}
-		},
+		});
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('Grow'),
-			_1: {ctor: '[]'}
+			_0: A2(
+				_elm_lang$html$Html$table,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('program-container-table'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$tr,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$td,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('program-buttons'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: growBtn,
+									_1: {
+										ctor: '::',
+										_0: shrinkBtn,
+										_1: {ctor: '[]'}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$td,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class(_justgage$tachyons_elm$Tachyons_Classes$pl5),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _minond$brainloller$Main$programOutput(model),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: _minond$brainloller$Main$programCommands(model),
+				_1: {ctor: '[]'}
+			}
 		});
+};
+var _minond$brainloller$Main$view = function (model) {
 	var containerClasses = {
 		ctor: '::',
 		_0: 'program-container',
@@ -15820,20 +15839,8 @@ var _minond$brainloller$Main$view = function (model) {
 					_0: title,
 					_1: {
 						ctor: '::',
-						_0: growBtn,
-						_1: {
-							ctor: '::',
-							_0: shrinkBtn,
-							_1: {
-								ctor: '::',
-								_0: _minond$brainloller$Main$programCommands(model),
-								_1: {
-									ctor: '::',
-									_0: _minond$brainloller$Main$programOutput(model),
-									_1: {ctor: '[]'}
-								}
-							}
-						}
+						_0: _minond$brainloller$Main$programContainer(model),
+						_1: {ctor: '[]'}
 					}
 				}
 			}
