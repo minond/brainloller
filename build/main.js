@@ -14527,106 +14527,78 @@ var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 			{
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$table,
-					{ctor: '[]'},
+					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$tr,
-							{ctor: '[]'},
+						_0: _elm_lang$html$Html_Attributes$classList(
 							{
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$td,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$div,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$classList(
-													{
-														ctor: '::',
-														_0: {ctor: '_Tuple2', _0: 'program-active-command', _1: true},
-														_1: {
-															ctor: '::',
-															_0: {
-																ctor: '_Tuple2',
-																_0: A2(_elm_lang$core$Basics_ops['++'], 'program-active-command--', activeCmd),
-																_1: true
-															},
-															_1: {ctor: '[]'}
-														}
-													}),
-												_1: {ctor: '[]'}
-											},
-											{ctor: '[]'}),
-										_1: {ctor: '[]'}
-									}),
+								_0: {ctor: '_Tuple2', _0: 'program-active-command', _1: true},
 								_1: {
 									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$td,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$div,
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$class('program-commands'),
-													_1: {ctor: '[]'}
-												},
-												{
-													ctor: '::',
-													_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
-													_1: {
-														ctor: '::',
-														_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
-														_1: {
-															ctor: '::',
-															_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.increment),
-															_1: {
-																ctor: '::',
-																_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.decrement),
-																_1: {
-																	ctor: '::',
-																	_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
-																	_1: {
-																		ctor: '::',
-																		_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioRead),
-																		_1: {
-																			ctor: '::',
-																			_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
-																			_1: {
-																				ctor: '::',
-																				_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopClose),
-																				_1: {
-																					ctor: '::',
-																					_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
-																					_1: {
-																						ctor: '::',
-																						_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
-																						_1: {ctor: '[]'}
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}),
-											_1: {ctor: '[]'}
-										}),
+									_0: {
+										ctor: '_Tuple2',
+										_0: A2(_elm_lang$core$Basics_ops['++'], 'program-active-command--', activeCmd),
+										_1: true
+									},
 									_1: {ctor: '[]'}
 								}
 							}),
 						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
+					},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('program-commands'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
+							_1: {
+								ctor: '::',
+								_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
+								_1: {
+									ctor: '::',
+									_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.increment),
+									_1: {
+										ctor: '::',
+										_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.decrement),
+										_1: {
+											ctor: '::',
+											_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
+											_1: {
+												ctor: '::',
+												_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioRead),
+												_1: {
+													ctor: '::',
+													_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
+													_1: {
+														ctor: '::',
+														_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopClose),
+														_1: {
+															ctor: '::',
+															_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
+															_1: {
+																ctor: '::',
+																_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}
 			});
 	});
 var _minond$brainloller$Brainloller_Pixel$pixelForm = F3(
@@ -15773,7 +15745,11 @@ var _minond$brainloller$Main$programContainer = function (model) {
 									_1: {
 										ctor: '::',
 										_0: shrinkBtn,
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: _minond$brainloller$Main$programCommands(model),
+											_1: {ctor: '[]'}
+										}
 									}
 								}),
 							_1: {
@@ -15795,11 +15771,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 						}),
 					_1: {ctor: '[]'}
 				}),
-			_1: {
-				ctor: '::',
-				_0: _minond$brainloller$Main$programCommands(model),
-				_1: {ctor: '[]'}
-			}
+			_1: {ctor: '[]'}
 		});
 };
 var _minond$brainloller$Main$view = function (model) {
