@@ -3,8 +3,8 @@ module Main exposing (main)
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Elem exposing (cmdBtn, mainTitle, stylesheet, textCopy)
-import Html exposing (Html, div)
+import Elem exposing (cmdBtn, link, mainTitle, stylesheet, textCopy)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import List
@@ -126,6 +126,33 @@ view model =
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
+        , textCopy
+            [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
+            , text " is "
+            , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" True
+            , text """ but represented as an image. In Brainfuck you start
+                with a tape of cells ranging from 0 to, in this case,
+                """
+            , link "infinity" "https://en.wikipedia.org/wiki/Infinity" True
+            , text """ or as much as your browser can store. This is your
+                program's memory. Memory is manipulated using commands that let
+                increment and decrement the value of the current cell and that
+                let you shift the active cell to the left or to the right. In
+                addition to the cell manipulating commands you have a loop
+                construct (a command for starting a loop and a separate one for
+                ending it) and input and output commands.
+                """
+            ]
+        , textCopy
+            [ text "This gives you a total of 8 commands that leave you with a "
+            , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
+            , text """ language, what ever that actually means in practice, but
+                in theory it means you can program anything. Given that
+                Brainloller code is store in a two dimensional image, the
+                language provides two additional commands for rotating the
+                instruction pointer direction.
+                """
+            ]
         , programContainer model
         ]
 

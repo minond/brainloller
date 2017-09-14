@@ -1,9 +1,10 @@
 body {
   cursor: default;
+  letter-spacing: .7px;
 }
 
 .main-container {
-  max-width: 900px;
+  max-width: 55rem;
   margin: 0 auto;
 }
 
@@ -49,10 +50,12 @@ body {
   box-shadow: 2px 2px 0px #b9b9b9;
   position: relative;
   transition: box-shadow .1s;
+  margin-right: .5rem;
+  margin-top: .2rem;
 }
 
-.cmd-btn + .cmd-btn {
-  margin-left: .5rem;
+.cmd-btn.cmd-btn-active {
+  box-shadow: 3px 3px 1px #b9b9b9 !important;
 }
 
 .cmd-btn:hover,
