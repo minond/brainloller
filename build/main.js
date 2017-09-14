@@ -15922,7 +15922,7 @@ var _minond$brainloller$Main$view = function (model) {
 									_0: _elm_lang$html$Html$text(' is '),
 									_1: {
 										ctor: '::',
-										_0: A3(_minond$brainloller$Elem$link, 'Brainfuck', 'http://minond.xyz/brainfuck', true),
+										_0: A3(_minond$brainloller$Elem$link, 'Brainfuck', 'http://minond.xyz/brainfuck', false),
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$html$Html$text(' but represented as an image. In Brainfuck you start\n                with a tape of cells ranging from 0 to, in this case,\n                '),

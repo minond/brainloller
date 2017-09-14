@@ -129,7 +129,7 @@ view model =
         , textCopy
             [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
             , text " is "
-            , link "Brainfuck" "http://minond.xyz/brainfuck" True
+            , link "Brainfuck" "http://minond.xyz/brainfuck" False
             , text """ but represented as an image. In Brainfuck you start
                 with a tape of cells ranging from 0 to, in this case,
                 """
