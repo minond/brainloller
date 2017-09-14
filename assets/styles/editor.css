@@ -8,14 +8,14 @@ body {
 }
 
 .program-cells {
+  margin-top: .3rem;
   font-size: 0;
   overflow: auto;
   white-space: nowrap;
   padding: 10px;
   background-color: white;
-  box-shadow: 4px 5px 8px #bfbfbf;
-  border: 1px solid #c3c3c3;
-  overflow: auto;
+  box-shadow: 4px 5px 4px #d4d4d4;
+  border: 1px solid #808080;
   height: 500px;
 }
 
@@ -37,7 +37,6 @@ body {
 .cmd-btn {
   outline: 0;
   display: inline-block;
-  cursor: pointer;
   padding: 0;
   box-sizing: border-box;
   height: 30px;
@@ -45,10 +44,11 @@ body {
   cursor: pointer;
   border-width: 2px;
   border-style: outset;
-  border-color: #afafaf;
+  border-color: #808080;
   background: #fbfcfe;
-  box-shadow: 2px 2px 0px #c7c7c7;
+  box-shadow: 2px 2px 0px #b9b9b9;
   position: relative;
+  transition: box-shadow .1s;
 }
 
 .cmd-btn + .cmd-btn {
