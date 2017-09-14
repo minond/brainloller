@@ -13,7 +13,7 @@ import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div)
-import Html.Attributes exposing (class, classList, style)
+import Html.Attributes exposing (class, classList, style, tabindex)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
 import Maybe
@@ -198,6 +198,7 @@ commandsForm cmdSetter activeCmd =
             \cmd ->
                 div
                     [ onClick (cmdSetter cmd)
+                    , tabindex 1
                     , classList
                         [ ( "cmd-btn", True )
                         , ( "cmd-btn-active", cmd == activeCmd )

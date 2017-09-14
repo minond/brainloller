@@ -7,7 +7,7 @@ import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
 import Html exposing (Attribute, Html, div, h1, img, node, p, text)
-import Html.Attributes exposing (class, href, rel, src)
+import Html.Attributes exposing (class, href, rel, src, style, tabindex)
 import Html.Events exposing (onClick)
 import List
 import Maybe
@@ -22,12 +22,15 @@ type Msg
     | DisableWrite
     | IncreaseSize
     | DecreaseSize
+    | ZoomIn
+    | ZoomOut
 
 
 type alias Model =
     { program : BLProgram
     , activeCmd : Maybe BLOptCode
     , sizeIncrease : Int
+    , zoomLevel : Float
     , writeEnabled : Bool
     }
 
@@ -46,6 +49,7 @@ initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
     , sizeIncrease = 5
+    , zoomLevel = 1
     , writeEnabled = False
     }
 
@@ -95,6 +99,12 @@ update message model =
         ( DecreaseSize, { sizeIncrease }, _ ) ->
             ( { model | sizeIncrease = sizeIncrease - 1 }, Cmd.none )
 
+        ( ZoomIn, { zoomLevel }, _ ) ->
+            ( { model | zoomLevel = zoomLevel + 0.1 }, Cmd.none )
+
+        ( ZoomOut, { zoomLevel }, _ ) ->
+            ( { model | zoomLevel = zoomLevel - 0.1 }, Cmd.none )
+
 
 subscriptions : Model -> Sub msg
 subscriptions model =
@@ -130,6 +140,12 @@ programContainer model =
 
         shrinkBtn =
             cmdBtn "assets/images/decrease.svg" [ onClick DecreaseSize ]
+
+        zoomInBtn =
+            cmdBtn "assets/images/zoom-in.svg" [ onClick ZoomIn ]
+
+        zoomOutBtn =
+            cmdBtn "assets/images/zoom-out.svg" [ onClick ZoomOut ]
     in
     div []
         [ div
@@ -137,6 +153,8 @@ programContainer model =
           <|
             growBtn
                 :: shrinkBtn
+                :: zoomInBtn
+                :: zoomOutBtn
                 :: programCommands model
         , div
             []
@@ -164,7 +182,10 @@ programOutput model =
     in
     div
         [ class "program-cells" ]
-        [ programCells width height model.program write EnableWrite DisableWrite ]
+        [ div
+            [ style [ ( "zoom", toString model.zoomLevel ) ] ]
+            [ programCells width height model.program write EnableWrite DisableWrite ]
+        ]
 
 
 programCommands : Model -> List (Html Msg)
@@ -181,7 +202,7 @@ programCommands model =
 
 cmdBtn : String -> List (Attribute msg) -> Html msg
 cmdBtn imgSrc attrs =
-    div (class "cmd-btn" :: attrs)
+    div (tabindex 1 :: class "cmd-btn" :: attrs)
         [ img
             [ src imgSrc ]
             []

@@ -56,7 +56,7 @@ body {
 }
 
 .cmd-btn:hover,
-.cmd-btn:active {
+.cmd-btn:focus {
   box-shadow: none;
 }
 
