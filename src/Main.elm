@@ -22,12 +22,14 @@ type Msg
     | DecreaseSize
     | ZoomIn
     | ZoomOut
+    | Reset
 
 
 type alias Model =
     { program : BLProgram
     , activeCmd : Maybe BLOptCode
-    , sizeIncrease : Int
+    , boardWidth : Int
+    , boardHeight : Int
     , zoomLevel : Float
     , writeEnabled : Bool
     }
@@ -46,7 +48,8 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
-    , sizeIncrease = 5
+    , boardWidth = 5
+    , boardHeight = 5
     , zoomLevel = 1
     , writeEnabled = False
     }
@@ -91,17 +94,30 @@ update message model =
         ( DisableWrite, _, _ ) ->
             ( { model | writeEnabled = False }, Cmd.none )
 
-        ( IncreaseSize, { sizeIncrease }, _ ) ->
-            ( { model | sizeIncrease = sizeIncrease + 1 }, Cmd.none )
+        ( IncreaseSize, { boardHeight, boardWidth }, _ ) ->
+            ( { model
+                | boardHeight = boardHeight + 1
+                , boardWidth = boardWidth + 1
+              }
+            , Cmd.none
+            )
 
-        ( DecreaseSize, { sizeIncrease }, _ ) ->
-            ( { model | sizeIncrease = sizeIncrease - 1 }, Cmd.none )
+        ( DecreaseSize, { boardHeight, boardWidth }, _ ) ->
+            ( { model
+                | boardHeight = boardHeight - 1
+                , boardWidth = boardWidth - 1
+              }
+            , Cmd.none
+            )
 
         ( ZoomIn, { zoomLevel }, _ ) ->
             ( { model | zoomLevel = zoomLevel + 0.1 }, Cmd.none )
 
         ( ZoomOut, { zoomLevel }, _ ) ->
             ( { model | zoomLevel = zoomLevel - 0.1 }, Cmd.none )
+
+        ( Reset, _, _ ) ->
+            ( { model | program = [] }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -171,6 +187,9 @@ programContainer model =
 
         zoomOutBtn =
             cmdBtn "assets/images/zoom-out.svg" [ onClick ZoomOut ]
+
+        resetBtn =
+            cmdBtn "assets/images/trash.svg" [ onClick Reset ]
     in
     div []
         [ div
@@ -180,6 +199,7 @@ programContainer model =
                 :: shrinkBtn
                 :: zoomInBtn
                 :: zoomOutBtn
+                :: resetBtn
                 :: programCommands model
         , div
             []
@@ -197,10 +217,10 @@ programOutput model =
             programDimensions program
 
         width =
-            Tuple.first dim + model.sizeIncrease
+            Tuple.first dim + model.boardWidth
 
         height =
-            Tuple.second dim + model.sizeIncrease
+            Tuple.second dim + model.boardHeight
 
         write =
             \x y f -> WriteCmd x y f
