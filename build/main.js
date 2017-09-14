@@ -14472,6 +14472,10 @@ var _minond$brainloller$Brainloller_Lang$Pixel = F3(
 		return {r: a, g: b, b: c};
 	});
 
+var _minond$brainloller$Util$ternary = F3(
+	function (cond, pass, fail) {
+		return cond ? pass : fail;
+	});
 var _minond$brainloller$Util$asList = function (list) {
 	return A2(
 		_elm_lang$core$Maybe$withDefault,
@@ -15516,11 +15520,7 @@ var _minond$brainloller$Elem$textCopy = function (copy) {
 			_0: _justgage$tachyons_elm$Tachyons$classes(pClasses),
 			_1: {ctor: '[]'}
 		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text(copy),
-			_1: {ctor: '[]'}
-		});
+		copy);
 };
 var _minond$brainloller$Elem$mainTitle = function (title) {
 	var h1Classes = {
@@ -15599,6 +15599,43 @@ var _minond$brainloller$Elem$cmdBtn = F2(
 						_1: {ctor: '[]'}
 					},
 					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _minond$brainloller$Elem$link = F3(
+	function (label, to, external) {
+		return A2(
+			_elm_lang$html$Html$a,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href(to),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$target(
+						A3(_minond$brainloller$Util$ternary, external, '_blank', '_self')),
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons$classes(
+							{
+								ctor: '::',
+								_0: _justgage$tachyons_elm$Tachyons_Classes$link,
+								_1: {
+									ctor: '::',
+									_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
+									_1: {
+										ctor: '::',
+										_0: _justgage$tachyons_elm$Tachyons_Classes$blue,
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(label),
 				_1: {ctor: '[]'}
 			});
 	});
@@ -15876,8 +15913,54 @@ var _minond$brainloller$Main$view = function (model) {
 					_0: title,
 					_1: {
 						ctor: '::',
-						_0: _minond$brainloller$Main$programContainer(model),
-						_1: {ctor: '[]'}
+						_0: _minond$brainloller$Elem$textCopy(
+							{
+								ctor: '::',
+								_0: A3(_minond$brainloller$Elem$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(' is '),
+									_1: {
+										ctor: '::',
+										_0: A3(_minond$brainloller$Elem$link, 'Brainfuck', 'https://esolangs.org/wiki/Brainfuck', true),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(' but represented as an image. In Brainfuck you start\n                with a tape of cells ranging from 0 to, in this case,\n                '),
+											_1: {
+												ctor: '::',
+												_0: A3(_minond$brainloller$Elem$link, 'infinity', 'https://en.wikipedia.org/wiki/Infinity', true),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(' or as much as your browser can store. This is your\n                program\'s memory. Memory is manipulated using commands that let\n                increment and decrement the value of the current cell and that\n                let you shift the active cell to the left or to the right. In\n                addition to the cell manipulating commands you have a loop\n                construct (a command for starting a loop and a separate one for\n                ending it) and input and output commands.\n                '),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: _minond$brainloller$Elem$textCopy(
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
+									_1: {
+										ctor: '::',
+										_0: A3(_minond$brainloller$Elem$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n                in theory it means you can program anything. Given that\n                Brainloller code is store in a two dimensional image, the\n                language provides two additional commands for rotating the\n                instruction pointer direction.\n                '),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: _minond$brainloller$Main$programContainer(model),
+								_1: {ctor: '[]'}
+							}
+						}
 					}
 				}
 			}
