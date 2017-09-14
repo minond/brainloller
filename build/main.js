@@ -14493,19 +14493,19 @@ var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 						_0: _elm_lang$html$Html_Attributes$classList(
 							{
 								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'program-command', _1: true},
+								_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
 								_1: {
 									ctor: '::',
 									_0: {
 										ctor: '_Tuple2',
-										_0: 'program-command-active',
+										_0: 'cmd-btn-active',
 										_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
 									},
 									_1: {
 										ctor: '::',
 										_0: {
 											ctor: '_Tuple2',
-											_0: A2(_elm_lang$core$Basics_ops['++'], 'program-command--', cmd),
+											_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
 											_1: true
 										},
 										_1: {ctor: '[]'}
@@ -14517,89 +14517,47 @@ var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 				},
 				{ctor: '[]'});
 		};
-		return A2(
-			_elm_lang$html$Html$div,
-			{
+		return {
+			ctor: '::',
+			_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
+			_1: {
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('program-commands-container'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$classList(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'program-active-command', _1: true},
-								_1: {
-									ctor: '::',
-									_0: {
-										ctor: '_Tuple2',
-										_0: A2(_elm_lang$core$Basics_ops['++'], 'program-active-command--', activeCmd),
-										_1: true
-									},
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {ctor: '[]'}
-					},
-					{ctor: '[]'}),
+				_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
+					_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.increment),
+					_1: {
+						ctor: '::',
+						_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.decrement),
+						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('program-commands'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
+							_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
 							_1: {
 								ctor: '::',
-								_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
+								_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioRead),
 								_1: {
 									ctor: '::',
-									_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.increment),
+									_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
 									_1: {
 										ctor: '::',
-										_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.decrement),
+										_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopClose),
 										_1: {
 											ctor: '::',
-											_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
+											_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
 											_1: {
 												ctor: '::',
-												_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioRead),
-												_1: {
-													ctor: '::',
-													_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
-													_1: {
-														ctor: '::',
-														_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopClose),
-														_1: {
-															ctor: '::',
-															_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
-															_1: {
-																ctor: '::',
-																_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
-																_1: {ctor: '[]'}
-															}
-														}
-													}
-												}
+												_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
+												_1: {ctor: '[]'}
 											}
 										}
 									}
 								}
 							}
-						}),
-					_1: {ctor: '[]'}
+						}
+					}
 				}
-			});
+			}
+		};
 	});
 var _minond$brainloller$Brainloller_Pixel$pixelForm = F3(
 	function (board, index, pixel) {
@@ -14744,15 +14702,11 @@ var _minond$brainloller$Brainloller_Pixel$programCells = F6(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('program-rows'),
+				_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
-						_1: {ctor: '[]'}
-					}
+					_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
+					_1: {ctor: '[]'}
 				}
 			},
 			A2(
@@ -15621,10 +15575,10 @@ var _minond$brainloller$Main$stylesheet = function (url) {
 var _minond$brainloller$Main$cmdBtn = F2(
 	function (imgSrc, attrs) {
 		return A2(
-			_elm_lang$html$Html$button,
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('cmd-button'),
+				_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
 				_1: attrs
 			},
 			{
@@ -15747,7 +15701,7 @@ var _minond$brainloller$Main$programOutput = function (model) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('program-output'),
+			_0: _elm_lang$html$Html_Attributes$class('program-cells'),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -15764,18 +15718,7 @@ var _minond$brainloller$Main$programCommands = function (model) {
 	var setCmd = function (cmd) {
 		return _minond$brainloller$Main$SetCmd(cmd);
 	};
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('program-commands'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(_minond$brainloller$Brainloller_Pixel$commandsForm, setCmd, activeCmd),
-			_1: {ctor: '[]'}
-		});
+	return A2(_minond$brainloller$Brainloller_Pixel$commandsForm, setCmd, activeCmd);
 };
 var _minond$brainloller$Main$programContainer = function (model) {
 	var shrinkBtn = A2(
@@ -15800,65 +15743,35 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$table,
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('program-container-table'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$tr,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$td,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('program-buttons'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: growBtn,
-									_1: {
-										ctor: '::',
-										_0: shrinkBtn,
-										_1: {
-											ctor: '::',
-											_0: _minond$brainloller$Main$programCommands(model),
-											_1: {ctor: '[]'}
-										}
-									}
-								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$td,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class(_justgage$tachyons_elm$Tachyons_Classes$pl5),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _minond$brainloller$Main$programOutput(model),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}
-						}),
-					_1: {ctor: '[]'}
+					_0: growBtn,
+					_1: {
+						ctor: '::',
+						_0: shrinkBtn,
+						_1: _minond$brainloller$Main$programCommands(model)
+					}
 				}),
-			_1: {ctor: '[]'}
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _minond$brainloller$Main$programOutput(model),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
 		});
 };
 var _minond$brainloller$Main$view = function (model) {
 	var containerClasses = {
 		ctor: '::',
-		_0: 'program-container',
+		_0: 'main-container',
 		_1: {
 			ctor: '::',
 			_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
