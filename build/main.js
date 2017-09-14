@@ -14490,29 +14490,33 @@ var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 						cmdSetter(cmd)),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$classList(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
-								_1: {
+						_0: _elm_lang$html$Html_Attributes$tabindex(1),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$classList(
+								{
 									ctor: '::',
-									_0: {
-										ctor: '_Tuple2',
-										_0: 'cmd-btn-active',
-										_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
-									},
+									_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
 									_1: {
 										ctor: '::',
 										_0: {
 											ctor: '_Tuple2',
-											_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
-											_1: true
+											_0: 'cmd-btn-active',
+											_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
 										},
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: {
+												ctor: '_Tuple2',
+												_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
+												_1: true
+											},
+											_1: {ctor: '[]'}
+										}
 									}
-								}
-							}),
-						_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}
 				},
 				{ctor: '[]'});
@@ -15495,7 +15499,7 @@ var _minond$brainloller$Brainloller_Program$progHelloWorld = {
 	}
 };
 
-var _minond$brainloller$Main$textCopy = function (copy) {
+var _minond$brainloller$Elem$textCopy = function (copy) {
 	var pClasses = {
 		ctor: '::',
 		_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
@@ -15518,7 +15522,7 @@ var _minond$brainloller$Main$textCopy = function (copy) {
 			_1: {ctor: '[]'}
 		});
 };
-var _minond$brainloller$Main$mainTitle = function (title) {
+var _minond$brainloller$Elem$mainTitle = function (title) {
 	var h1Classes = {
 		ctor: '::',
 		_0: _justgage$tachyons_elm$Tachyons_Classes$mt0,
@@ -15557,7 +15561,7 @@ var _minond$brainloller$Main$mainTitle = function (title) {
 			_1: {ctor: '[]'}
 		});
 };
-var _minond$brainloller$Main$stylesheet = function (url) {
+var _minond$brainloller$Elem$stylesheet = function (url) {
 	return A3(
 		_elm_lang$html$Html$node,
 		'link',
@@ -15572,14 +15576,18 @@ var _minond$brainloller$Main$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
-var _minond$brainloller$Main$cmdBtn = F2(
+var _minond$brainloller$Elem$cmdBtn = F2(
 	function (imgSrc, attrs) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
-				_1: attrs
+				_0: _elm_lang$html$Html_Attributes$tabindex(1),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
+					_1: attrs
+				}
 			},
 			{
 				ctor: '::',
@@ -15594,6 +15602,7 @@ var _minond$brainloller$Main$cmdBtn = F2(
 				_1: {ctor: '[]'}
 			});
 	});
+
 var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
@@ -15665,7 +15674,7 @@ var _minond$brainloller$Main$update = F2(
 						{sizeIncrease: _p0._1.sizeIncrease + 1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			default:
+			case 'DecreaseSize':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -15673,13 +15682,31 @@ var _minond$brainloller$Main$update = F2(
 						{sizeIncrease: _p0._1.sizeIncrease - 1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'ZoomIn':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{zoomLevel: _p0._1.zoomLevel + 0.1}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{zoomLevel: _p0._1.zoomLevel - 0.1}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 		}
 	});
-var _minond$brainloller$Main$initialModel = {program: _minond$brainloller$Brainloller_Program$progHelloWorld, activeCmd: _elm_lang$core$Maybe$Nothing, sizeIncrease: 5, writeEnabled: false};
-var _minond$brainloller$Main$Model = F4(
-	function (a, b, c, d) {
-		return {program: a, activeCmd: b, sizeIncrease: c, writeEnabled: d};
+var _minond$brainloller$Main$initialModel = {program: _minond$brainloller$Brainloller_Program$progHelloWorld, activeCmd: _elm_lang$core$Maybe$Nothing, sizeIncrease: 5, zoomLevel: 1, writeEnabled: false};
+var _minond$brainloller$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {program: a, activeCmd: b, sizeIncrease: c, zoomLevel: d, writeEnabled: e};
 	});
+var _minond$brainloller$Main$ZoomOut = {ctor: 'ZoomOut'};
+var _minond$brainloller$Main$ZoomIn = {ctor: 'ZoomIn'};
 var _minond$brainloller$Main$DecreaseSize = {ctor: 'DecreaseSize'};
 var _minond$brainloller$Main$IncreaseSize = {ctor: 'IncreaseSize'};
 var _minond$brainloller$Main$DisableWrite = {ctor: 'DisableWrite'};
@@ -15706,7 +15733,27 @@ var _minond$brainloller$Main$programOutput = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: A6(_minond$brainloller$Brainloller_Pixel$programCells, width, height, model.program, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						{
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'zoom',
+								_1: _elm_lang$core$Basics$toString(model.zoomLevel)
+							},
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A6(_minond$brainloller$Brainloller_Pixel$programCells, width, height, model.program, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+					_1: {ctor: '[]'}
+				}),
 			_1: {ctor: '[]'}
 		});
 };
@@ -15721,8 +15768,24 @@ var _minond$brainloller$Main$programCommands = function (model) {
 	return A2(_minond$brainloller$Brainloller_Pixel$commandsForm, setCmd, activeCmd);
 };
 var _minond$brainloller$Main$programContainer = function (model) {
+	var zoomOutBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/zoom-out.svg',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomOut),
+			_1: {ctor: '[]'}
+		});
+	var zoomInBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/zoom-in.svg',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomIn),
+			_1: {ctor: '[]'}
+		});
 	var shrinkBtn = A2(
-		_minond$brainloller$Main$cmdBtn,
+		_minond$brainloller$Elem$cmdBtn,
 		'assets/images/decrease.svg',
 		{
 			ctor: '::',
@@ -15730,7 +15793,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var growBtn = A2(
-		_minond$brainloller$Main$cmdBtn,
+		_minond$brainloller$Elem$cmdBtn,
 		'assets/images/increase.svg',
 		{
 			ctor: '::',
@@ -15751,7 +15814,15 @@ var _minond$brainloller$Main$programContainer = function (model) {
 					_1: {
 						ctor: '::',
 						_0: shrinkBtn,
-						_1: _minond$brainloller$Main$programCommands(model)
+						_1: {
+							ctor: '::',
+							_0: zoomInBtn,
+							_1: {
+								ctor: '::',
+								_0: zoomOutBtn,
+								_1: _minond$brainloller$Main$programCommands(model)
+							}
+						}
 					}
 				}),
 			_1: {
@@ -15786,7 +15857,7 @@ var _minond$brainloller$Main$view = function (model) {
 			}
 		}
 	};
-	var title = _minond$brainloller$Main$mainTitle('Brainloller');
+	var title = _minond$brainloller$Elem$mainTitle('Brainloller');
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -15796,10 +15867,10 @@ var _minond$brainloller$Main$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: _minond$brainloller$Main$stylesheet('/build/tachyons.min.css'),
+			_0: _minond$brainloller$Elem$stylesheet('/build/tachyons.min.css'),
 			_1: {
 				ctor: '::',
-				_0: _minond$brainloller$Main$stylesheet('/assets/styles/editor.css'),
+				_0: _minond$brainloller$Elem$stylesheet('/assets/styles/editor.css'),
 				_1: {
 					ctor: '::',
 					_0: title,
