@@ -1,11 +1,8 @@
 module Main exposing (main)
 
-import Array
-import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmd, blCmdPixel, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, programForm, resizeProgram, setCellAt)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
+import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Debug
-import Element exposing (Element, image)
 import Html exposing (Attribute, Html, div, h1, img, node, p, text)
 import Html.Attributes exposing (class, href, rel, src, style, tabindex)
 import Html.Events exposing (onClick)

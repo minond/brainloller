@@ -9,7 +9,7 @@ module Brainloller.Pixel
         , setCellAt
         )
 
-import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd, blCmdPixel)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div)
