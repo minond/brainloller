@@ -11,6 +11,7 @@ import List
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
+import Tuple exposing (first, second)
 
 
 type Msg
@@ -28,8 +29,7 @@ type Msg
 type alias Model =
     { program : BLProgram
     , activeCmd : Maybe BLOptCode
-    , boardWidth : Int
-    , boardHeight : Int
+    , boardDimensions : ( Int, Int )
     , zoomLevel : Float
     , writeEnabled : Bool
     }
@@ -48,8 +48,7 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
-    , boardWidth = 5
-    , boardHeight = 5
+    , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
     , writeEnabled = False
     }
@@ -94,18 +93,18 @@ update message model =
         ( DisableWrite, _, _ ) ->
             ( { model | writeEnabled = False }, Cmd.none )
 
-        ( IncreaseSize, { boardHeight, boardWidth }, _ ) ->
+        ( IncreaseSize, { boardDimensions }, _ ) ->
             ( { model
-                | boardHeight = boardHeight + 1
-                , boardWidth = boardWidth + 1
+                | boardDimensions =
+                    ( first boardDimensions + 1, second boardDimensions + 1 )
               }
             , Cmd.none
             )
 
-        ( DecreaseSize, { boardHeight, boardWidth }, _ ) ->
+        ( DecreaseSize, { boardDimensions }, _ ) ->
             ( { model
-                | boardHeight = boardHeight - 1
-                , boardWidth = boardWidth - 1
+                | boardDimensions =
+                    ( first boardDimensions - 1, second boardDimensions - 1 )
               }
             , Cmd.none
             )
@@ -217,10 +216,10 @@ programOutput model =
             programDimensions program
 
         width =
-            Tuple.first dim + model.boardWidth
+            max (first dim) (first model.boardDimensions)
 
         height =
-            Tuple.second dim + model.boardHeight
+            max (second dim) (second model.boardDimensions)
 
         write =
             \x y f -> WriteCmd x y f
