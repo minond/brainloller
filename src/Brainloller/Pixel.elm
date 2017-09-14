@@ -106,8 +106,7 @@ programDimensions program =
 programCells : Int -> Int -> BLProgram -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
 programCells width height program writeHandler enableHandler disableHandler =
     div
-        [ class "program-rows"
-        , onMouseDown enableHandler
+        [ onMouseDown enableHandler
         , onMouseUp disableHandler
         ]
     <|
@@ -192,7 +191,7 @@ programForm program =
     List.indexedMap processPixel continuous
 
 
-commandsForm : (BLOptCode -> msg) -> BLOptCode -> Html msg
+commandsForm : (BLOptCode -> msg) -> BLOptCode -> List (Html msg)
 commandsForm cmdSetter activeCmd =
     let
         picker =
@@ -200,25 +199,21 @@ commandsForm cmdSetter activeCmd =
                 div
                     [ onClick (cmdSetter cmd)
                     , classList
-                        [ ( "cmd-button", True )
-                        , ( "program-command-active", cmd == activeCmd )
-                        , ( "program-command--" ++ cmd, True )
+                        [ ( "cmd-btn", True )
+                        , ( "cmd-btn-active", cmd == activeCmd )
+                        , ( "cmd-btn--" ++ cmd, True )
                         ]
                     ]
                     []
     in
-    div [ class "program-commands-container" ]
-        [ div
-            [ class "program-commands" ]
-            [ picker blCmd.shiftRight
-            , picker blCmd.shiftLeft
-            , picker blCmd.increment
-            , picker blCmd.decrement
-            , picker blCmd.ioWrite
-            , picker blCmd.ioRead
-            , picker blCmd.loopOpen
-            , picker blCmd.loopClose
-            , picker blCmd.rotateClockwise
-            , picker blCmd.rotateCounterClockwise
-            ]
-        ]
+    [ picker blCmd.shiftRight
+    , picker blCmd.shiftLeft
+    , picker blCmd.increment
+    , picker blCmd.decrement
+    , picker blCmd.ioWrite
+    , picker blCmd.ioRead
+    , picker blCmd.loopOpen
+    , picker blCmd.loopClose
+    , picker blCmd.rotateClockwise
+    , picker blCmd.rotateCounterClockwise
+    ]

@@ -2,96 +2,21 @@ body {
   cursor: default;
 }
 
-.program-container {
+.main-container {
   max-width: 900px;
   margin: 0 auto;
 }
 
-.program-output {
+.program-cells {
+  font-size: 0;
+  overflow: auto;
+  white-space: nowrap;
+  padding: 10px;
   background-color: white;
   box-shadow: 4px 5px 8px #bfbfbf;
   border: 1px solid #c3c3c3;
   overflow: auto;
   height: 500px;
-}
-
-.program-commands {
-  display: inline-block;
-}
-
-.cmd-button {
-  box-sizing: content-box;
-  outline: 0;
-  cursor: pointer;
-  padding: 0;
-  box-sizing: border-box;
-  margin: 0 0 .5rem 1px;
-  height: 30px;
-  width: 30px;
-  cursor: pointer;
-  border-width: 2px;
-  border-style: outset;
-  border-color: #afafaf;
-  background: #fbfcfe;
-  box-shadow: 2px 2px 0px #c7c7c7;
-}
-
-.cmd-button:hover,
-.cmd-button:active {
-  box-shadow: none;
-}
-
-.cmd-button img {
-  height: 100%;
-  width: 100%;
-}
-
-.program-command--shiftRight {
-  background-color: rgb(255, 0, 0);
-}
-
-.program-command--shiftLeft {
-  background-color: rgb(128, 0, 0);
-}
-
-.program-command--increment {
-  background-color: rgb(0, 255, 0);
-}
-
-.program-command--decrement {
-  background-color: rgb(0, 128, 0);
-}
-
-.program-command--ioWrite {
-  background-color: rgb(0, 0, 255);
-}
-
-.program-command--ioRead {
-  background-color: rgb(0, 0, 128);
-}
-
-.program-command--loopOpen {
-  background-color: rgb(255, 255, 0);
-}
-
-.program-command--loopClose {
-  background-color: rgb(128, 128, 0);
-}
-
-.program-command--rotateClockwise {
-  background-color: rgb(0, 255, 255);
-}
-
-.program-command--rotateCounterClockwise {
-  background-color: rgb(0, 128, 128);
-}
-
-.program-rows {
-  font-size: 0;
-  overflow: auto;
-  white-space: nowrap;
-  max-width: 765px;
-  padding: 10px;
 }
 
 .program-cell {
@@ -109,22 +34,76 @@ body {
   border-top: 0;
 }
 
-.program-buttons {
-  width: 60px;
-}
-
-.program-container-table {
-  width: 100%;
-  border-collapse: collapse
-}
-
-.program-container-table,
-.program-container-table > tr > td {
-  border-collapse: collapse;
+.cmd-btn {
+  outline: 0;
+  display: inline-block;
+  cursor: pointer;
   padding: 0;
-  vertical-align: top;
+  box-sizing: border-box;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  border-width: 2px;
+  border-style: outset;
+  border-color: #afafaf;
+  background: #fbfcfe;
+  box-shadow: 2px 2px 0px #c7c7c7;
+  position: relative;
 }
 
-.program-container-table > tr > td:last-child {
-  padding-left: .5rem;
+.cmd-btn + .cmd-btn {
+  margin-left: .5rem;
+}
+
+.cmd-btn:hover,
+.cmd-btn:active {
+  box-shadow: none;
+}
+
+.cmd-btn img {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0%;
+  left: 0%;
+}
+
+.cmd-btn--shiftRight {
+  background-color: rgb(255, 0, 0);
+}
+
+.cmd-btn--shiftLeft {
+  background-color: rgb(128, 0, 0);
+}
+
+.cmd-btn--increment {
+  background-color: rgb(0, 255, 0);
+}
+
+.cmd-btn--decrement {
+  background-color: rgb(0, 128, 0);
+}
+
+.cmd-btn--ioWrite {
+  background-color: rgb(0, 0, 255);
+}
+
+.cmd-btn--ioRead {
+  background-color: rgb(0, 0, 128);
+}
+
+.cmd-btn--loopOpen {
+  background-color: rgb(255, 255, 0);
+}
+
+.cmd-btn--loopClose {
+  background-color: rgb(128, 128, 0);
+}
+
+.cmd-btn--rotateClockwise {
+  background-color: rgb(0, 255, 255);
+}
+
+.cmd-btn--rotateCounterClockwise {
+  background-color: rgb(0, 128, 128);
 }

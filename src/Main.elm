@@ -6,7 +6,7 @@ import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, pro
 import Brainloller.Program exposing (progHelloWorld)
 import Debug
 import Element exposing (Element, image)
-import Html exposing (Attribute, Html, button, div, h1, img, node, p, table, td, text, tr)
+import Html exposing (Attribute, Html, div, h1, img, node, p, text)
 import Html.Attributes exposing (class, href, rel, src)
 import Html.Events exposing (onClick)
 import List
@@ -108,7 +108,7 @@ view model =
             mainTitle "Brainloller"
 
         containerClasses =
-            [ "program-container"
+            [ "main-container"
             , Tac.cf
             , Tac.pa3
             , Tac.pa4_ns
@@ -132,21 +132,15 @@ programContainer model =
             cmdBtn "assets/images/decrease.svg" [ onClick DecreaseSize ]
     in
     div []
-        [ table
-            [ class "program-container-table" ]
-            [ tr
-                []
-                [ td
-                    [ class "program-buttons" ]
-                    [ growBtn
-                    , shrinkBtn
-                    , programCommands model
-                    ]
-                , td
-                    [ class Tac.pl5 ]
-                    [ programOutput model ]
-                ]
-            ]
+        [ div
+            []
+          <|
+            growBtn
+                :: shrinkBtn
+                :: programCommands model
+        , div
+            []
+            [ programOutput model ]
         ]
 
 
@@ -169,11 +163,11 @@ programOutput model =
             \x y f -> WriteCmd x y f
     in
     div
-        [ class "program-output" ]
+        [ class "program-cells" ]
         [ programCells width height model.program write EnableWrite DisableWrite ]
 
 
-programCommands : Model -> Html Msg
+programCommands : Model -> List (Html Msg)
 programCommands model =
     let
         setCmd =
@@ -182,13 +176,12 @@ programCommands model =
         activeCmd =
             Maybe.withDefault "" model.activeCmd
     in
-    div [ class "program-commands" ]
-        [ commandsForm setCmd activeCmd ]
+    commandsForm setCmd activeCmd
 
 
 cmdBtn : String -> List (Attribute msg) -> Html msg
 cmdBtn imgSrc attrs =
-    button (class "cmd-button" :: attrs)
+    div (class "cmd-btn" :: attrs)
         [ img
             [ src imgSrc ]
             []
