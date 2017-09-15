@@ -145,33 +145,7 @@ view model =
         [ stylesheet "/build/tachyons.min.css"
         , stylesheet "/assets/styles/editor.css"
         , title
-        , textCopy
-            [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
-            , text " is "
-            , link "Brainfuck" "http://minond.xyz/brainfuck" False
-            , text """ but represented as an image. In Brainfuck you start
-                with a tape of cells ranging from 0 to, in this case,
-                """
-            , link "infinity" "https://en.wikipedia.org/wiki/Infinity" True
-            , text """ or as much as your browser can store. This is your
-                program's memory. Memory is manipulated using commands that let
-                increment and decrement the value of the current cell and that
-                let you shift the active cell to the left or to the right. In
-                addition to the cell manipulating commands you have a loop
-                construct (a command for starting a loop and a separate one for
-                ending it) and input and output commands.
-                """
-            ]
-        , textCopy
-            [ text "This gives you a total of 8 commands that leave you with a "
-            , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
-            , text """ language, what ever that actually means in practice, but
-                in theory it means you can program anything. Given that
-                Brainloller code is store in a two dimensional image, the
-                language provides two additional commands for rotating the
-                instruction pointer direction.
-                """
-            ]
+        , textCopy introText
         , programContainer model
         ]
 
@@ -254,3 +228,35 @@ programCommands model =
             Maybe.withDefault "" model.activeCmd
     in
     commandsForm setCmd activeCmd
+
+
+introText : List (Html msg)
+introText =
+    [ textCopy
+        [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
+        , text " is "
+        , link "Brainfuck" "http://minond.xyz/brainfuck" False
+        , text """ but represented as an image. In Brainfuck you start
+            with a tape of cells ranging from 0 to, in this case,
+            """
+        , link "infinity" "https://en.wikipedia.org/wiki/Infinity" True
+        , text """ or as much as your browser can store. This is your
+            program's memory. Memory is manipulated using commands that let
+            increment and decrement the value of the current cell and that
+            let you shift the active cell to the left or to the right. In
+            addition to the cell manipulating commands you have a loop
+            construct (a command for starting a loop and a separate one for
+            ending it) and input and output commands.
+            """
+        ]
+    , textCopy
+        [ text "This gives you a total of 8 commands that leave you with a "
+        , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
+        , text """ language, what ever that actually means in practice, but
+            in theory it means you can program anything. Given that
+            Brainloller code is store in a two dimensional image, the
+            language provides two additional commands for rotating the
+            instruction pointer direction.
+            """
+        ]
+    ]
