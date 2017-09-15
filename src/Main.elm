@@ -153,6 +153,12 @@ view model =
 programContainer : Model -> Html Msg
 programContainer model =
     let
+        playBtn =
+            cmdBtn "assets/images/play.png" [ onClick NoOp ]
+
+        pauseBtn =
+            cmdBtn "assets/images/pause.png" [ onClick NoOp ]
+
         undoBtn =
             cmdBtn "assets/images/undo.png" [ onClick NoOp ]
 
@@ -178,7 +184,9 @@ programContainer model =
         [ div
             []
           <|
-            undoBtn
+            playBtn
+                :: pauseBtn
+                :: undoBtn
                 :: redoBtn
                 :: growBtn
                 :: shrinkBtn
