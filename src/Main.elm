@@ -12,7 +12,6 @@ import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
-import Util exposing (mapBoth)
 
 
 type Msg
@@ -49,7 +48,7 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
-    , boardDimensions = mapBoth ((+) 1) (programDimensions progHelloWorld)
+    , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
     , writeEnabled = False
     }
@@ -217,10 +216,10 @@ programOutput model =
             programDimensions program
 
         width =
-            max (first dim) (first model.boardDimensions)
+            2 + (max (first dim) (first model.boardDimensions))
 
         height =
-            max (second dim) (second model.boardDimensions)
+            2 + (max (second dim) (second model.boardDimensions))
 
         write =
             \x y f -> WriteCmd x y f
