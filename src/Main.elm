@@ -15,7 +15,8 @@ import Tuple exposing (first, second)
 
 
 type Msg
-    = SetCmd BLOptCode
+    = NoOp
+    | SetCmd BLOptCode
     | WriteCmd Int Int Bool
     | EnableWrite
     | DisableWrite
@@ -57,6 +58,9 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
+        ( NoOp, _, _ ) ->
+            ( model, Cmd.none )
+
         ( WriteCmd x y force, { writeEnabled, program }, Just activeCmd ) ->
             let
                 pixel =
@@ -175,26 +179,34 @@ view model =
 programContainer : Model -> Html Msg
 programContainer model =
     let
+        undoBtn =
+            cmdBtn "assets/images/undo.png" [ onClick NoOp ]
+
+        redoBtn =
+            cmdBtn "assets/images/redo.png" [ onClick NoOp ]
+
         growBtn =
-            cmdBtn "assets/images/increase.svg" [ onClick IncreaseSize ]
+            cmdBtn "assets/images/expand.png" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            cmdBtn "assets/images/decrease.svg" [ onClick DecreaseSize ]
+            cmdBtn "assets/images/contract.png" [ onClick DecreaseSize ]
 
         zoomInBtn =
-            cmdBtn "assets/images/zoom-in.svg" [ onClick ZoomIn ]
+            cmdBtn "assets/images/zoomin.png" [ onClick ZoomIn ]
 
         zoomOutBtn =
-            cmdBtn "assets/images/zoom-out.svg" [ onClick ZoomOut ]
+            cmdBtn "assets/images/zoomout.png" [ onClick ZoomOut ]
 
         resetBtn =
-            cmdBtn "assets/images/trash.svg" [ onClick Reset ]
+            cmdBtn "assets/images/blank.png" [ onClick Reset ]
     in
     div []
         [ div
             []
           <|
-            growBtn
+            undoBtn
+                :: redoBtn
+                :: growBtn
                 :: shrinkBtn
                 :: zoomInBtn
                 :: zoomOutBtn
@@ -216,10 +228,10 @@ programOutput model =
             programDimensions program
 
         width =
-            2 + (max (first dim) (first model.boardDimensions))
+            2 + max (first dim) (first model.boardDimensions)
 
         height =
-            2 + (max (second dim) (second model.boardDimensions))
+            2 + max (second dim) (second model.boardDimensions)
 
         write =
             \x y f -> WriteCmd x y f
