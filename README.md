@@ -9,11 +9,3 @@ and starts server, or `make install reactor` which runs Elm's reactor instead.
 
 - https://esolangs.org/wiki/Brainloller
 - https://github.com/Fedcomp/brainloller-php
-
-### Thanks
-
-- https://thenounproject.com/Galaktionov/collection/ui-200/?i=1082582
-- https://thenounproject.com/Galaktionov/collection/ui-200/?i=1082568
-- https://thenounproject.com/jamison/collection/ui-nui/?i=635885
-- https://thenounproject.com/jamison/collection/ui-nui/?i=635886
-- https://thenounproject.com/search/?q=trash&i=1041983
