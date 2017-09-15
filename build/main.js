@@ -15649,6 +15649,53 @@ var _minond$brainloller$Elem$link = F3(
 			});
 	});
 
+var _minond$brainloller$Main$introText = {
+	ctor: '::',
+	_0: _minond$brainloller$Elem$textCopy(
+		{
+			ctor: '::',
+			_0: A3(_minond$brainloller$Elem$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(' is '),
+				_1: {
+					ctor: '::',
+					_0: A3(_minond$brainloller$Elem$link, 'Brainfuck', 'http://minond.xyz/brainfuck', false),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(' but represented as an image. In Brainfuck you start\n            with a tape of cells ranging from 0 to, in this case,\n            '),
+						_1: {
+							ctor: '::',
+							_0: A3(_minond$brainloller$Elem$link, 'infinity', 'https://en.wikipedia.org/wiki/Infinity', true),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(' or as much as your browser can store. This is your\n            program\'s memory. Memory is manipulated using commands that let\n            increment and decrement the value of the current cell and that\n            let you shift the active cell to the left or to the right. In\n            addition to the cell manipulating commands you have a loop\n            construct (a command for starting a loop and a separate one for\n            ending it) and input and output commands.\n            '),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		}),
+	_1: {
+		ctor: '::',
+		_0: _minond$brainloller$Elem$textCopy(
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
+				_1: {
+					ctor: '::',
+					_0: A3(_minond$brainloller$Elem$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n            in theory it means you can program anything. Given that\n            Brainloller code is store in a two dimensional image, the\n            language provides two additional commands for rotating the\n            instruction pointer direction.\n            '),
+						_1: {ctor: '[]'}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	}
+};
 var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
@@ -15656,6 +15703,8 @@ var _minond$brainloller$Main$update = F2(
 	function (message, model) {
 		var _p0 = {ctor: '_Tuple3', _0: message, _1: model, _2: model.activeCmd};
 		switch (_p0._0.ctor) {
+			case 'NoOp':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'WriteCmd':
 				if (_p0._2.ctor === 'Just') {
 					var _p4 = _p0._0._1;
@@ -15773,13 +15822,7 @@ var _minond$brainloller$Main$update = F2(
 var _minond$brainloller$Main$initialModel = {
 	program: _minond$brainloller$Brainloller_Program$progHelloWorld,
 	activeCmd: _elm_lang$core$Maybe$Nothing,
-	boardDimensions: A2(
-		_minond$brainloller$Util$mapBoth,
-		F2(
-			function (x, y) {
-				return x + y;
-			})(1),
-		_minond$brainloller$Brainloller_Pixel$programDimensions(_minond$brainloller$Brainloller_Program$progHelloWorld)),
+	boardDimensions: _minond$brainloller$Brainloller_Pixel$programDimensions(_minond$brainloller$Brainloller_Program$progHelloWorld),
 	zoomLevel: 1,
 	writeEnabled: false
 };
@@ -15805,11 +15848,11 @@ var _minond$brainloller$Main$programOutput = function (model) {
 		});
 	var program = model.program;
 	var dim = _minond$brainloller$Brainloller_Pixel$programDimensions(program);
-	var width = A2(
+	var width = 2 + A2(
 		_elm_lang$core$Basics$max,
 		_elm_lang$core$Tuple$first(dim),
 		_elm_lang$core$Tuple$first(model.boardDimensions));
-	var height = A2(
+	var height = 2 + A2(
 		_elm_lang$core$Basics$max,
 		_elm_lang$core$Tuple$second(dim),
 		_elm_lang$core$Tuple$second(model.boardDimensions));
@@ -15856,10 +15899,11 @@ var _minond$brainloller$Main$programCommands = function (model) {
 	};
 	return A2(_minond$brainloller$Brainloller_Pixel$commandsForm, setCmd, activeCmd);
 };
+var _minond$brainloller$Main$NoOp = {ctor: 'NoOp'};
 var _minond$brainloller$Main$programContainer = function (model) {
 	var resetBtn = A2(
 		_minond$brainloller$Elem$cmdBtn,
-		'assets/images/trash.svg',
+		'assets/images/blank.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Reset),
@@ -15867,7 +15911,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 	var zoomOutBtn = A2(
 		_minond$brainloller$Elem$cmdBtn,
-		'assets/images/zoom-out.svg',
+		'assets/images/zoomout.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomOut),
@@ -15875,7 +15919,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 	var zoomInBtn = A2(
 		_minond$brainloller$Elem$cmdBtn,
-		'assets/images/zoom-in.svg',
+		'assets/images/zoomin.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomIn),
@@ -15883,7 +15927,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 	var shrinkBtn = A2(
 		_minond$brainloller$Elem$cmdBtn,
-		'assets/images/decrease.svg',
+		'assets/images/contract.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DecreaseSize),
@@ -15891,10 +15935,26 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 	var growBtn = A2(
 		_minond$brainloller$Elem$cmdBtn,
-		'assets/images/increase.svg',
+		'assets/images/expand.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$IncreaseSize),
+			_1: {ctor: '[]'}
+		});
+	var redoBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/redo.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		});
+	var undoBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/undo.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
 			_1: {ctor: '[]'}
 		});
 	return A2(
@@ -15907,20 +15967,28 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: growBtn,
+					_0: undoBtn,
 					_1: {
 						ctor: '::',
-						_0: shrinkBtn,
+						_0: redoBtn,
 						_1: {
 							ctor: '::',
-							_0: zoomInBtn,
+							_0: growBtn,
 							_1: {
 								ctor: '::',
-								_0: zoomOutBtn,
+								_0: shrinkBtn,
 								_1: {
 									ctor: '::',
-									_0: resetBtn,
-									_1: _minond$brainloller$Main$programCommands(model)
+									_0: zoomInBtn,
+									_1: {
+										ctor: '::',
+										_0: zoomOutBtn,
+										_1: {
+											ctor: '::',
+											_0: resetBtn,
+											_1: _minond$brainloller$Main$programCommands(model)
+										}
+									}
 								}
 							}
 						}
@@ -15977,53 +16045,11 @@ var _minond$brainloller$Main$view = function (model) {
 					_0: title,
 					_1: {
 						ctor: '::',
-						_0: _minond$brainloller$Elem$textCopy(
-							{
-								ctor: '::',
-								_0: A3(_minond$brainloller$Elem$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(' is '),
-									_1: {
-										ctor: '::',
-										_0: A3(_minond$brainloller$Elem$link, 'Brainfuck', 'http://minond.xyz/brainfuck', false),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(' but represented as an image. In Brainfuck you start\n                with a tape of cells ranging from 0 to, in this case,\n                '),
-											_1: {
-												ctor: '::',
-												_0: A3(_minond$brainloller$Elem$link, 'infinity', 'https://en.wikipedia.org/wiki/Infinity', true),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html$text(' or as much as your browser can store. This is your\n                program\'s memory. Memory is manipulated using commands that let\n                increment and decrement the value of the current cell and that\n                let you shift the active cell to the left or to the right. In\n                addition to the cell manipulating commands you have a loop\n                construct (a command for starting a loop and a separate one for\n                ending it) and input and output commands.\n                '),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
-							}),
+						_0: _minond$brainloller$Elem$textCopy(_minond$brainloller$Main$introText),
 						_1: {
 							ctor: '::',
-							_0: _minond$brainloller$Elem$textCopy(
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
-									_1: {
-										ctor: '::',
-										_0: A3(_minond$brainloller$Elem$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n                in theory it means you can program anything. Given that\n                Brainloller code is store in a two dimensional image, the\n                language provides two additional commands for rotating the\n                instruction pointer direction.\n                '),
-											_1: {ctor: '[]'}
-										}
-									}
-								}),
-							_1: {
-								ctor: '::',
-								_0: _minond$brainloller$Main$programContainer(model),
-								_1: {ctor: '[]'}
-							}
+							_0: _minond$brainloller$Main$programContainer(model),
+							_1: {ctor: '[]'}
 						}
 					}
 				}
