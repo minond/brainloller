@@ -14472,6 +14472,15 @@ var _minond$brainloller$Brainloller_Lang$Pixel = F3(
 		return {r: a, g: b, b: c};
 	});
 
+var _minond$brainloller$Util$mapBoth = F2(
+	function (fn, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: fn(_p1._0),
+			_1: fn(_p1._1)
+		};
+	});
 var _minond$brainloller$Util$ternary = F3(
 	function (cond, pass, fail) {
 		return cond ? pass : fail;
@@ -15764,7 +15773,13 @@ var _minond$brainloller$Main$update = F2(
 var _minond$brainloller$Main$initialModel = {
 	program: _minond$brainloller$Brainloller_Program$progHelloWorld,
 	activeCmd: _elm_lang$core$Maybe$Nothing,
-	boardDimensions: _minond$brainloller$Brainloller_Pixel$programDimensions(_minond$brainloller$Brainloller_Program$progHelloWorld),
+	boardDimensions: A2(
+		_minond$brainloller$Util$mapBoth,
+		F2(
+			function (x, y) {
+				return x + y;
+			})(1),
+		_minond$brainloller$Brainloller_Pixel$programDimensions(_minond$brainloller$Brainloller_Program$progHelloWorld)),
 	zoomLevel: 1,
 	writeEnabled: false
 };

@@ -12,6 +12,7 @@ import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
+import Util exposing (mapBoth)
 
 
 type Msg
@@ -48,7 +49,7 @@ initialModel : Model
 initialModel =
     { program = progHelloWorld
     , activeCmd = Nothing
-    , boardDimensions = programDimensions progHelloWorld
+    , boardDimensions = mapBoth ((+) 1) (programDimensions progHelloWorld)
     , zoomLevel = 1
     , writeEnabled = False
     }
