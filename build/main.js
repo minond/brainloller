@@ -15957,6 +15957,22 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
 			_1: {ctor: '[]'}
 		});
+	var pauseBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/pause.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		});
+	var playBtn = A2(
+		_minond$brainloller$Elem$cmdBtn,
+		'assets/images/play.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		});
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -15967,26 +15983,34 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: undoBtn,
+					_0: playBtn,
 					_1: {
 						ctor: '::',
-						_0: redoBtn,
+						_0: pauseBtn,
 						_1: {
 							ctor: '::',
-							_0: growBtn,
+							_0: undoBtn,
 							_1: {
 								ctor: '::',
-								_0: shrinkBtn,
+								_0: redoBtn,
 								_1: {
 									ctor: '::',
-									_0: zoomInBtn,
+									_0: growBtn,
 									_1: {
 										ctor: '::',
-										_0: zoomOutBtn,
+										_0: shrinkBtn,
 										_1: {
 											ctor: '::',
-											_0: resetBtn,
-											_1: _minond$brainloller$Main$programCommands(model)
+											_0: zoomInBtn,
+											_1: {
+												ctor: '::',
+												_0: zoomOutBtn,
+												_1: {
+													ctor: '::',
+													_0: resetBtn,
+													_1: _minond$brainloller$Main$programCommands(model)
+												}
+											}
 										}
 									}
 								}
