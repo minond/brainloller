@@ -3,7 +3,7 @@ module Main exposing (main)
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Elem exposing (cmdBtn, link, mainTitle, stylesheet, textCopy)
+import Elem exposing (cmdBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
@@ -219,9 +219,7 @@ view model =
             ]
     in
     div [ classes containerClasses ]
-        [ stylesheet "/build/tachyons.min.css"
-        , stylesheet "/assets/styles/editor.css"
-        , title
+        [ title
         , textCopy introText
         , programContainer model
         ]

@@ -16016,22 +16016,14 @@ var _minond$brainloller$Main$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: _minond$brainloller$Elem$stylesheet('/build/tachyons.min.css'),
+			_0: title,
 			_1: {
 				ctor: '::',
-				_0: _minond$brainloller$Elem$stylesheet('/assets/styles/editor.css'),
+				_0: _minond$brainloller$Elem$textCopy(_minond$brainloller$Main$introText),
 				_1: {
 					ctor: '::',
-					_0: title,
-					_1: {
-						ctor: '::',
-						_0: _minond$brainloller$Elem$textCopy(_minond$brainloller$Main$introText),
-						_1: {
-							ctor: '::',
-							_0: _minond$brainloller$Main$programContainer(model),
-							_1: {ctor: '[]'}
-						}
-					}
+					_0: _minond$brainloller$Main$programContainer(model),
+					_1: {ctor: '[]'}
 				}
 			}
 		});
