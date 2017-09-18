@@ -231,37 +231,37 @@ programContainer : Model -> Html Msg
 programContainer model =
     let
         uploadBtn =
-            cmdBtn "assets/images/upload.png" [ onClick NoOp ]
+            cmdBtn "Upload" "assets/images/upload.png" [ onClick NoOp ]
 
         downloadBtn =
-            cmdBtn "assets/images/download.png" [ onClick NoOp ]
+            cmdBtn "Download" "assets/images/download.png" [ onClick NoOp ]
 
         playBtn =
-            cmdBtn "assets/images/play.png" [ onClick NoOp ]
+            cmdBtn "Play" "assets/images/play.png" [ onClick NoOp ]
 
         pauseBtn =
-            cmdBtn "assets/images/pause.png" [ onClick NoOp ]
+            cmdBtn "Pause" "assets/images/pause.png" [ onClick NoOp ]
 
         undoBtn =
-            cmdBtn "assets/images/undo.png" [ onClick Undo ]
+            cmdBtn "Undo" "assets/images/undo.png" [ onClick Undo ]
 
         redoBtn =
-            cmdBtn "assets/images/redo.png" [ onClick Redo ]
+            cmdBtn "Redo" "assets/images/redo.png" [ onClick Redo ]
 
         growBtn =
-            cmdBtn "assets/images/expand.png" [ onClick IncreaseSize ]
+            cmdBtn "Expand canvas" "assets/images/expand.png" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            cmdBtn "assets/images/contract.png" [ onClick DecreaseSize ]
+            cmdBtn "Contract canvas" "assets/images/contract.png" [ onClick DecreaseSize ]
 
         zoomInBtn =
-            cmdBtn "assets/images/zoomin.png" [ onClick ZoomIn ]
+            cmdBtn "Zoom in" "assets/images/zoomin.png" [ onClick ZoomIn ]
 
         zoomOutBtn =
-            cmdBtn "assets/images/zoomout.png" [ onClick ZoomOut ]
+            cmdBtn "Zoom out" "assets/images/zoomout.png" [ onClick ZoomOut ]
 
         resetBtn =
-            cmdBtn "assets/images/blank.png" [ onClick Reset ]
+            cmdBtn "Clear" "assets/images/blank.png" [ onClick Reset ]
     in
     div []
         [ div

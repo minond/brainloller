@@ -1,7 +1,7 @@
 module Elem exposing (cmdBtn, link, mainTitle, stylesheet, textCopy)
 
 import Html exposing (Attribute, Html, a, div, h1, img, node, p, text)
-import Html.Attributes exposing (class, href, rel, src, tabindex, target)
+import Html.Attributes exposing (class, href, rel, src, tabindex, target, title)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Util exposing (ternary)
@@ -21,9 +21,9 @@ link label to external =
         [ text label ]
 
 
-cmdBtn : String -> List (Attribute msg) -> Html msg
-cmdBtn imgSrc attrs =
-    div (tabindex 1 :: class "cmd-btn" :: attrs)
+cmdBtn : String -> String -> List (Attribute msg) -> Html msg
+cmdBtn label imgSrc attrs =
+    div (title label :: tabindex 1 :: class "cmd-btn" :: attrs)
         [ img
             [ src imgSrc ]
             []
