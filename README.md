@@ -5,7 +5,7 @@ A Brainloller debugger and code editor.
 To run this project locally, run `make install build serve` which builds once
 and starts server, or `make install reactor` which runs Elm's reactor instead.
 
-### Image processing process
+### Image processing flow
 
 ```bash
 curl -X POST -F file=@brainloller/helloworld.png https://tmpstore.herokuapp.com/upload
