@@ -12,6 +12,7 @@ import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
+import Util exposing (asList)
 
 
 type Msg
@@ -22,6 +23,8 @@ type Msg
     | DisableWrite
     | IncreaseSize
     | DecreaseSize
+    | Undo
+    | Redo
     | ZoomIn
     | ZoomOut
     | Reset
@@ -67,6 +70,46 @@ update message model =
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
 
+        ( Undo, { work }, _ ) ->
+            case work of
+                Curr curr ->
+                    ( model, Cmd.none )
+
+                CurrBack back curr ->
+                    let
+                        newCurr =
+                            asList <| List.head back
+
+                        newBack =
+                            asList <| List.tail back
+
+                        newForw =
+                            [ curr ]
+
+                        update =
+                            CurrBackForw newBack newCurr newForw
+                    in
+                    ( { model | work = update }, Cmd.none )
+
+                CurrBackForw back curr forw ->
+                    let
+                        newCurr =
+                            asList <| List.head back
+
+                        newBack =
+                            asList <| List.tail back
+
+                        newForw =
+                            curr :: forw
+
+                        update =
+                            CurrBackForw newBack newCurr newForw
+                    in
+                    ( { model | work = update }, Cmd.none )
+
+        ( Redo, { work }, _ ) ->
+            ( model, Cmd.none )
+
         ( WriteCmd x y force, { writeEnabled, work }, Just activeCmd ) ->
             let
                 program =
@@ -87,15 +130,15 @@ update message model =
                     else
                         program
 
-                updated =
+                update =
                     case ( rewrite, getCellMaybe resized x y ) of
                         ( True, Just _ ) ->
-                            setCellAt resized x y pixel
+                            CurrBack back (setCellAt resized x y pixel)
 
                         _ ->
-                            program
+                            work
             in
-            ( { model | work = CurrBack back updated }, Cmd.none )
+            ( { model | work = update }, Cmd.none )
 
         ( WriteCmd _ _ _, _, Nothing ) ->
             ( model, Cmd.none )
@@ -172,10 +215,10 @@ programContainer model =
             cmdBtn "assets/images/pause.png" [ onClick NoOp ]
 
         undoBtn =
-            cmdBtn "assets/images/undo.png" [ onClick NoOp ]
+            cmdBtn "assets/images/undo.png" [ onClick Undo ]
 
         redoBtn =
-            cmdBtn "assets/images/redo.png" [ onClick NoOp ]
+            cmdBtn "assets/images/redo.png" [ onClick Redo ]
 
         growBtn =
             cmdBtn "assets/images/expand.png" [ onClick IncreaseSize ]
