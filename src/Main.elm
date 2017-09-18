@@ -230,6 +230,12 @@ view model =
 programContainer : Model -> Html Msg
 programContainer model =
     let
+        uploadBtn =
+            cmdBtn "assets/images/upload.png" [ onClick NoOp ]
+
+        downloadBtn =
+            cmdBtn "assets/images/download.png" [ onClick NoOp ]
+
         playBtn =
             cmdBtn "assets/images/play.png" [ onClick NoOp ]
 
@@ -270,6 +276,8 @@ programContainer model =
                 :: zoomInBtn
                 :: zoomOutBtn
                 :: resetBtn
+                :: uploadBtn
+                :: downloadBtn
                 :: programCommands model
         , div
             []
