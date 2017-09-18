@@ -13,7 +13,7 @@ import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div)
-import Html.Attributes exposing (class, classList, style, tabindex)
+import Html.Attributes exposing (class, classList, style, tabindex, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
 import Maybe
@@ -195,10 +195,11 @@ commandsForm : (BLOptCode -> msg) -> BLOptCode -> List (Html msg)
 commandsForm cmdSetter activeCmd =
     let
         picker =
-            \cmd ->
+            \label cmd ->
                 div
                     [ onClick (cmdSetter cmd)
                     , tabindex 1
+                    , title label
                     , classList
                         [ ( "cmd-btn", True )
                         , ( "cmd-btn-active", cmd == activeCmd )
@@ -207,14 +208,14 @@ commandsForm cmdSetter activeCmd =
                     ]
                     []
     in
-    [ picker blCmd.shiftRight
-    , picker blCmd.shiftLeft
-    , picker blCmd.increment
-    , picker blCmd.decrement
-    , picker blCmd.ioWrite
-    , picker blCmd.ioRead
-    , picker blCmd.loopOpen
-    , picker blCmd.loopClose
-    , picker blCmd.rotateClockwise
-    , picker blCmd.rotateCounterClockwise
+    [ picker ">" blCmd.shiftRight
+    , picker "<" blCmd.shiftLeft
+    , picker "+" blCmd.increment
+    , picker "-" blCmd.decrement
+    , picker "." blCmd.ioWrite
+    , picker "," blCmd.ioRead
+    , picker "[" blCmd.loopOpen
+    , picker "]" blCmd.loopClose
+    , picker "+90" blCmd.rotateClockwise
+    , picker "-90" blCmd.rotateCounterClockwise
     ]
