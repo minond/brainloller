@@ -32,8 +32,8 @@ type Msg
 
 type History a
     = Curr a
-    | CurrBack (List a) a
-    | CurrBackForw (List a) a (List a)
+    | BackCurr (List a) a
+    | BackCurrForw (List a) a (List a)
 
 
 type alias Model =
@@ -72,10 +72,10 @@ update message model =
 
         ( Undo, { work }, _ ) ->
             case work of
-                Curr curr ->
+                Curr _ ->
                     ( model, Cmd.none )
 
-                CurrBack back curr ->
+                BackCurr back curr ->
                     let
                         newCurr =
                             asList <| List.head back
@@ -87,11 +87,11 @@ update message model =
                             [ curr ]
 
                         update =
-                            CurrBackForw newBack newCurr newForw
+                            BackCurrForw newBack newCurr newForw
                     in
                     ( { model | work = update }, Cmd.none )
 
-                CurrBackForw back curr forw ->
+                BackCurrForw back curr forw ->
                     let
                         newCurr =
                             asList <| List.head back
@@ -103,12 +103,32 @@ update message model =
                             curr :: forw
 
                         update =
-                            CurrBackForw newBack newCurr newForw
+                            BackCurrForw newBack newCurr newForw
                     in
                     ( { model | work = update }, Cmd.none )
 
         ( Redo, { work }, _ ) ->
-            ( model, Cmd.none )
+            case work of
+                BackCurrForw back curr forw ->
+                    let
+                        newCurr =
+                            asList <| List.head forw
+
+                        newBack =
+                            curr :: back
+
+                        update =
+                            case List.tail forw of
+                                Nothing ->
+                                    BackCurr newBack newCurr
+
+                                Just newForw ->
+                                    BackCurrForw newBack newCurr newForw
+                    in
+                    ( { model | work = update }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ( WriteCmd x y force, { writeEnabled, work }, Just activeCmd ) ->
             let
@@ -133,7 +153,7 @@ update message model =
                 update =
                     case ( rewrite, getCellMaybe resized x y ) of
                         ( True, Just _ ) ->
-                            CurrBack back (setCellAt resized x y pixel)
+                            BackCurr back (setCellAt resized x y pixel)
 
                         _ ->
                             work
@@ -299,10 +319,10 @@ historyCurr hist =
         Curr val ->
             val
 
-        CurrBack _ val ->
+        BackCurr _ val ->
             val
 
-        CurrBackForw _ val _ ->
+        BackCurrForw _ val _ ->
             val
 
 
@@ -312,10 +332,10 @@ historyBack hist =
         Curr _ ->
             []
 
-        CurrBack back _ ->
+        BackCurr back _ ->
             back
 
-        CurrBackForw back _ _ ->
+        BackCurrForw back _ _ ->
             back
 
 
@@ -325,10 +345,10 @@ historyForw hist =
         Curr _ ->
             []
 
-        CurrBack _ _ ->
+        BackCurr _ _ ->
             []
 
-        CurrBackForw _ _ forw ->
+        BackCurrForw _ _ forw ->
             forw
 
 
