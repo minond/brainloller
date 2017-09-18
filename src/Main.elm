@@ -27,8 +27,14 @@ type Msg
     | Reset
 
 
+type History a
+    = Curr a
+    | CurrBack (List a) a
+    | CurrBackForw (List a) a (List a)
+
+
 type alias Model =
-    { program : BLProgram
+    { work : History BLProgram
     , activeCmd : Maybe BLOptCode
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
@@ -47,7 +53,7 @@ main =
 
 initialModel : Model
 initialModel =
-    { program = progHelloWorld
+    { work = Curr progHelloWorld
     , activeCmd = Nothing
     , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
@@ -61,8 +67,14 @@ update message model =
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
 
-        ( WriteCmd x y force, { writeEnabled, program }, Just activeCmd ) ->
+        ( WriteCmd x y force, { writeEnabled, work }, Just activeCmd ) ->
             let
+                program =
+                    historyCurr work
+
+                back =
+                    program :: historyBack work
+
                 pixel =
                     getBlCmd activeCmd blCmdPixel
 
@@ -83,7 +95,7 @@ update message model =
                         _ ->
                             program
             in
-            ( { model | program = updated }, Cmd.none )
+            ( { model | work = CurrBack back updated }, Cmd.none )
 
         ( WriteCmd _ _ _, _, Nothing ) ->
             ( model, Cmd.none )
@@ -120,7 +132,7 @@ update message model =
             ( { model | zoomLevel = zoomLevel - 0.1 }, Cmd.none )
 
         ( Reset, _, _ ) ->
-            ( { model | program = [] }, Cmd.none )
+            ( { model | work = Curr [] }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -204,7 +216,7 @@ programOutput : Model -> Html Msg
 programOutput model =
     let
         program =
-            model.program
+            historyCurr model.work
 
         dim =
             programDimensions program
@@ -222,7 +234,7 @@ programOutput model =
         [ class "program-cells" ]
         [ div
             [ style [ ( "zoom", toString model.zoomLevel ) ] ]
-            [ programCells width height model.program write EnableWrite DisableWrite ]
+            [ programCells width height program write EnableWrite DisableWrite ]
         ]
 
 
@@ -236,6 +248,45 @@ programCommands model =
             Maybe.withDefault "" model.activeCmd
     in
     commandsForm setCmd activeCmd
+
+
+historyCurr : History a -> a
+historyCurr hist =
+    case hist of
+        Curr val ->
+            val
+
+        CurrBack _ val ->
+            val
+
+        CurrBackForw _ val _ ->
+            val
+
+
+historyBack : History a -> List a
+historyBack hist =
+    case hist of
+        Curr _ ->
+            []
+
+        CurrBack back _ ->
+            back
+
+        CurrBackForw back _ _ ->
+            back
+
+
+historyForw : History a -> List a
+historyForw hist =
+    case hist of
+        Curr _ ->
+            []
+
+        CurrBack _ _ ->
+            []
+
+        CurrBackForw _ _ forw ->
+            forw
 
 
 introText : List (Html msg)
