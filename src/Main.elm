@@ -111,19 +111,19 @@ update message model =
             case work of
                 BackCurrForw back curr forw ->
                     let
-                        newCurr =
-                            asList <| List.head forw
-
                         newBack =
                             curr :: back
 
                         update =
-                            case List.tail forw of
-                                Nothing ->
-                                    BackCurr newBack newCurr
+                            case forw of
+                                [] ->
+                                    BackCurr back curr
 
-                                Just newForw ->
-                                    BackCurrForw newBack newCurr newForw
+                                [ head ] ->
+                                    BackCurr newBack head
+
+                                head :: tail ->
+                                    BackCurrForw newBack head tail
                     in
                     ( { model | work = update }, Cmd.none )
 
