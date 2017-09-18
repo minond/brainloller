@@ -15917,6 +15917,51 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
 			_1: {ctor: '[]'}
 		});
+	var commands = {
+		ctor: '::',
+		_0: playBtn,
+		_1: {
+			ctor: '::',
+			_0: pauseBtn,
+			_1: {
+				ctor: '::',
+				_0: undoBtn,
+				_1: {
+					ctor: '::',
+					_0: redoBtn,
+					_1: {
+						ctor: '::',
+						_0: growBtn,
+						_1: {
+							ctor: '::',
+							_0: shrinkBtn,
+							_1: {
+								ctor: '::',
+								_0: zoomInBtn,
+								_1: {
+									ctor: '::',
+									_0: zoomOutBtn,
+									_1: {
+										ctor: '::',
+										_0: resetBtn,
+										_1: {
+											ctor: '::',
+											_0: uploadBtn,
+											_1: {
+												ctor: '::',
+												_0: downloadBtn,
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -15925,51 +15970,10 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_0: A2(
 				_elm_lang$html$Html$div,
 				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: playBtn,
-					_1: {
-						ctor: '::',
-						_0: pauseBtn,
-						_1: {
-							ctor: '::',
-							_0: undoBtn,
-							_1: {
-								ctor: '::',
-								_0: redoBtn,
-								_1: {
-									ctor: '::',
-									_0: growBtn,
-									_1: {
-										ctor: '::',
-										_0: shrinkBtn,
-										_1: {
-											ctor: '::',
-											_0: zoomInBtn,
-											_1: {
-												ctor: '::',
-												_0: zoomOutBtn,
-												_1: {
-													ctor: '::',
-													_0: resetBtn,
-													_1: {
-														ctor: '::',
-														_0: uploadBtn,
-														_1: {
-															ctor: '::',
-															_0: downloadBtn,
-															_1: _minond$brainloller$Main$programCommands(model)
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					commands,
+					_minond$brainloller$Main$programCommands(model))),
 			_1: {
 				ctor: '::',
 				_0: A2(
