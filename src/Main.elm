@@ -262,23 +262,25 @@ programContainer model =
 
         resetBtn =
             cmdBtn "Clear" "assets/images/blank.png" [ onClick Reset ]
+
+        commands =
+            [ playBtn
+            , pauseBtn
+            , undoBtn
+            , redoBtn
+            , growBtn
+            , shrinkBtn
+            , zoomInBtn
+            , zoomOutBtn
+            , resetBtn
+            , uploadBtn
+            , downloadBtn
+            ]
     in
     div []
         [ div
             []
-          <|
-            playBtn
-                :: pauseBtn
-                :: undoBtn
-                :: redoBtn
-                :: growBtn
-                :: shrinkBtn
-                :: zoomInBtn
-                :: zoomOutBtn
-                :: resetBtn
-                :: uploadBtn
-                :: downloadBtn
-                :: programCommands model
+            (commands ++ programCommands model)
         , div
             []
             [ programOutput model ]
