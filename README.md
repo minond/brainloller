@@ -19,7 +19,10 @@ image and send back the pixel data:
 curl -X POST -F file=@brainloller/helloworld.png https://tmpstore.herokuapp.com/upload
 # -> {"name":"STOTAoaKaKyeIESyzXPlpeIupXDcbDyt"}
 
-curl "https://paddedjson.herokuapp.com/?url=https://8rwnim1cq1.execute-api.us-west-2.amazonaws.com/prod/pixels_pixels&method=POST&body=%7B%22path%22:%22https://tmpstore.herokuapp.com/get/STOTAoaKaKyeIESyzXPlpeIupXDcbDyt%22%7D"
+imgfileurl="https://tmpstore.herokuapp.com/get/STOTAoaKaKyeIESyzXPlpeIupXDcbDyt"
+imgprocess="https://8rwnim1cq1.execute-api.us-west-2.amazonaws.com/prod/pixels_pixels"
+
+curl "https://paddedjson.herokuapp.com/?url=$imgprocess&method=POST&body=%7B%22path%22:%22$imgfileurl%22%7D"
 # -> callback({"isBase64Encoded":false,"statusCode":400,"headers":{},"body":{"pixels":[[{"R":255,"G":0,"B":0,"A":255}, ...
 ```
 
