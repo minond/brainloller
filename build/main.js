@@ -14494,76 +14494,81 @@ var _minond$brainloller$Util$asList = function (list) {
 
 var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 	function (cmdSetter, activeCmd) {
-		var picker = function (cmd) {
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(
-						cmdSetter(cmd)),
-					_1: {
+		var picker = F2(
+			function (label, cmd) {
+				return A2(
+					_elm_lang$html$Html$div,
+					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$tabindex(1),
+						_0: _elm_lang$html$Html_Events$onClick(
+							cmdSetter(cmd)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$classList(
-								{
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
-									_1: {
-										ctor: '::',
-										_0: {
-											ctor: '_Tuple2',
-											_0: 'cmd-btn-active',
-											_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
-										},
-										_1: {
-											ctor: '::',
-											_0: {
-												ctor: '_Tuple2',
-												_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
-												_1: true
-											},
-											_1: {ctor: '[]'}
-										}
-									}
-								}),
-							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{ctor: '[]'});
-		};
-		return {
-			ctor: '::',
-			_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
-			_1: {
-				ctor: '::',
-				_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
-				_1: {
-					ctor: '::',
-					_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.increment),
-					_1: {
-						ctor: '::',
-						_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.decrement),
-						_1: {
-							ctor: '::',
-							_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
+							_0: _elm_lang$html$Html_Attributes$tabindex(1),
 							_1: {
 								ctor: '::',
-								_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.ioRead),
+								_0: _elm_lang$html$Html_Attributes$title(label),
 								_1: {
 									ctor: '::',
-									_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
-									_1: {
-										ctor: '::',
-										_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.loopClose),
-										_1: {
+									_0: _elm_lang$html$Html_Attributes$classList(
+										{
 											ctor: '::',
-											_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
+											_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
 											_1: {
 												ctor: '::',
-												_0: picker(_minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
+												_0: {
+													ctor: '_Tuple2',
+													_0: 'cmd-btn-active',
+													_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
+												},
+												_1: {
+													ctor: '::',
+													_0: {
+														ctor: '_Tuple2',
+														_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
+														_1: true
+													},
+													_1: {ctor: '[]'}
+												}
+											}
+										}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					},
+					{ctor: '[]'});
+			});
+		return {
+			ctor: '::',
+			_0: A2(picker, '>', _minond$brainloller$Brainloller_Lang$blCmd.shiftRight),
+			_1: {
+				ctor: '::',
+				_0: A2(picker, '<', _minond$brainloller$Brainloller_Lang$blCmd.shiftLeft),
+				_1: {
+					ctor: '::',
+					_0: A2(picker, '+', _minond$brainloller$Brainloller_Lang$blCmd.increment),
+					_1: {
+						ctor: '::',
+						_0: A2(picker, '-', _minond$brainloller$Brainloller_Lang$blCmd.decrement),
+						_1: {
+							ctor: '::',
+							_0: A2(picker, '.', _minond$brainloller$Brainloller_Lang$blCmd.ioWrite),
+							_1: {
+								ctor: '::',
+								_0: A2(picker, ',', _minond$brainloller$Brainloller_Lang$blCmd.ioRead),
+								_1: {
+									ctor: '::',
+									_0: A2(picker, '[', _minond$brainloller$Brainloller_Lang$blCmd.loopOpen),
+									_1: {
+										ctor: '::',
+										_0: A2(picker, ']', _minond$brainloller$Brainloller_Lang$blCmd.loopClose),
+										_1: {
+											ctor: '::',
+											_0: A2(picker, '+90', _minond$brainloller$Brainloller_Lang$blCmd.rotateClockwise),
+											_1: {
+												ctor: '::',
+												_0: A2(picker, '-90', _minond$brainloller$Brainloller_Lang$blCmd.rotateCounterClockwise),
 												_1: {ctor: '[]'}
 											}
 										}
@@ -15585,17 +15590,21 @@ var _minond$brainloller$Elem$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
-var _minond$brainloller$Elem$cmdBtn = F2(
-	function (imgSrc, attrs) {
+var _minond$brainloller$Elem$cmdBtn = F3(
+	function (label, imgSrc, attrs) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$tabindex(1),
+				_0: _elm_lang$html$Html_Attributes$title(label),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
-					_1: attrs
+					_0: _elm_lang$html$Html_Attributes$tabindex(1),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
+						_1: attrs
+					}
 				}
 			},
 			{
@@ -15809,73 +15818,100 @@ var _minond$brainloller$Main$programCommands = function (model) {
 };
 var _minond$brainloller$Main$NoOp = {ctor: 'NoOp'};
 var _minond$brainloller$Main$programContainer = function (model) {
-	var resetBtn = A2(
+	var resetBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Clear',
 		'assets/images/blank.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Reset),
 			_1: {ctor: '[]'}
 		});
-	var zoomOutBtn = A2(
+	var zoomOutBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Zoom out',
 		'assets/images/zoomout.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomOut),
 			_1: {ctor: '[]'}
 		});
-	var zoomInBtn = A2(
+	var zoomInBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Zoom in',
 		'assets/images/zoomin.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomIn),
 			_1: {ctor: '[]'}
 		});
-	var shrinkBtn = A2(
+	var shrinkBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Contract canvas',
 		'assets/images/contract.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DecreaseSize),
 			_1: {ctor: '[]'}
 		});
-	var growBtn = A2(
+	var growBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Expand canvas',
 		'assets/images/expand.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$IncreaseSize),
 			_1: {ctor: '[]'}
 		});
-	var redoBtn = A2(
+	var redoBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Redo',
 		'assets/images/redo.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Redo),
 			_1: {ctor: '[]'}
 		});
-	var undoBtn = A2(
+	var undoBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Undo',
 		'assets/images/undo.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Undo),
 			_1: {ctor: '[]'}
 		});
-	var pauseBtn = A2(
+	var pauseBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Pause',
 		'assets/images/pause.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
 			_1: {ctor: '[]'}
 		});
-	var playBtn = A2(
+	var playBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
+		'Play',
 		'assets/images/play.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		});
+	var downloadBtn = A3(
+		_minond$brainloller$Elem$cmdBtn,
+		'Download',
+		'assets/images/download.png',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		});
+	var uploadBtn = A3(
+		_minond$brainloller$Elem$cmdBtn,
+		'Upload',
+		'assets/images/upload.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
@@ -15916,7 +15952,15 @@ var _minond$brainloller$Main$programContainer = function (model) {
 												_1: {
 													ctor: '::',
 													_0: resetBtn,
-													_1: _minond$brainloller$Main$programCommands(model)
+													_1: {
+														ctor: '::',
+														_0: uploadBtn,
+														_1: {
+															ctor: '::',
+															_0: downloadBtn,
+															_1: _minond$brainloller$Main$programCommands(model)
+														}
+													}
 												}
 											}
 										}
