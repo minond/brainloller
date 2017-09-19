@@ -26,6 +26,7 @@
 
       app.ports.downloadProgram.subscribe(function (program) {
         if (!program || !program.length || !program[0] || !program[0].length) {
+          console.error('A program with at least one row and one column is needed');
           return
         }
 
@@ -36,11 +37,19 @@
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
 
+        var rgb = function (pixel) {
+          return ['rgb(', pixel.r, ',', pixel.g, ',', pixel.b, ')'].join('');
+        };
+
         canvas.height = height;
         canvas.width = width;
 
-        ctx.fillStyle = '#f90';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (var row = 0, rlen = program.length; row < rlen; row++) {
+          for (var col = 0, clen = program[row].length; col < clen; col++) {
+            ctx.fillStyle = rgb(program[row][col]);
+            ctx.fillRect(col, row, 1, 1);
+          }
+        }
 
         link.href = canvas.toDataURL();
         link.download = 'brainloller-program.png';
