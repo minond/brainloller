@@ -25,18 +25,25 @@
       var app = Elm.Main.embed(document.getElementById('view'));
 
       app.ports.downloadProgram.subscribe(function (program) {
+        if (!program || !program.length || !program[0] || !program[0].length) {
+          return
+        }
+
+        var height = program.length;
+        var width = program[0].length;
+
         var link = document.createElement('a');
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
 
-        canvas.height = 200;
-        canvas.width = 200;
+        canvas.height = height;
+        canvas.width = width;
 
         ctx.fillStyle = '#f90';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         link.href = canvas.toDataURL();
-        link.download = 'Program.png';
+        link.download = 'brainloller-program.png';
         link.click();
       });
 
