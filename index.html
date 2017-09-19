@@ -63,7 +63,31 @@
             }
 
             window[callback] = function (args) {
-              console.log(args);
+              if (!args || !args.body || !args.body.pixels) {
+                console.error('uploadFile: error processing image (%s)', args && args.errorMessage
+                  ? args.errorMessage
+                  : 'Unknown error');
+                return;
+              }
+
+              var program = [];
+              var pixels = args.body.pixels;
+
+              for (var row = 0, rlen = pixels.length; row < rlen; row++) {
+                for (var col = 0, clen = pixels[row].length; col < clen; col++) {
+                  if (!program[row]) {
+                    program[row] = [];
+                  }
+
+                  program[row][col] = {
+                    r: pixels[row][col].R,
+                    g: pixels[row][col].G,
+                    b: pixels[row][col].B,
+                  };
+                }
+              }
+
+              app.ports.imageProcessed.send(program);
               delete window[callback];
             };
 
@@ -72,7 +96,7 @@
               .replace('CALLBACK', callback)
               .replace('BODY', encodeURI(JSON.stringify({
                 path: URL_IMGGET + resp.name
-              })))
+              })));
 
             document.getElementsByTagName('head')[0].appendChild(script);
           }

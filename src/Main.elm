@@ -10,7 +10,7 @@ import Html.Events exposing (on, onClick)
 import Json.Decode as Json
 import List
 import Maybe
-import Ports exposing (uploadFile)
+import Ports exposing (imageProcessed, uploadFile)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -26,6 +26,7 @@ type Msg
     | IncreaseSize
     | DecreaseSize
     | UploadFile
+    | ImageProcessed BLProgram
     | Undo
     | Redo
     | ZoomIn
@@ -75,6 +76,15 @@ update message model =
 
         ( UploadFile, _, _ ) ->
             ( model, uploadFile "#fileupload" )
+
+        ( ImageProcessed prog, _, _ ) ->
+            ( { model
+                | work = Curr prog
+                , zoomLevel = 1
+                , boardDimensions = programDimensions prog
+              }
+            , Cmd.none
+            )
 
         ( Undo, { work }, _ ) ->
             case work of
@@ -206,9 +216,9 @@ update message model =
             ( { model | work = Curr [] }, Cmd.none )
 
 
-subscriptions : Model -> Sub msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    imageProcessed ImageProcessed
 
 
 view : Model -> Html Msg
