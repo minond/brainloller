@@ -1,9 +1,12 @@
-port module Ports exposing (imageProcessed, uploadFile)
+port module Ports exposing (downloadProgram, imageProcessed, uploadProgram)
 
 import Brainloller.Lang exposing (BLProgram)
 
 
-port uploadFile : String -> Cmd msg
+port downloadProgram : BLProgram -> Cmd msg
+
+
+port uploadProgram : String -> Cmd msg
 
 
 port imageProcessed : (BLProgram -> msg) -> Sub msg

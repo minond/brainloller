@@ -19844,8 +19844,19 @@ var _minond$brainloller$Elem$link = F3(
 			});
 	});
 
-var _minond$brainloller$Ports$uploadFile = _elm_lang$core$Native_Platform.outgoingPort(
-	'uploadFile',
+var _minond$brainloller$Ports$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'downloadProgram',
+	function (v) {
+		return _elm_lang$core$Native_List.toArray(v).map(
+			function (v) {
+				return _elm_lang$core$Native_List.toArray(v).map(
+					function (v) {
+						return {r: v.r, g: v.g, b: v.b};
+					});
+			});
+	});
+var _minond$brainloller$Ports$uploadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'uploadProgram',
 	function (v) {
 		return v;
 	});
@@ -19966,7 +19977,8 @@ var _minond$brainloller$Main$ImageProcessed = function (a) {
 var _minond$brainloller$Main$subscriptions = function (model) {
 	return _minond$brainloller$Ports$imageProcessed(_minond$brainloller$Main$ImageProcessed);
 };
-var _minond$brainloller$Main$UploadFile = {ctor: 'UploadFile'};
+var _minond$brainloller$Main$UploadProgram = {ctor: 'UploadProgram'};
+var _minond$brainloller$Main$DownloadProgram = {ctor: 'DownloadProgram'};
 var _minond$brainloller$Main$DecreaseSize = {ctor: 'DecreaseSize'};
 var _minond$brainloller$Main$IncreaseSize = {ctor: 'IncreaseSize'};
 var _minond$brainloller$Main$DisableWrite = {ctor: 'DisableWrite'};
@@ -20122,7 +20134,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		'assets/images/download.png',
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DownloadProgram),
 			_1: {ctor: '[]'}
 		});
 	var uploadBtn = A4(
@@ -20152,7 +20164,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 								_0: A2(
 									_elm_lang$html$Html_Events$on,
 									'change',
-									_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadFile)),
+									_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadProgram)),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -20296,11 +20308,18 @@ var _minond$brainloller$Main$update = F2(
 		switch (_p3._0.ctor) {
 			case 'NoOp':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			case 'UploadFile':
+			case 'UploadProgram':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$uploadFile('#fileupload')
+					_1: _minond$brainloller$Ports$uploadProgram('#fileupload')
+				};
+			case 'DownloadProgram':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _minond$brainloller$Ports$downloadProgram(
+						_minond$brainloller$Main$historyCurr(_p3._1.work))
 				};
 			case 'ImageProcessed':
 				var _p4 = _p3._0._0;
@@ -20534,7 +20553,7 @@ var _minond$brainloller$Main$main = _elm_lang$html$Html$program(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _minond$brainloller$Main$main !== 'undefined') {
-    _minond$brainloller$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"Redo":[],"WriteCmd":["Int","Int","Bool"],"DecreaseSize":[],"ImageProcessed":["Brainloller.Lang.BLProgram"],"ZoomIn":[],"ZoomOut":[],"EnableWrite":[],"UploadFile":[],"Reset":[],"Undo":[],"SetCmd":["Brainloller.Lang.BLOptCode"],"NoOp":[],"DisableWrite":[],"IncreaseSize":[]}}},"aliases":{"Brainloller.Lang.BLProgram":{"args":[],"type":"List (List Brainloller.Lang.Pixel)"},"Brainloller.Lang.Pixel":{"args":[],"type":"{ r : Int, g : Int, b : Int }"},"Brainloller.Lang.BLOptCode":{"args":[],"type":"String"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _minond$brainloller$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Main.Msg":{"args":[],"tags":{"Redo":[],"WriteCmd":["Int","Int","Bool"],"DecreaseSize":[],"ImageProcessed":["Brainloller.Lang.BLProgram"],"ZoomIn":[],"DownloadProgram":[],"ZoomOut":[],"EnableWrite":[],"UploadProgram":[],"Reset":[],"Undo":[],"SetCmd":["Brainloller.Lang.BLOptCode"],"NoOp":[],"DisableWrite":[],"IncreaseSize":[]}}},"aliases":{"Brainloller.Lang.BLProgram":{"args":[],"type":"List (List Brainloller.Lang.Pixel)"},"Brainloller.Lang.Pixel":{"args":[],"type":"{ r : Int, g : Int, b : Int }"},"Brainloller.Lang.BLOptCode":{"args":[],"type":"String"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

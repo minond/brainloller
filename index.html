@@ -24,7 +24,11 @@
     <script>
       var app = Elm.Main.embed(document.getElementById('view'));
 
-      app.ports.uploadFile.subscribe(function (selector) {
+      app.ports.downloadProgram.subscribe(function (program) {
+        console.log(program);
+      });
+
+      app.ports.uploadProgram.subscribe(function (selector) {
         var URL_TMLSTORE = 'https://tmpstore.herokuapp.com/upload';
         var URL_IMGGET = 'https://tmpstore.herokuapp.com/get/';
         var URL_IMGPROCESS = 'https://8rwnim1cq1.execute-api.us-west-2.amazonaws.com/prod/pixels_pixels'

@@ -10,7 +10,7 @@ import Html.Events exposing (on, onClick)
 import Json.Decode as Json
 import List
 import Maybe
-import Ports exposing (imageProcessed, uploadFile)
+import Ports exposing (downloadProgram, imageProcessed, uploadProgram)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -25,7 +25,8 @@ type Msg
     | DisableWrite
     | IncreaseSize
     | DecreaseSize
-    | UploadFile
+    | DownloadProgram
+    | UploadProgram
     | ImageProcessed BLProgram
     | Undo
     | Redo
@@ -74,8 +75,11 @@ update message model =
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
 
-        ( UploadFile, _, _ ) ->
-            ( model, uploadFile "#fileupload" )
+        ( UploadProgram, _, _ ) ->
+            ( model, uploadProgram "#fileupload" )
+
+        ( DownloadProgram, { work }, _ ) ->
+            ( model, downloadProgram (historyCurr work) )
 
         ( ImageProcessed prog, _, _ ) ->
             ( { model
@@ -253,13 +257,13 @@ programContainer model =
                     [ type_ "file"
                     , id "fileupload"
                     , class "dn"
-                    , on "change" (Json.succeed UploadFile)
+                    , on "change" (Json.succeed UploadProgram)
                     ]
                     []
                 ]
 
         downloadBtn =
-            cmdBtn "Download" "assets/images/download.png" [ onClick NoOp ]
+            cmdBtn "Download" "assets/images/download.png" [ onClick DownloadProgram ]
 
         playBtn =
             cmdBtn "Play" "assets/images/play.png" [ onClick NoOp ]
