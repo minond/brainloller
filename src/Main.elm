@@ -3,7 +3,7 @@ port module Main exposing (main)
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Elem exposing (cmdBtn, link, mainTitle, textCopy)
+import Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (class, id, style, type_)
 import Html.Events exposing (on, onClick)
@@ -245,7 +245,18 @@ programContainer : Model -> Html Msg
 programContainer model =
     let
         uploadBtn =
-            cmdBtn "Upload" "assets/images/upload.png" [ onClick NoOp ]
+            cmdContentBtn
+                "Upload"
+                "assets/images/upload.png"
+                [ onClick NoOp ]
+                [ input
+                    [ type_ "file"
+                    , id "fileupload"
+                    , class "dn"
+                    , on "change" (Json.succeed UploadFile)
+                    ]
+                    []
+                ]
 
         downloadBtn =
             cmdBtn "Download" "assets/images/download.png" [ onClick NoOp ]
@@ -290,20 +301,11 @@ programContainer model =
             , uploadBtn
             , downloadBtn
             ]
-
-        inputs =
-            [ input
-                [ type_ "file"
-                , id "fileupload"
-                , on "change" (Json.succeed UploadFile)
-                ]
-                []
-            ]
     in
     div []
         [ div
             []
-            (commands ++ programCommands model ++ inputs)
+            (commands ++ programCommands model)
         , div
             []
             [ programOutput model ]

@@ -19746,6 +19746,36 @@ var _minond$brainloller$Elem$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
+var _minond$brainloller$Elem$cmdContentBtn = F4(
+	function (name, imgSrc, attrs, content) {
+		return A2(
+			_elm_lang$html$Html$label,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$title(name),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$tabindex(1),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
+						_1: attrs
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$img,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$src(imgSrc),
+						_1: {ctor: '[]'}
+					},
+					content),
+				_1: {ctor: '[]'}
+			});
+	});
 var _minond$brainloller$Elem$cmdBtn = F3(
 	function (label, imgSrc, attrs) {
 		return A2(
@@ -20005,29 +20035,6 @@ var _minond$brainloller$Main$programCommands = function (model) {
 };
 var _minond$brainloller$Main$NoOp = {ctor: 'NoOp'};
 var _minond$brainloller$Main$programContainer = function (model) {
-	var inputs = {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$input,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$type_('file'),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$id('fileupload'),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html_Events$on,
-							'change',
-							_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadFile)),
-						_1: {ctor: '[]'}
-					}
-				}
-			},
-			{ctor: '[]'}),
-		_1: {ctor: '[]'}
-	};
 	var resetBtn = A3(
 		_minond$brainloller$Elem$cmdBtn,
 		'Clear',
@@ -20118,13 +20125,40 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
 			_1: {ctor: '[]'}
 		});
-	var uploadBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var uploadBtn = A4(
+		_minond$brainloller$Elem$cmdContentBtn,
 		'Upload',
 		'assets/images/upload.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('file'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$id('fileupload'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('dn'),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html_Events$on,
+									'change',
+									_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadFile)),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
 			_1: {ctor: '[]'}
 		});
 	var commands = {
@@ -20183,10 +20217,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					commands,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_minond$brainloller$Main$programCommands(model),
-						inputs))),
+					_minond$brainloller$Main$programCommands(model))),
 			_1: {
 				ctor: '::',
 				_0: A2(

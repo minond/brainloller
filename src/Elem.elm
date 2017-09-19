@@ -1,6 +1,6 @@
-module Elem exposing (cmdBtn, link, mainTitle, stylesheet, textCopy)
+module Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, stylesheet, textCopy)
 
-import Html exposing (Attribute, Html, a, div, h1, img, node, p, text)
+import Html exposing (Attribute, Html, a, div, h1, img, label, node, p, text)
 import Html.Attributes exposing (class, href, rel, src, tabindex, target, title)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
@@ -27,6 +27,15 @@ cmdBtn label imgSrc attrs =
         [ img
             [ src imgSrc ]
             []
+        ]
+
+
+cmdContentBtn : String -> String -> List (Attribute msg) -> List (Html msg) -> Html msg
+cmdContentBtn name imgSrc attrs content =
+    label (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
+        [ img
+            [ src imgSrc ]
+            content
         ]
 
 
