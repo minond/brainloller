@@ -1,6 +1,6 @@
 port module Main exposing (main)
 
-import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, textCopy)
@@ -44,6 +44,7 @@ type History a
 type alias Model =
     { work : History BLProgram
     , activeCmd : Maybe BLOptCode
+    , runtime : BLRuntime
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
     , writeEnabled : Bool
@@ -63,6 +64,7 @@ initialModel : Model
 initialModel =
     { work = Curr progHelloWorld
     , activeCmd = Nothing
+    , runtime = createRuntime Nothing
     , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
     , writeEnabled = False
@@ -222,7 +224,9 @@ update message model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    imageProcessed ImageProcessed
+    Sub.batch
+        [ imageProcessed ImageProcessed
+        ]
 
 
 view : Model -> Html Msg
