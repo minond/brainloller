@@ -25,7 +25,19 @@
       var app = Elm.Main.embed(document.getElementById('view'));
 
       app.ports.downloadProgram.subscribe(function (program) {
-        console.log(program);
+        var link = document.createElement('a');
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.height = 200;
+        canvas.width = 200;
+
+        ctx.fillStyle = '#f90';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        link.href = canvas.toDataURL();
+        link.download = 'Program.png';
+        link.click();
       });
 
       app.ports.uploadProgram.subscribe(function (selector) {
