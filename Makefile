@@ -8,7 +8,7 @@ build: vendor
 
 .PHONY: dev
 dev:
-	$(ELMLIVE) src/Main.elm --output=build/main.js --open
+	$(ELMLIVE) src/Main.elm --output=build/main.js --open --debug
 
 vendor:
 	cp node_modules/tachyons/css/tachyons.min.css build/tachyons.min.css

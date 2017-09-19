@@ -21,7 +21,67 @@
   <body>
     <section id="view"></section>
     <script src="build/main.js"></script>
-    <script>Elm.Main.embed(document.getElementById('view'))</script>
+    <script>
+      var app = Elm.Main.embed(document.getElementById('view'));
+
+      app.ports.uploadFile.subscribe(function (selector) {
+        var URL_TMLSTORE = 'https://tmpstore.herokuapp.com/upload';
+        var URL_IMGGET = 'https://tmpstore.herokuapp.com/get/';
+        var URL_IMGPROCESS = 'https://8rwnim1cq1.execute-api.us-west-2.amazonaws.com/prod/pixels_pixels'
+        var URL_JSONP = 'https://paddedjson.herokuapp.com/' +
+          '?method=POST' +
+          '&callback=CALLBACK' +
+          '&url=URL' +
+          '&body=BODY';
+
+        var xhr = new XMLHttpRequest();
+        var data = new FormData();
+
+        var script = document.createElement('script');
+        var input = document.querySelector(selector);
+        var callback = 'callback_' + Date.now() + '_' + Math.random().toString().substr(-10);
+        var file;
+        var resp;
+
+        if (input && input.files && input.files.length) {
+          file = input.files[0];
+        }
+
+        if (!file) {
+          console.info('uploadFile: no file found');
+          return;
+        }
+
+        xhr.open('POST', URL_TMLSTORE, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+              resp = JSON.parse(xhr.responseText);
+            } catch (err) {
+              console.error('uploadFile: error parsing request (%s)', err.message);
+              return;
+            }
+
+            window[callback] = function (args) {
+              console.log(args);
+              delete window[callback];
+            };
+
+            script.src = URL_JSONP
+              .replace('URL', URL_IMGPROCESS)
+              .replace('CALLBACK', callback)
+              .replace('BODY', encodeURI(JSON.stringify({
+                path: URL_IMGGET + resp.name
+              })))
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+          }
+        };
+
+        data.append('file', file);
+        xhr.send(data);
+      });
+    </script>
   </body>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

@@ -1,14 +1,16 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, blCmdPixel, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, link, mainTitle, textCopy)
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (class, style)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, input, text)
+import Html.Attributes exposing (class, id, style, type_)
+import Html.Events exposing (on, onClick)
+import Json.Decode as Json
 import List
 import Maybe
+import Ports exposing (uploadFile)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -23,6 +25,7 @@ type Msg
     | DisableWrite
     | IncreaseSize
     | DecreaseSize
+    | UploadFile
     | Undo
     | Redo
     | ZoomIn
@@ -69,6 +72,9 @@ update message model =
     case ( message, model, model.activeCmd ) of
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
+
+        ( UploadFile, _, _ ) ->
+            ( model, uploadFile "#fileupload" )
 
         ( Undo, { work }, _ ) ->
             case work of
@@ -274,11 +280,20 @@ programContainer model =
             , uploadBtn
             , downloadBtn
             ]
+
+        inputs =
+            [ input
+                [ type_ "file"
+                , id "fileupload"
+                , on "change" (Json.succeed UploadFile)
+                ]
+                []
+            ]
     in
     div []
         [ div
             []
-            (commands ++ programCommands model)
+            (commands ++ programCommands model ++ inputs)
         , div
             []
             [ programOutput model ]
