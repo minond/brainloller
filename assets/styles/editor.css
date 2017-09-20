@@ -40,12 +40,13 @@ body {
 }
 
 .cmd-btn {
+  text-align: center;
   outline: 0;
   display: inline-block;
   padding: 0;
   box-sizing: border-box;
   height: 30px;
-  width: 30px;
+  min-width: 30px;
   cursor: pointer;
   border-width: 2px;
   border-style: outset;
@@ -54,8 +55,8 @@ body {
   box-shadow: 2px 2px 0px #b9b9b9;
   position: relative;
   transition: box-shadow .1s;
-  margin-right: .5rem;
-  margin-top: .2rem;
+  margin-right: .6rem;
+  margin-top: .4rem;
 }
 
 .cmd-btn.cmd-btn-active {
@@ -73,6 +74,24 @@ body {
   position: absolute;
   top: 0%;
   left: 0%;
+}
+
+.cmd-btn-content {
+  width: 50px;
+}
+
+.cmd-btn-content,
+.program-memory-cell-content {
+  font-family: monospace;
+  font-size: 1rem;
+  text-transform: uppercase;
+  display: table;
+  width: 100%;
+  text-align: center;
+  transform: translateY(40%);
+  white-space: nowrap;
+  padding: 0 13px;
+  box-sizing: border-box;
 }
 
 .cmd-btn--shiftRight {
@@ -117,17 +136,7 @@ body {
 
 .program-memory-cell.cmd-btn {
   cursor: default;
-  position: relative;
-  font-family: monospace;
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.program-memory-cell-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  min-width: 50px;
 }
 
 .program-memory-cell--active {

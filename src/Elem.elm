@@ -1,4 +1,4 @@
-module Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, stylesheet, textCopy)
+module Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, stylesheet, textCopy)
 
 import Html exposing (Attribute, Html, a, div, h1, img, label, node, p, text)
 import Html.Attributes exposing (class, href, rel, src, tabindex, target, title)
@@ -30,12 +30,21 @@ cmdBtn label imgSrc attrs =
         ]
 
 
-cmdContentBtn : String -> String -> List (Attribute msg) -> List (Html msg) -> Html msg
-cmdContentBtn name imgSrc attrs content =
-    label (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
-        [ img
-            [ src imgSrc ]
-            content
+cmdContentBtn : String -> List (Attribute msg) -> List (Html msg) -> Html msg
+cmdContentBtn name attrs content =
+    div (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
+        [ label
+            [ class "cmd-btn-content" ]
+            ([ text name ] ++ content)
+        ]
+
+
+cmdTextBtn : String -> List (Attribute msg) -> Html msg
+cmdTextBtn name attrs =
+    div (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
+        [ label
+            [ class "cmd-btn-content" ]
+            [ text name ]
         ]
 
 

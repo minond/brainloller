@@ -15673,10 +15673,10 @@ var _minond$brainloller$Elem$stylesheet = function (url) {
 		},
 		{ctor: '[]'});
 };
-var _minond$brainloller$Elem$cmdContentBtn = F4(
-	function (name, imgSrc, attrs, content) {
+var _minond$brainloller$Elem$cmdTextBtn = F2(
+	function (name, attrs) {
 		return A2(
-			_elm_lang$html$Html$label,
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$title(name),
@@ -15693,13 +15693,54 @@ var _minond$brainloller$Elem$cmdContentBtn = F4(
 			{
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$img,
+					_elm_lang$html$Html$label,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$src(imgSrc),
+						_0: _elm_lang$html$Html_Attributes$class('cmd-btn-content'),
 						_1: {ctor: '[]'}
 					},
-					content),
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(name),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _minond$brainloller$Elem$cmdContentBtn = F3(
+	function (name, attrs, content) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$title(name),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$tabindex(1),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
+						_1: attrs
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$label,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('cmd-btn-content'),
+						_1: {ctor: '[]'}
+					},
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(name),
+							_1: {ctor: '[]'}
+						},
+						content)),
 				_1: {ctor: '[]'}
 			});
 	});
@@ -16182,100 +16223,89 @@ var _minond$brainloller$Main$programCommands = function (model) {
 };
 var _minond$brainloller$Main$NoOp = {ctor: 'NoOp'};
 var _minond$brainloller$Main$programContainer = function (model) {
-	var resetBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var resetBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Clear',
-		'assets/images/blank.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Reset),
 			_1: {ctor: '[]'}
 		});
-	var zoomOutBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var zoomOutBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Zoom out',
-		'assets/images/zoomout.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomOut),
 			_1: {ctor: '[]'}
 		});
-	var zoomInBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var zoomInBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Zoom in',
-		'assets/images/zoomin.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$ZoomIn),
 			_1: {ctor: '[]'}
 		});
-	var shrinkBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var shrinkBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Contract canvas',
-		'assets/images/contract.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DecreaseSize),
 			_1: {ctor: '[]'}
 		});
-	var growBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var growBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Expand canvas',
-		'assets/images/expand.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$IncreaseSize),
 			_1: {ctor: '[]'}
 		});
-	var redoBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var redoBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Redo',
-		'assets/images/redo.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Redo),
 			_1: {ctor: '[]'}
 		});
-	var undoBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var undoBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Undo',
-		'assets/images/undo.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Undo),
 			_1: {ctor: '[]'}
 		});
-	var pauseBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var pauseBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Pause',
-		'assets/images/pause.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Pause),
 			_1: {ctor: '[]'}
 		});
-	var playBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var playBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Play',
-		'assets/images/play.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$Start),
 			_1: {ctor: '[]'}
 		});
-	var downloadBtn = A3(
-		_minond$brainloller$Elem$cmdBtn,
+	var downloadBtn = A2(
+		_minond$brainloller$Elem$cmdTextBtn,
 		'Download',
-		'assets/images/download.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DownloadProgram),
 			_1: {ctor: '[]'}
 		});
-	var uploadBtn = A4(
+	var uploadBtn = A3(
 		_minond$brainloller$Elem$cmdContentBtn,
 		'Upload',
-		'assets/images/upload.png',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),

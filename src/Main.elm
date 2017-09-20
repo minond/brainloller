@@ -3,7 +3,7 @@ port module Main exposing (main)
 import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd)
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, memoryTape, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
-import Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, textCopy)
+import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (class, id, style, type_)
 import Html.Events exposing (on, onClick)
@@ -289,7 +289,6 @@ programContainer model =
         uploadBtn =
             cmdContentBtn
                 "Upload"
-                "assets/images/upload.png"
                 [ onClick NoOp ]
                 [ input
                     [ type_ "file"
@@ -301,34 +300,34 @@ programContainer model =
                 ]
 
         downloadBtn =
-            cmdBtn "Download" "assets/images/download.png" [ onClick DownloadProgram ]
+            cmdTextBtn "Download" [ onClick DownloadProgram ]
 
         playBtn =
-            cmdBtn "Play" "assets/images/play.png" [ onClick Start ]
+            cmdTextBtn "Play" [ onClick Start ]
 
         pauseBtn =
-            cmdBtn "Pause" "assets/images/pause.png" [ onClick Pause ]
+            cmdTextBtn "Pause" [ onClick Pause ]
 
         undoBtn =
-            cmdBtn "Undo" "assets/images/undo.png" [ onClick Undo ]
+            cmdTextBtn "Undo" [ onClick Undo ]
 
         redoBtn =
-            cmdBtn "Redo" "assets/images/redo.png" [ onClick Redo ]
+            cmdTextBtn "Redo" [ onClick Redo ]
 
         growBtn =
-            cmdBtn "Expand canvas" "assets/images/expand.png" [ onClick IncreaseSize ]
+            cmdTextBtn "Expand canvas" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            cmdBtn "Contract canvas" "assets/images/contract.png" [ onClick DecreaseSize ]
+            cmdTextBtn "Contract canvas" [ onClick DecreaseSize ]
 
         zoomInBtn =
-            cmdBtn "Zoom in" "assets/images/zoomin.png" [ onClick ZoomIn ]
+            cmdTextBtn "Zoom in" [ onClick ZoomIn ]
 
         zoomOutBtn =
-            cmdBtn "Zoom out" "assets/images/zoomout.png" [ onClick ZoomOut ]
+            cmdTextBtn "Zoom out" [ onClick ZoomOut ]
 
         resetBtn =
-            cmdBtn "Clear" "assets/images/blank.png" [ onClick Reset ]
+            cmdTextBtn "Clear" [ onClick Reset ]
 
         commands =
             [ playBtn
