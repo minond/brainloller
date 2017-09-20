@@ -137,9 +137,18 @@
                     coorX = jump[0];
                     coorY = jump[1];
                     runtime.pointerDeg = jump[2];
+
+                    runtime.jumps.push(jump);
                   }
                 }
                 break;
+            }
+
+            if (
+              runtime.memory[runtime.activeCell] < 0 ||
+              runtime.memory[runtime.activeCell] > 255
+            ) {
+              runtime.memory[runtime.activeCell] = 0;
             }
 
             if (runtime.pointerDeg >= 360 || runtime.pointerDeg < 0) {
