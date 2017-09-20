@@ -18,6 +18,7 @@ type alias BLProgram =
 type alias BLRuntime =
     { activeCoor : ( Int, Int )
     , activeCell : Int
+    , jumps : List ( Int, Int, Int )
     , pointerDeg : Int
     , output : Maybe String
     , input : Maybe String
@@ -128,6 +129,7 @@ createRuntime : Maybe String -> BLRuntime
 createRuntime input =
     { activeCoor = ( 0, 0 )
     , activeCell = 0
+    , jumps = []
     , pointerDeg = 0
     , output = Nothing
     , input = input
