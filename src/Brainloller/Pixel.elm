@@ -9,7 +9,7 @@ module Brainloller.Pixel
         , setCellAt
         )
 
-import Brainloller.Lang exposing (BLOptCode, BLProgram, Pixel, blCmd)
+import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Html, div)
@@ -103,8 +103,8 @@ programDimensions program =
     ( width, height )
 
 
-programCells : Int -> Int -> BLProgram -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
-programCells width height program writeHandler enableHandler disableHandler =
+programCells : Int -> Int -> BLProgram -> BLRuntime -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
+programCells width height program runtime writeHandler enableHandler disableHandler =
     div
         [ onMouseDown enableHandler
         , onMouseUp disableHandler
@@ -118,13 +118,19 @@ programCells width height program writeHandler enableHandler disableHandler =
                             let
                                 pixel =
                                     getCellAt program cellIndex rowIndex
+
+                                isActive =
+                                    runtime.activeCoor == ( cellIndex, rowIndex )
                             in
                             cell
-                                [ class "program-cell"
-                                , onClick (writeHandler cellIndex rowIndex True)
+                                [ onClick (writeHandler cellIndex rowIndex True)
                                 , onMouseDown (writeHandler cellIndex rowIndex True)
                                 , onMouseOver (writeHandler cellIndex rowIndex False)
                                 , style [ pixelStyle pixel ]
+                                , classList
+                                    [ ( "program-cell", True )
+                                    , ( "program-cell--active", isActive )
+                                    ]
                                 ]
                                 []
                         )

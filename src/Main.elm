@@ -342,7 +342,7 @@ programOutput model =
         [ class "program-cells" ]
         [ div
             [ style [ ( "zoom", toString model.zoomLevel ) ] ]
-            [ programCells width height program write EnableWrite DisableWrite ]
+            [ programCells width height program model.runtime write EnableWrite DisableWrite ]
         ]
 
 

@@ -18890,8 +18890,8 @@ var _minond$brainloller$Brainloller_Pixel$pixelStyle = function (p) {
 								')'))))))
 	};
 };
-var _minond$brainloller$Brainloller_Pixel$programCells = F6(
-	function (width, height, program, writeHandler, enableHandler, disableHandler) {
+var _minond$brainloller$Brainloller_Pixel$programCells = F7(
+	function (width, height, program, runtime, writeHandler, enableHandler, disableHandler) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -18912,31 +18912,43 @@ var _minond$brainloller$Brainloller_Pixel$programCells = F6(
 								_elm_lang$core$List$indexedMap,
 								F2(
 									function (cellIndex, cell) {
+										var isActive = _elm_lang$core$Native_Utils.eq(
+											runtime.activeCoor,
+											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
 										var pixel = A3(_minond$brainloller$Brainloller_Pixel$getCellAt, program, cellIndex, rowIndex);
 										return A2(
 											cell,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$class('program-cell'),
+												_0: _elm_lang$html$Html_Events$onClick(
+													A3(writeHandler, cellIndex, rowIndex, true)),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onClick(
+													_0: _elm_lang$html$Html_Events$onMouseDown(
 														A3(writeHandler, cellIndex, rowIndex, true)),
 													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onMouseDown(
-															A3(writeHandler, cellIndex, rowIndex, true)),
+														_0: _elm_lang$html$Html_Events$onMouseOver(
+															A3(writeHandler, cellIndex, rowIndex, false)),
 														_1: {
 															ctor: '::',
-															_0: _elm_lang$html$Html_Events$onMouseOver(
-																A3(writeHandler, cellIndex, rowIndex, false)),
+															_0: _elm_lang$html$Html_Attributes$style(
+																{
+																	ctor: '::',
+																	_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
+																	_1: {ctor: '[]'}
+																}),
 															_1: {
 																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$style(
+																_0: _elm_lang$html$Html_Attributes$classList(
 																	{
 																		ctor: '::',
-																		_0: _minond$brainloller$Brainloller_Pixel$pixelStyle(pixel),
-																		_1: {ctor: '[]'}
+																		_0: {ctor: '_Tuple2', _0: 'program-cell', _1: true},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple2', _0: 'program-cell--active', _1: isActive},
+																			_1: {ctor: '[]'}
+																		}
 																	}),
 																_1: {ctor: '[]'}
 															}
@@ -20050,7 +20062,7 @@ var _minond$brainloller$Main$programOutput = function (model) {
 				},
 				{
 					ctor: '::',
-					_0: A6(_minond$brainloller$Brainloller_Pixel$programCells, width, height, program, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+					_0: A7(_minond$brainloller$Brainloller_Pixel$programCells, width, height, program, model.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
 					_1: {ctor: '[]'}
 				}),
 			_1: {ctor: '[]'}
