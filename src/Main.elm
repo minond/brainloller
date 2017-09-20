@@ -93,7 +93,13 @@ update message model =
             ( model
             , startExecution
                 { program = historyCurr work
-                , runtime = runtime
+                , runtime =
+                    { runtime
+                        | activeCoor = ( 0, 0 )
+                        , pointerDeg = 0
+                        , input = Nothing
+                        , memory = []
+                    }
                 }
             )
 
@@ -101,17 +107,7 @@ update message model =
             ( { model | runtime = runtime }, Cmd.none )
 
         ( Halt runtime, _, _ ) ->
-            ( { model
-                | runtime =
-                    { runtime
-                        | activeCoor = ( 0, 0 )
-                        , pointerDeg = 0
-                        , input = Nothing
-                        , memory = []
-                    }
-              }
-            , Cmd.none
-            )
+            ( model, Cmd.none )
 
         ( UploadProgram, _, _ ) ->
             ( model, uploadProgram "#fileupload" )
@@ -351,10 +347,13 @@ programContainer model =
     div []
         [ div
             []
-            (commands ++ programCommands model ++ memoryTape model.runtime)
+            (commands ++ programCommands model)
         , div
             []
             [ programOutput model ]
+        , div
+            [ class Tac.mt2 ]
+            (memoryTape model.runtime)
         ]
 
 
