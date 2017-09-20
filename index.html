@@ -108,6 +108,16 @@
 
               // ,
               case '[0,0,128]':
+                for (var i = 0; i <= runtime.activeCell; i++) {
+                  if (!runtime.memory[i]) {
+                    runtime.memory[i] = 0;
+                  }
+                }
+
+                var input = prompt('Input');
+                var code = input ? input.charCodeAt(0) : 0;
+
+                runtime.memory[runtime.activeCell] = code;
                 break;
 
               // .
