@@ -344,7 +344,7 @@ programContainer model =
             , downloadBtn
             ]
     in
-    div []
+    div [ class "noselect" ]
         [ div
             []
             (commands ++ programCommands model)
