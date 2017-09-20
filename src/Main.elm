@@ -101,7 +101,15 @@ update message model =
             ( { model | runtime = runtime }, Cmd.none )
 
         ( Halt runtime, _, _ ) ->
-            ( { model | runtime = runtime }, Cmd.none )
+            ( { model
+                | runtime =
+                    { runtime
+                        | activeCoor = ( 0, 0 )
+                        , pointerDeg = 0
+                    }
+              }
+            , Cmd.none
+            )
 
         ( UploadProgram, _, _ ) ->
             ( model, uploadProgram "#fileupload" )

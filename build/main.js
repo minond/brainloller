@@ -16397,7 +16397,14 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{runtime: _p3._0._0}),
+						{
+							runtime: _elm_lang$core$Native_Utils.update(
+								_p3._0._0,
+								{
+									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
+									pointerDeg: 0
+								})
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'UploadProgram':
