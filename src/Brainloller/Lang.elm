@@ -1,4 +1,10 @@
-module Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd, blCmdPixel, createRuntime, getBlCmd)
+module Brainloller.Lang exposing (BLEnvironment, BLOptCode, BLProgram, BLRuntime, Pixel, blCmd, blCmdPixel, createRuntime, getBlCmd)
+
+
+type alias BLEnvironment =
+    { runtime : BLRuntime
+    , program : BLProgram
+    }
 
 
 type alias BLOptCode =
@@ -9,18 +15,11 @@ type alias BLProgram =
     List (List Pixel)
 
 
-type PointerDirection
-    = Deg0
-    | Deg90
-    | Deg180
-    | Deg270
-
-
 type alias BLRuntime =
     { activeCoor : ( Int, Int )
-    , pointerDir : PointerDirection
+    , pointerDeg : Int
     , output : Maybe String
-    , input : Maybe (List Char)
+    , input : Maybe String
     }
 
 
@@ -123,10 +122,10 @@ getBlCmd key dict =
             dict.noop
 
 
-createRuntime : Maybe (List Char) -> BLRuntime
+createRuntime : Maybe String -> BLRuntime
 createRuntime input =
     { activeCoor = ( 0, 0 )
-    , pointerDir = Deg0
+    , pointerDeg = 0
     , output = Nothing
     , input = input
     }

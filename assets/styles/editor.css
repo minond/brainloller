@@ -28,7 +28,7 @@ body {
 }
 
 .program-cell.program-cell--active {
-  border: 4px solid black;
+  border: 4px solid black !important;
 }
 
 .program-cell + .program-cell {

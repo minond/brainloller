@@ -24,6 +24,94 @@
     <script>
       var app = Elm.Main.embed(document.getElementById('view'));
 
+      (function () {
+        var timer;
+
+        function stopTimer () {
+          if (timer) {
+            clearInterval(timer);
+          }
+        }
+
+        app.ports.pauseExecution.subscribe(function () {
+          stopTimer();
+        });
+
+        app.ports.startExecution.subscribe(function (env) {
+          stopTimer()
+
+          function tick () {
+            var runtime = env.runtime;
+            var program = env.program;
+
+            var coorX = runtime.activeCoor[0];
+            var coorY = runtime.activeCoor[1];
+            var cell;
+            var optc;
+
+            if (!program[coorY] || !program[coorY][coorX]) {
+              stopTimer();
+              app.ports.interpreterHalt.send(runtime);
+              return;
+            }
+
+            cell = program[coorY][coorX];
+            optc = JSON.stringify([cell.r, cell.g, cell.b]);
+
+            switch (optc) {
+              // +90
+              case '[0,255,255]':
+                runtime.pointerDeg += 90;
+                break;
+
+              // -90
+              case '[0,128,128]':
+                runtime.pointerDeg -= 90;
+                break;
+            }
+
+            if (runtime.pointerDeg >= 360 || runtime.pointerDeg < 0) {
+              runtime.pointerDeg = 0;
+            }
+
+            switch (runtime.pointerDeg) {
+              case 0:
+                runtime.activeCoor = [
+                  coorX + 1,
+                  coorY
+                ];
+                break;
+
+              case 90:
+                runtime.activeCoor = [
+                  coorX,
+                  coorY + 1
+                ];
+                break;
+
+              case 180:
+                runtime.activeCoor = [
+                  coorX - 1,
+                  coorY
+                ];
+                break;
+
+              case 270:
+                runtime.activeCoor = [
+                  coorX,
+                  coorY - 1
+                ];
+                break;
+            }
+
+            app.ports.interpreterTick.send(runtime);
+          }
+
+          tick();
+          timer = setInterval(tick, 50);
+        });
+      })();
+
       app.ports.downloadProgram.subscribe(function (program) {
         if (!program || !program.length || !program[0] || !program[0].length) {
           console.error('A program with at least one row and one column is needed');

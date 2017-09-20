@@ -10,7 +10,7 @@ import Html.Events exposing (on, onClick)
 import Json.Decode as Json
 import List
 import Maybe
-import Ports exposing (downloadProgram, imageProcessed, uploadProgram)
+import Ports exposing (downloadProgram, imageProcessed, interpreterHalt, interpreterTick, pauseExecution, startExecution, uploadProgram)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -33,6 +33,10 @@ type Msg
     | ZoomIn
     | ZoomOut
     | Reset
+    | Start
+    | Pause
+    | Tick BLRuntime
+    | Halt BLRuntime
 
 
 type History a
@@ -76,6 +80,28 @@ update message model =
     case ( message, model, model.activeCmd ) of
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
+
+        ( Pause, { work, runtime }, _ ) ->
+            ( model
+            , pauseExecution
+                { program = historyCurr work
+                , runtime = runtime
+                }
+            )
+
+        ( Start, { work, runtime }, _ ) ->
+            ( model
+            , startExecution
+                { program = historyCurr work
+                , runtime = runtime
+                }
+            )
+
+        ( Tick runtime, _, _ ) ->
+            ( { model | runtime = runtime }, Cmd.none )
+
+        ( Halt runtime, _, _ ) ->
+            ( { model | runtime = runtime }, Cmd.none )
 
         ( UploadProgram, _, _ ) ->
             ( model, uploadProgram "#fileupload" )
@@ -226,6 +252,8 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ imageProcessed ImageProcessed
+        , interpreterTick Tick
+        , interpreterHalt Halt
         ]
 
 
@@ -270,10 +298,10 @@ programContainer model =
             cmdBtn "Download" "assets/images/download.png" [ onClick DownloadProgram ]
 
         playBtn =
-            cmdBtn "Play" "assets/images/play.png" [ onClick NoOp ]
+            cmdBtn "Play" "assets/images/play.png" [ onClick Start ]
 
         pauseBtn =
-            cmdBtn "Pause" "assets/images/pause.png" [ onClick NoOp ]
+            cmdBtn "Pause" "assets/images/pause.png" [ onClick Pause ]
 
         undoBtn =
             cmdBtn "Undo" "assets/images/undo.png" [ onClick Undo ]
