@@ -26,7 +26,7 @@
 
       (function () {
         var timer;
-        var delay = 50;
+        var delay = 10;
 
         function stopTimer () {
           if (timer) {
@@ -112,6 +112,12 @@
 
               // .
               case '[0,0,255]':
+                if (!runtime.output) {
+                  runtime.output = '';
+                }
+
+                runtime.output += String.fromCharCode(runtime.memory[runtime.activeCell]);
+                console.log(runtime.output);
                 break;
 
               // [
