@@ -232,9 +232,14 @@ memoryTape : BLRuntime -> List (Html msg)
 memoryTape runtime =
     let
         cell =
-            \val ->
+            \i val ->
                 div
-                    [ class "cmd-btn program-memory-cell" ]
+                    [ classList
+                        [ ( "cmd-btn", True )
+                        , ( "program-memory-cell", True )
+                        , ( "program-memory-cell--active", runtime.activeCell == i )
+                        ]
+                    ]
                     [ div
                         [ class "program-memory-cell-content" ]
                         [ text (toString val) ]
@@ -249,4 +254,4 @@ memoryTape runtime =
         cells =
             runtime.memory ++ padding
     in
-    List.map cell cells
+    List.indexedMap cell cells

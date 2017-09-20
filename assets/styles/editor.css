@@ -129,3 +129,8 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
 }
+
+.program-memory-cell--active {
+  background: black;
+  color: white;
+}

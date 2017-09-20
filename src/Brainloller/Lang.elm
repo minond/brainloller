@@ -17,6 +17,7 @@ type alias BLProgram =
 
 type alias BLRuntime =
     { activeCoor : ( Int, Int )
+    , activeCell : Int
     , pointerDeg : Int
     , output : Maybe String
     , input : Maybe String
@@ -126,6 +127,7 @@ getBlCmd key dict =
 createRuntime : Maybe String -> BLRuntime
 createRuntime input =
     { activeCoor = ( 0, 0 )
+    , activeCell = 0
     , pointerDeg = 0
     , output = Nothing
     , input = input

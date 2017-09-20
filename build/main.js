@@ -14401,6 +14401,7 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 var _minond$brainloller$Brainloller_Lang$createRuntime = function (input) {
 	return {
 		activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
+		activeCell: 0,
 		pointerDeg: 0,
 		output: _elm_lang$core$Maybe$Nothing,
 		input: input,
@@ -14457,9 +14458,9 @@ var _minond$brainloller$Brainloller_Lang$BLEnvironment = F2(
 	function (a, b) {
 		return {runtime: a, program: b};
 	});
-var _minond$brainloller$Brainloller_Lang$BLRuntime = F5(
-	function (a, b, c, d, e) {
-		return {activeCoor: a, pointerDeg: b, output: c, input: d, memory: e};
+var _minond$brainloller$Brainloller_Lang$BLRuntime = F6(
+	function (a, b, c, d, e, f) {
+		return {activeCoor: a, activeCell: b, pointerDeg: c, output: d, input: e, memory: f};
 	});
 var _minond$brainloller$Brainloller_Lang$BLCmd = function (a) {
 	return function (b) {
@@ -14516,33 +14517,51 @@ var _minond$brainloller$Brainloller_Pixel$memoryTape = function (runtime) {
 		len,
 		A2(_elm_lang$core$List$repeat, 10, 0));
 	var cells = A2(_elm_lang$core$Basics_ops['++'], runtime.memory, padding);
-	var cell = function (val) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('cmd-btn program-memory-cell'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(val)),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			});
-	};
-	return A2(_elm_lang$core$List$map, cell, cells);
+	var cell = F2(
+		function (i, val) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'program-memory-cell', _1: true},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'program-memory-cell--active',
+										_1: _elm_lang$core$Native_Utils.eq(runtime.activeCell, i)
+									},
+									_1: {ctor: '[]'}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(val)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		});
+	return A2(_elm_lang$core$List$indexedMap, cell, cells);
 };
 var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 	function (cmdSetter, activeCmd) {
@@ -15774,6 +15793,7 @@ var _minond$brainloller$Ports$startExecution = _elm_lang$core$Native_Platform.ou
 		return {
 			runtime: {
 				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
 				pointerDeg: v.runtime.pointerDeg,
 				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
 				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
@@ -15797,6 +15817,7 @@ var _minond$brainloller$Ports$pauseExecution = _elm_lang$core$Native_Platform.ou
 		return {
 			runtime: {
 				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
 				pointerDeg: v.runtime.pointerDeg,
 				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
 				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
@@ -15842,27 +15863,44 @@ var _minond$brainloller$Ports$interpreterTick = _elm_lang$core$Native_Platform.i
 		function (activeCoor) {
 			return A2(
 				_elm_lang$core$Json_Decode$andThen,
-				function (pointerDeg) {
+				function (activeCell) {
 					return A2(
 						_elm_lang$core$Json_Decode$andThen,
-						function (output) {
+						function (pointerDeg) {
 							return A2(
 								_elm_lang$core$Json_Decode$andThen,
-								function (input) {
+								function (output) {
 									return A2(
 										_elm_lang$core$Json_Decode$andThen,
-										function (memory) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+										function (input) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (memory) {
+													return _elm_lang$core$Json_Decode$succeed(
+														{activeCoor: activeCoor, activeCell: activeCell, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'memory',
+													_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
 										},
 										A2(
 											_elm_lang$core$Json_Decode$field,
-											'memory',
-											_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+											'input',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
 								},
 								A2(
 									_elm_lang$core$Json_Decode$field,
-									'input',
+									'output',
 									_elm_lang$core$Json_Decode$oneOf(
 										{
 											ctor: '::',
@@ -15874,21 +15912,9 @@ var _minond$brainloller$Ports$interpreterTick = _elm_lang$core$Native_Platform.i
 											}
 										})));
 						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'output',
-							_elm_lang$core$Json_Decode$oneOf(
-								{
-									ctor: '::',
-									_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-									_1: {
-										ctor: '::',
-										_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-										_1: {ctor: '[]'}
-									}
-								})));
+						A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
 				},
-				A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
 		},
 		A2(
 			_elm_lang$core$Json_Decode$field,
@@ -15912,27 +15938,44 @@ var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.i
 		function (activeCoor) {
 			return A2(
 				_elm_lang$core$Json_Decode$andThen,
-				function (pointerDeg) {
+				function (activeCell) {
 					return A2(
 						_elm_lang$core$Json_Decode$andThen,
-						function (output) {
+						function (pointerDeg) {
 							return A2(
 								_elm_lang$core$Json_Decode$andThen,
-								function (input) {
+								function (output) {
 									return A2(
 										_elm_lang$core$Json_Decode$andThen,
-										function (memory) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+										function (input) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (memory) {
+													return _elm_lang$core$Json_Decode$succeed(
+														{activeCoor: activeCoor, activeCell: activeCell, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'memory',
+													_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
 										},
 										A2(
 											_elm_lang$core$Json_Decode$field,
-											'memory',
-											_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+											'input',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
 								},
 								A2(
 									_elm_lang$core$Json_Decode$field,
-									'input',
+									'output',
 									_elm_lang$core$Json_Decode$oneOf(
 										{
 											ctor: '::',
@@ -15944,21 +15987,9 @@ var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.i
 											}
 										})));
 						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'output',
-							_elm_lang$core$Json_Decode$oneOf(
-								{
-									ctor: '::',
-									_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-									_1: {
-										ctor: '::',
-										_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-										_1: {ctor: '[]'}
-									}
-								})));
+						A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
 				},
-				A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
 		},
 		A2(
 			_elm_lang$core$Json_Decode$field,
