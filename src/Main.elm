@@ -99,6 +99,7 @@ update message model =
                         , activeCell = 0
                         , pointerDeg = 0
                         , input = Nothing
+                        , output = Nothing
                         , memory = []
                     }
                 }
