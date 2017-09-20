@@ -96,6 +96,7 @@ update message model =
                 , runtime =
                     { runtime
                         | activeCoor = ( 0, 0 )
+                        , activeCell = 0
                         , pointerDeg = 0
                         , input = Nothing
                         , memory = []

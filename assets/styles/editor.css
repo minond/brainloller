@@ -48,11 +48,8 @@ body {
   height: 30px;
   min-width: 30px;
   cursor: pointer;
-  border-width: 2px;
-  border-style: outset;
-  border-color: #808080;
+  border: 1px solid #9e9e9e;
   background: #fbfcfe;
-  box-shadow: 2px 2px 0px #b9b9b9;
   position: relative;
   transition: box-shadow .1s;
   margin-right: .6rem;
@@ -61,11 +58,6 @@ body {
 
 .cmd-btn.cmd-btn-active {
   box-shadow: 3px 3px 1px #b9b9b9 !important;
-}
-
-.cmd-btn:hover,
-.cmd-btn:focus {
-  box-shadow: none;
 }
 
 .cmd-btn img {
@@ -80,15 +72,20 @@ body {
   width: 50px;
 }
 
+.cmd-btn-content {
+  cursor: pointer;
+}
+
 .cmd-btn-content,
 .program-memory-cell-content {
   font-family: monospace;
-  font-size: 1rem;
+  font-size: .9rem;
+  line-height: 1.2;
   text-transform: uppercase;
   display: table;
   width: 100%;
   text-align: center;
-  transform: translateY(40%);
+  transform: translateY(50%);
   white-space: nowrap;
   padding: 0 13px;
   box-sizing: border-box;
