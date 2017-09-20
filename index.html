@@ -26,6 +26,7 @@
 
       (function () {
         var timer;
+        var delay = 50;
 
         function stopTimer () {
           if (timer) {
@@ -68,6 +69,47 @@
               case '[0,128,128]':
                 runtime.pointerDeg -= 90;
                 break;
+
+              // >
+              case '[255,0,0]':
+                runtime.activeCell++;
+                break;
+
+              // <
+              case '[128,0,0]':
+                runtime.activeCell--;
+                break;
+
+              // +
+              case '[0,255,0]':
+                if (runtime.activeCell > -1) {
+                  for (var i = 0; i <= runtime.activeCell; i++) {
+                    if (!runtime.memory[i]) {
+                      runtime.memory[i] = 0;
+                    }
+                  }
+
+                  runtime.memory[runtime.activeCell]++;
+                }
+                break;
+
+              // -
+              case '[0,128,0]':
+                if (runtime.activeCell > -1) {
+                  for (var i = 0; i <= runtime.activeCell; i++) {
+                    if (!runtime.memory[i]) {
+                      runtime.memory[i] = 0;
+                    }
+                  }
+
+                  runtime.memory[runtime.activeCell]--;
+                }
+                break;
+
+              // ,
+              // .
+              // [
+              // ]
             }
 
             if (runtime.pointerDeg >= 360 || runtime.pointerDeg < 0) {
@@ -108,7 +150,7 @@
           }
 
           tick();
-          timer = setInterval(tick, 50);
+          timer = setInterval(tick, delay);
         });
       })();
 
