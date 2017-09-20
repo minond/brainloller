@@ -20,6 +20,7 @@ type alias BLRuntime =
     , pointerDeg : Int
     , output : Maybe String
     , input : Maybe String
+    , memory : List Int
     }
 
 
@@ -128,4 +129,5 @@ createRuntime input =
     , pointerDeg = 0
     , output = Nothing
     , input = input
+    , memory = []
     }

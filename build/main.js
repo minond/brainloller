@@ -14403,7 +14403,8 @@ var _minond$brainloller$Brainloller_Lang$createRuntime = function (input) {
 		activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
 		pointerDeg: 0,
 		output: _elm_lang$core$Maybe$Nothing,
-		input: input
+		input: input,
+		memory: {ctor: '[]'}
 	};
 };
 var _minond$brainloller$Brainloller_Lang$getBlCmd = F2(
@@ -14456,9 +14457,9 @@ var _minond$brainloller$Brainloller_Lang$BLEnvironment = F2(
 	function (a, b) {
 		return {runtime: a, program: b};
 	});
-var _minond$brainloller$Brainloller_Lang$BLRuntime = F4(
-	function (a, b, c, d) {
-		return {activeCoor: a, pointerDeg: b, output: c, input: d};
+var _minond$brainloller$Brainloller_Lang$BLRuntime = F5(
+	function (a, b, c, d, e) {
+		return {activeCoor: a, pointerDeg: b, output: c, input: d, memory: e};
 	});
 var _minond$brainloller$Brainloller_Lang$BLCmd = function (a) {
 	return function (b) {
@@ -14508,6 +14509,41 @@ var _minond$brainloller$Util$asList = function (list) {
 		list);
 };
 
+var _minond$brainloller$Brainloller_Pixel$memoryTape = function (runtime) {
+	var len = _elm_lang$core$List$length(runtime.memory);
+	var padding = A2(
+		_elm_lang$core$List$drop,
+		len,
+		A2(_elm_lang$core$List$repeat, 10, 0));
+	var cells = A2(_elm_lang$core$Basics_ops['++'], runtime.memory, padding);
+	var cell = function (val) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('cmd-btn program-memory-cell'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_elm_lang$core$Basics$toString(val)),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	};
+	return A2(_elm_lang$core$List$map, cell, cells);
+};
 var _minond$brainloller$Brainloller_Pixel$commandsForm = F2(
 	function (cmdSetter, activeCmd) {
 		var picker = F2(
@@ -15740,7 +15776,11 @@ var _minond$brainloller$Ports$startExecution = _elm_lang$core$Native_Platform.ou
 				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
 				pointerDeg: v.runtime.pointerDeg,
 				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
 			},
 			program: _elm_lang$core$Native_List.toArray(v.program).map(
 				function (v) {
@@ -15759,7 +15799,11 @@ var _minond$brainloller$Ports$pauseExecution = _elm_lang$core$Native_Platform.ou
 				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
 				pointerDeg: v.runtime.pointerDeg,
 				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
 			},
 			program: _elm_lang$core$Native_List.toArray(v.program).map(
 				function (v) {
@@ -15805,8 +15849,16 @@ var _minond$brainloller$Ports$interpreterTick = _elm_lang$core$Native_Platform.i
 							return A2(
 								_elm_lang$core$Json_Decode$andThen,
 								function (input) {
-									return _elm_lang$core$Json_Decode$succeed(
-										{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input});
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (memory) {
+											return _elm_lang$core$Json_Decode$succeed(
+												{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'memory',
+											_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
 								},
 								A2(
 									_elm_lang$core$Json_Decode$field,
@@ -15867,8 +15919,16 @@ var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.i
 							return A2(
 								_elm_lang$core$Json_Decode$andThen,
 								function (input) {
-									return _elm_lang$core$Json_Decode$succeed(
-										{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input});
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (memory) {
+											return _elm_lang$core$Json_Decode$succeed(
+												{activeCoor: activeCoor, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'memory',
+											_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
 								},
 								A2(
 									_elm_lang$core$Json_Decode$field,
@@ -15963,37 +16023,26 @@ var _minond$brainloller$Main$introText = {
 		_1: {ctor: '[]'}
 	}
 };
-var _minond$brainloller$Main$historyForw = function (hist) {
+var _minond$brainloller$Main$historyBack = function (hist) {
 	var _p0 = hist;
 	switch (_p0.ctor) {
 		case 'Curr':
 			return {ctor: '[]'};
 		case 'BackCurr':
-			return {ctor: '[]'};
+			return _p0._0;
 		default:
-			return _p0._2;
-	}
-};
-var _minond$brainloller$Main$historyBack = function (hist) {
-	var _p1 = hist;
-	switch (_p1.ctor) {
-		case 'Curr':
-			return {ctor: '[]'};
-		case 'BackCurr':
-			return _p1._0;
-		default:
-			return _p1._0;
+			return _p0._0;
 	}
 };
 var _minond$brainloller$Main$historyCurr = function (hist) {
-	var _p2 = hist;
-	switch (_p2.ctor) {
+	var _p1 = hist;
+	switch (_p1.ctor) {
 		case 'Curr':
-			return _p2._0;
+			return _p1._0;
 		case 'BackCurr':
-			return _p2._1;
+			return _p1._1;
 		default:
-			return _p2._1;
+			return _p1._1;
 	}
 };
 var _minond$brainloller$Main$Model = F6(
@@ -16284,7 +16333,10 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					commands,
-					_minond$brainloller$Main$programCommands(model))),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_minond$brainloller$Main$programCommands(model),
+						_minond$brainloller$Brainloller_Pixel$memoryTape(model.runtime)))),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -16360,8 +16412,8 @@ var _minond$brainloller$Main$initialModel = {
 };
 var _minond$brainloller$Main$update = F2(
 	function (message, model) {
-		var _p3 = {ctor: '_Tuple3', _0: message, _1: model, _2: model.activeCmd};
-		switch (_p3._0.ctor) {
+		var _p2 = {ctor: '_Tuple3', _0: message, _1: model, _2: model.activeCmd};
+		switch (_p2._0.ctor) {
 			case 'NoOp':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'Pause':
@@ -16370,8 +16422,8 @@ var _minond$brainloller$Main$update = F2(
 					_0: model,
 					_1: _minond$brainloller$Ports$pauseExecution(
 						{
-							program: _minond$brainloller$Main$historyCurr(_p3._1.work),
-							runtime: _p3._1.runtime
+							program: _minond$brainloller$Main$historyCurr(_p2._1.work),
+							runtime: _p2._1.runtime
 						})
 				};
 			case 'Start':
@@ -16380,8 +16432,8 @@ var _minond$brainloller$Main$update = F2(
 					_0: model,
 					_1: _minond$brainloller$Ports$startExecution(
 						{
-							program: _minond$brainloller$Main$historyCurr(_p3._1.work),
-							runtime: _p3._1.runtime
+							program: _minond$brainloller$Main$historyCurr(_p2._1.work),
+							runtime: _p2._1.runtime
 						})
 				};
 			case 'Tick':
@@ -16389,7 +16441,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{runtime: _p3._0._0}),
+						{runtime: _p2._0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Halt':
@@ -16399,10 +16451,12 @@ var _minond$brainloller$Main$update = F2(
 						model,
 						{
 							runtime: _elm_lang$core$Native_Utils.update(
-								_p3._0._0,
+								_p2._0._0,
 								{
 									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
-									pointerDeg: 0
+									pointerDeg: 0,
+									input: _elm_lang$core$Maybe$Nothing,
+									memory: {ctor: '[]'}
 								})
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -16418,37 +16472,37 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: model,
 					_1: _minond$brainloller$Ports$downloadProgram(
-						_minond$brainloller$Main$historyCurr(_p3._1.work))
+						_minond$brainloller$Main$historyCurr(_p2._1.work))
 				};
 			case 'ImageProcessed':
-				var _p4 = _p3._0._0;
+				var _p3 = _p2._0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							work: _minond$brainloller$Main$Curr(_p4),
+							work: _minond$brainloller$Main$Curr(_p3),
 							zoomLevel: 1,
-							boardDimensions: _minond$brainloller$Brainloller_Pixel$programDimensions(_p4)
+							boardDimensions: _minond$brainloller$Brainloller_Pixel$programDimensions(_p3)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Undo':
-				var _p5 = _p3._1.work;
-				switch (_p5.ctor) {
+				var _p4 = _p2._1.work;
+				switch (_p4.ctor) {
 					case 'Curr':
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					case 'BackCurr':
-						var _p6 = _p5._0;
+						var _p5 = _p4._0;
 						var newForw = {
 							ctor: '::',
-							_0: _p5._1,
+							_0: _p4._1,
 							_1: {ctor: '[]'}
 						};
 						var newBack = _minond$brainloller$Util$asList(
-							_elm_lang$core$List$tail(_p6));
+							_elm_lang$core$List$tail(_p5));
 						var newCurr = _minond$brainloller$Util$asList(
-							_elm_lang$core$List$head(_p6));
+							_elm_lang$core$List$head(_p5));
 						var update = A3(_minond$brainloller$Main$BackCurrForw, newBack, newCurr, newForw);
 						return {
 							ctor: '_Tuple2',
@@ -16458,26 +16512,26 @@ var _minond$brainloller$Main$update = F2(
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					default:
-						var _p9 = _p5._2;
-						var _p8 = _p5._1;
-						var newForw = {ctor: '::', _0: _p8, _1: _p9};
+						var _p8 = _p4._2;
+						var _p7 = _p4._1;
+						var newForw = {ctor: '::', _0: _p7, _1: _p8};
 						var update = function () {
-							var _p7 = _p5._0;
-							if (_p7.ctor === '[]') {
+							var _p6 = _p4._0;
+							if (_p6.ctor === '[]') {
 								return A3(
 									_minond$brainloller$Main$BackCurrForw,
 									{ctor: '[]'},
-									_p8,
-									_p9);
+									_p7,
+									_p8);
 							} else {
-								if (_p7._1.ctor === '[]') {
+								if (_p6._1.ctor === '[]') {
 									return A3(
 										_minond$brainloller$Main$BackCurrForw,
 										{ctor: '[]'},
-										_p7._0,
+										_p6._0,
 										newForw);
 								} else {
-									return A3(_minond$brainloller$Main$BackCurrForw, _p7._1, _p7._0, newForw);
+									return A3(_minond$brainloller$Main$BackCurrForw, _p6._1, _p6._0, newForw);
 								}
 							}
 						}();
@@ -16490,20 +16544,20 @@ var _minond$brainloller$Main$update = F2(
 						};
 				}
 			case 'Redo':
-				var _p10 = _p3._1.work;
-				if (_p10.ctor === 'BackCurrForw') {
-					var _p13 = _p10._1;
-					var _p12 = _p10._0;
-					var newBack = {ctor: '::', _0: _p13, _1: _p12};
+				var _p9 = _p2._1.work;
+				if (_p9.ctor === 'BackCurrForw') {
+					var _p12 = _p9._1;
+					var _p11 = _p9._0;
+					var newBack = {ctor: '::', _0: _p12, _1: _p11};
 					var update = function () {
-						var _p11 = _p10._2;
-						if (_p11.ctor === '[]') {
-							return A2(_minond$brainloller$Main$BackCurr, _p12, _p13);
+						var _p10 = _p9._2;
+						if (_p10.ctor === '[]') {
+							return A2(_minond$brainloller$Main$BackCurr, _p11, _p12);
 						} else {
-							if (_p11._1.ctor === '[]') {
-								return A2(_minond$brainloller$Main$BackCurr, newBack, _p11._0);
+							if (_p10._1.ctor === '[]') {
+								return A2(_minond$brainloller$Main$BackCurr, newBack, _p10._0);
 							} else {
-								return A3(_minond$brainloller$Main$BackCurrForw, newBack, _p11._0, _p11._1);
+								return A3(_minond$brainloller$Main$BackCurrForw, newBack, _p10._0, _p10._1);
 							}
 						}
 					}();
@@ -16518,32 +16572,32 @@ var _minond$brainloller$Main$update = F2(
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
 			case 'WriteCmd':
-				if (_p3._2.ctor === 'Just') {
-					var _p17 = _p3._0._1;
-					var _p16 = _p3._0._0;
-					var _p15 = _p3._1.work;
-					var rewrite = _p3._0._2 || _p3._1.writeEnabled;
-					var pixel = A2(_minond$brainloller$Brainloller_Lang$getBlCmd, _p3._2._0, _minond$brainloller$Brainloller_Lang$blCmdPixel);
-					var program = _minond$brainloller$Main$historyCurr(_p15);
+				if (_p2._2.ctor === 'Just') {
+					var _p16 = _p2._0._1;
+					var _p15 = _p2._0._0;
+					var _p14 = _p2._1.work;
+					var rewrite = _p2._0._2 || _p2._1.writeEnabled;
+					var pixel = A2(_minond$brainloller$Brainloller_Lang$getBlCmd, _p2._2._0, _minond$brainloller$Brainloller_Lang$blCmdPixel);
+					var program = _minond$brainloller$Main$historyCurr(_p14);
 					var back = {
 						ctor: '::',
 						_0: program,
-						_1: _minond$brainloller$Main$historyBack(_p15)
+						_1: _minond$brainloller$Main$historyBack(_p14)
 					};
-					var resized = rewrite ? A3(_minond$brainloller$Brainloller_Pixel$resizeProgram, program, _p16, _p17) : program;
+					var resized = rewrite ? A3(_minond$brainloller$Brainloller_Pixel$resizeProgram, program, _p15, _p16) : program;
 					var update = function () {
-						var _p14 = {
+						var _p13 = {
 							ctor: '_Tuple2',
 							_0: rewrite,
-							_1: A3(_minond$brainloller$Brainloller_Pixel$getCellMaybe, resized, _p16, _p17)
+							_1: A3(_minond$brainloller$Brainloller_Pixel$getCellMaybe, resized, _p15, _p16)
 						};
-						if (((_p14.ctor === '_Tuple2') && (_p14._0 === true)) && (_p14._1.ctor === 'Just')) {
+						if (((_p13.ctor === '_Tuple2') && (_p13._0 === true)) && (_p13._1.ctor === 'Just')) {
 							return A2(
 								_minond$brainloller$Main$BackCurr,
 								back,
-								A4(_minond$brainloller$Brainloller_Pixel$setCellAt, resized, _p16, _p17, pixel));
+								A4(_minond$brainloller$Brainloller_Pixel$setCellAt, resized, _p15, _p16, pixel));
 						} else {
-							return _p15;
+							return _p14;
 						}
 					}();
 					return {
@@ -16562,7 +16616,7 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							activeCmd: _elm_lang$core$Maybe$Just(_p3._0._0)
+							activeCmd: _elm_lang$core$Maybe$Just(_p2._0._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -16583,7 +16637,7 @@ var _minond$brainloller$Main$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'IncreaseSize':
-				var _p18 = _p3._1.boardDimensions;
+				var _p17 = _p2._1.boardDimensions;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16591,14 +16645,14 @@ var _minond$brainloller$Main$update = F2(
 						{
 							boardDimensions: {
 								ctor: '_Tuple2',
-								_0: _elm_lang$core$Tuple$first(_p18) + 1,
-								_1: _elm_lang$core$Tuple$second(_p18) + 1
+								_0: _elm_lang$core$Tuple$first(_p17) + 1,
+								_1: _elm_lang$core$Tuple$second(_p17) + 1
 							}
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'DecreaseSize':
-				var _p19 = _p3._1.boardDimensions;
+				var _p18 = _p2._1.boardDimensions;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16606,8 +16660,8 @@ var _minond$brainloller$Main$update = F2(
 						{
 							boardDimensions: {
 								ctor: '_Tuple2',
-								_0: _elm_lang$core$Tuple$first(_p19) - 1,
-								_1: _elm_lang$core$Tuple$second(_p19) - 1
+								_0: _elm_lang$core$Tuple$first(_p18) - 1,
+								_1: _elm_lang$core$Tuple$second(_p18) - 1
 							}
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -16617,7 +16671,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{zoomLevel: _p3._1.zoomLevel + 0.1}),
+						{zoomLevel: _p2._1.zoomLevel + 0.1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ZoomOut':
@@ -16625,7 +16679,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{zoomLevel: _p3._1.zoomLevel - 0.1}),
+						{zoomLevel: _p2._1.zoomLevel - 0.1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:

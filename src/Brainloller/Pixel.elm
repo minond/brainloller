@@ -2,6 +2,7 @@ module Brainloller.Pixel
     exposing
         ( commandsForm
         , getCellMaybe
+        , memoryTape
         , programCells
         , programDimensions
         , programForm
@@ -12,7 +13,7 @@ module Brainloller.Pixel
 import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
-import Html exposing (Html, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, classList, style, tabindex, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
@@ -225,3 +226,27 @@ commandsForm cmdSetter activeCmd =
     , picker "+90" blCmd.rotateClockwise
     , picker "-90" blCmd.rotateCounterClockwise
     ]
+
+
+memoryTape : BLRuntime -> List (Html msg)
+memoryTape runtime =
+    let
+        cell =
+            \val ->
+                div
+                    [ class "cmd-btn program-memory-cell" ]
+                    [ div
+                        [ class "program-memory-cell-content" ]
+                        [ text (toString val) ]
+                    ]
+
+        len =
+            List.length runtime.memory
+
+        padding =
+            List.drop len <| List.repeat 10 0
+
+        cells =
+            runtime.memory ++ padding
+    in
+    List.map cell cells

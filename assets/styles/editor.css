@@ -114,3 +114,18 @@ body {
 .cmd-btn--rotateCounterClockwise {
   background-color: rgb(0, 128, 128);
 }
+
+.program-memory-cell.cmd-btn {
+  cursor: default;
+  position: relative;
+  font-family: monospace;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.program-memory-cell-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}

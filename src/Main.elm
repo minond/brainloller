@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, getCellMaybe, programCells, programDimensions, resizeProgram, setCellAt)
+import Brainloller.Pixel exposing (commandsForm, getCellMaybe, memoryTape, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, text)
@@ -106,6 +106,8 @@ update message model =
                     { runtime
                         | activeCoor = ( 0, 0 )
                         , pointerDeg = 0
+                        , input = Nothing
+                        , memory = []
                     }
               }
             , Cmd.none
@@ -349,7 +351,7 @@ programContainer model =
     div []
         [ div
             []
-            (commands ++ programCommands model)
+            (commands ++ programCommands model ++ memoryTape model.runtime)
         , div
             []
             [ programOutput model ]
@@ -418,19 +420,6 @@ historyBack hist =
 
         BackCurrForw back _ _ ->
             back
-
-
-historyForw : History a -> List a
-historyForw hist =
-    case hist of
-        Curr _ ->
-            []
-
-        BackCurr _ _ ->
-            []
-
-        BackCurrForw _ _ forw ->
-            forw
 
 
 introText : List (Html msg)
