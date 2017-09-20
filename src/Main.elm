@@ -344,6 +344,16 @@ programContainer model =
             , uploadBtn
             , downloadBtn
             ]
+
+        output =
+            case model.runtime.output of
+                Just content ->
+                    div
+                        [ class "program-output" ]
+                        [ text content ]
+                Nothing ->
+                    div []
+                        []
     in
     div [ class "noselect" ]
         [ div
@@ -353,8 +363,9 @@ programContainer model =
             []
             [ programOutput model ]
         , div
-            [ class Tac.mt2 ]
+            [ class Tac.mt3 ]
             (memoryTape model.runtime)
+        , output
         ]
 
 

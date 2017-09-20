@@ -17,6 +17,13 @@ body {
   margin: 0 auto;
 }
 
+.program-output {
+  margin: 1rem 0;
+  border: 1px solid gray;
+  padding: 1rem;
+  background: #f3f3f3;
+}
+
 .program-cells {
   margin-top: .3rem;
   font-size: 0;
