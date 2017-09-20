@@ -50,6 +50,16 @@
             var cell;
             var optc;
 
+            function memoryBackfill () {
+              if (runtime.activeCell > -1) {
+                for (var i = 0; i <= runtime.activeCell; i++) {
+                  if (!runtime.memory[i]) {
+                    runtime.memory[i] = 0;
+                  }
+                }
+              }
+            }
+
             if (!program[coorY] || !program[coorY][coorX]) {
               stopTimer();
               app.ports.interpreterHalt.send(runtime);
@@ -83,12 +93,7 @@
               // +
               case '[0,255,0]':
                 if (runtime.activeCell > -1) {
-                  for (var i = 0; i <= runtime.activeCell; i++) {
-                    if (!runtime.memory[i]) {
-                      runtime.memory[i] = 0;
-                    }
-                  }
-
+                  memoryBackfill();
                   runtime.memory[runtime.activeCell]++;
                 }
                 break;
@@ -96,28 +101,21 @@
               // -
               case '[0,128,0]':
                 if (runtime.activeCell > -1) {
-                  for (var i = 0; i <= runtime.activeCell; i++) {
-                    if (!runtime.memory[i]) {
-                      runtime.memory[i] = 0;
-                    }
-                  }
-
+                  memoryBackfill();
                   runtime.memory[runtime.activeCell]--;
                 }
                 break;
 
               // ,
               case '[0,0,128]':
-                for (var i = 0; i <= runtime.activeCell; i++) {
-                  if (!runtime.memory[i]) {
-                    runtime.memory[i] = 0;
-                  }
+                if (runtime.activeCell > -1) {
+                  memoryBackfill();
+
+                  var input = prompt('Input');
+                  var code = input ? input.charCodeAt(0) : 0;
+
+                  runtime.memory[runtime.activeCell] = code;
                 }
-
-                var input = prompt('Input');
-                var code = input ? input.charCodeAt(0) : 0;
-
-                runtime.memory[runtime.activeCell] = code;
                 break;
 
               // .

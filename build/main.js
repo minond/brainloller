@@ -20728,6 +20728,7 @@ var _minond$brainloller$Main$update = F2(
 									activeCell: 0,
 									pointerDeg: 0,
 									input: _elm_lang$core$Maybe$Nothing,
+									output: _elm_lang$core$Maybe$Nothing,
 									memory: {ctor: '[]'}
 								})
 						})
