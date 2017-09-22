@@ -502,4 +502,10 @@ introText =
         , cmdCol "-90" "dark cyan" "rotateCounterClockwise"
         , text "."
         ]
+    , textCopy
+        [ text """Below is a Brainloller program editor and interpreter.
+            Automatically loaded is a "Hello, World" program which simply
+            prints out the string "Hello World!".
+            """
+        ]
     ]

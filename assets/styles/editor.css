@@ -147,45 +147,49 @@ body {
   background-color: rgb(0, 128, 128);
 }
 
-.cmd-label--shiftRight {
+.cmd-label--shiftRight .cmd-label-color {
   color: rgb(255, 0, 0);
 }
 
-.cmd-label--shiftLeft {
+.cmd-label--shiftLeft .cmd-label-color {
   color: rgb(128, 0, 0);
 }
 
-.cmd-label--increment {
+.cmd-label--increment .cmd-label-color {
   color: rgb(0, 255, 0);
 }
 
-.cmd-label--decrement {
+.cmd-label--decrement .cmd-label-color {
   color: rgb(0, 128, 0);
 }
 
-.cmd-label--ioWrite {
+.cmd-label--ioWrite .cmd-label-color {
   color: rgb(0, 0, 255);
 }
 
-.cmd-label--ioRead {
+.cmd-label--ioRead .cmd-label-color {
   color: rgb(0, 0, 128);
 }
 
-.cmd-label--loopOpen {
+.cmd-label--loopOpen .cmd-label-color {
   background-color: #272727;
   color: rgb(255, 255, 0);
 }
 
-.cmd-label--loopClose {
+.cmd-label--loopClose .cmd-label-color {
   color: rgb(128, 128, 0);
 }
 
-.cmd-label--rotateClockwise {
+.cmd-label--rotateClockwise .cmd-label-color {
   color: rgb(0, 255, 255);
 }
 
-.cmd-label--rotateCounterClockwise {
+.cmd-label--rotateCounterClockwise .cmd-label-color {
   color: rgb(0, 128, 128);
+}
+
+.cmd-label-cmd {
+  font-family: monospace;
 }
 
 .program-memory-cell.cmd-btn {

@@ -20442,7 +20442,16 @@ var _minond$brainloller$Main$introText = function () {
 							}
 						}
 					}),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: _minond$brainloller$Elem$textCopy(
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Below is a Brainloller program editor and interpreter.\n            Automatically loaded is a \"Hello, World\" program which simply\n            prints out the string \"Hello World!\".\n            '),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
 			}
 		}
 	};
