@@ -4,7 +4,7 @@ import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, c
 import Brainloller.Pixel exposing (commandsForm, getCellMaybe, memoryTape, programCells, programDimensions, resizeProgram, setCellAt)
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
-import Html exposing (Html, div, input, text)
+import Html exposing (Html, div, input, span, text)
 import Html.Attributes exposing (class, id, style, type_)
 import Html.Events exposing (on, onClick)
 import Json.Decode as Json
@@ -351,6 +351,7 @@ programContainer model =
                     div
                         [ class "program-output" ]
                         [ text content ]
+
                 Nothing ->
                     div []
                         []
@@ -435,6 +436,20 @@ historyBack hist =
 
 introText : List (Html msg)
 introText =
+    let
+        cmdCol =
+            \cmdText colorText className ->
+                span
+                    [ class ("cmd-label--" ++ className) ]
+                    [ span
+                        [ class "cmd-label-cmd" ]
+                        [ text cmdText ]
+                    , text " is "
+                    , span
+                        [ class "cmd-label-color" ]
+                        [ text colorText ]
+                    ]
+    in
     [ textCopy
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is "
@@ -461,5 +476,30 @@ introText =
             language provides two additional commands for rotating the
             instruction pointer direction.
             """
+        ]
+    , textCopy
+        [ text """Here's a breakdown of the commands and how Brainloller colors
+            relate to different Brainfuck commands:
+            """
+        , cmdCol ">" "red" "shiftRight"
+        , text ", "
+        , cmdCol "<" "dark red" "shiftLeft"
+        , text ", "
+        , cmdCol "+" "green" "increment"
+        , text ", "
+        , cmdCol "-" "dark green" "decrement"
+        , text ", "
+        , cmdCol ". (period)" "blue" "ioWrite"
+        , text ", "
+        , cmdCol ", (comma)" "dark blue" "ioRead"
+        , text ", "
+        , cmdCol "[" "yellow" "loopOpen"
+        , text ", "
+        , cmdCol "]" "dark yellow" "loopClose"
+        , text ", "
+        , cmdCol "+90" "cyan" "rotateClockwise"
+        , text ", "
+        , cmdCol "-90" "dark cyan" "rotateCounterClockwise"
+        , text "."
         ]
     ]

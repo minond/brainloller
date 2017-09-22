@@ -147,6 +147,47 @@ body {
   background-color: rgb(0, 128, 128);
 }
 
+.cmd-label--shiftRight {
+  color: rgb(255, 0, 0);
+}
+
+.cmd-label--shiftLeft {
+  color: rgb(128, 0, 0);
+}
+
+.cmd-label--increment {
+  color: rgb(0, 255, 0);
+}
+
+.cmd-label--decrement {
+  color: rgb(0, 128, 0);
+}
+
+.cmd-label--ioWrite {
+  color: rgb(0, 0, 255);
+}
+
+.cmd-label--ioRead {
+  color: rgb(0, 0, 128);
+}
+
+.cmd-label--loopOpen {
+  background-color: #272727;
+  color: rgb(255, 255, 0);
+}
+
+.cmd-label--loopClose {
+  color: rgb(128, 128, 0);
+}
+
+.cmd-label--rotateClockwise {
+  color: rgb(0, 255, 255);
+}
+
+.cmd-label--rotateCounterClockwise {
+  color: rgb(0, 128, 128);
+}
+
 .program-memory-cell.cmd-btn {
   cursor: default;
   min-width: 50px;
