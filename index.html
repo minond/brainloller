@@ -158,10 +158,9 @@
                 break;
             }
 
-            if (
-              runtime.memory[runtime.activeCell] < 0 ||
-              runtime.memory[runtime.activeCell] > 255
-            ) {
+            if (runtime.memory[runtime.activeCell] < 0) {
+              runtime.memory[runtime.activeCell] = 255;
+            } else if (runtime.memory[runtime.activeCell] > 255) {
               runtime.memory[runtime.activeCell] = 0;
             }
 
