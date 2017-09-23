@@ -235,8 +235,7 @@ memoryTape runtime =
             \i val ->
                 div
                     [ classList
-                        [ ( "cmd-btn", True )
-                        , ( "program-memory-cell", True )
+                        [ ( "program-memory-cell", True )
                         , ( "program-memory-cell--active", runtime.activeCell == i )
                         ]
                     ]

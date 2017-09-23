@@ -280,8 +280,12 @@ view model =
     in
     div [ classes containerClasses ]
         [ title
-        , textCopy introText
-        , programContainer model
+        , div
+            [ class "editor-section fl w-100 w-50-ns" ]
+            [ textCopy introText ]
+        , div
+            [ class "editor-section fl w-100 w-50-ns" ]
+            [ programContainer model ]
         ]
 
 
@@ -361,12 +365,12 @@ programContainer model =
             []
             (commands ++ programCommands model)
         , div
-            []
-            [ programOutput model ]
-        , div
-            [ class Tac.mt3 ]
+            [ class "program-memory" ]
             (memoryTape model.runtime)
         , output
+        , div
+            []
+            [ programOutput model ]
         ]
 
 
