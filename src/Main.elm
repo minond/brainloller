@@ -281,10 +281,16 @@ view model =
     div [ classes containerClasses ]
         [ title
         , div
-            [ class "editor-section fl w-100 w-50-ns" ]
-            [ textCopy introText ]
+            [ class "cf" ]
+            [ div
+                [ class "editor-section fl w-100 w-50-l pr3-l" ]
+                [ textCopy introText1 ]
+            , div
+                [ class "editor-section fl w-100 w-50-l pl3-l" ]
+                [ textCopy introText2 ]
+            ]
         , div
-            [ class "editor-section fl w-100 w-50-ns" ]
+            []
             [ programContainer model ]
         ]
 
@@ -362,7 +368,7 @@ programContainer model =
     in
     div [ class "noselect" ]
         [ div
-            []
+            [ class "w-100 w-50-l" ]
             (commands ++ programCommands model)
         , div
             [ class "program-memory" ]
@@ -438,22 +444,8 @@ historyBack hist =
             back
 
 
-introText : List (Html msg)
-introText =
-    let
-        cmdCol =
-            \cmdText colorText className ->
-                span
-                    [ class ("cmd-label--" ++ className) ]
-                    [ span
-                        [ class "cmd-label-cmd" ]
-                        [ text cmdText ]
-                    , text " is "
-                    , span
-                        [ class "cmd-label-color" ]
-                        [ text colorText ]
-                    ]
-    in
+introText1 : List (Html msg)
+introText1 =
     [ textCopy
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is "
@@ -481,7 +473,26 @@ introText =
             instruction pointer direction.
             """
         ]
-    , textCopy
+    ]
+
+
+introText2 : List (Html msg)
+introText2 =
+    let
+        cmdCol =
+            \cmdText colorText className ->
+                span
+                    [ class ("cmd-label--" ++ className) ]
+                    [ span
+                        [ class "cmd-label-cmd" ]
+                        [ text cmdText ]
+                    , text " is "
+                    , span
+                        [ class "cmd-label-color" ]
+                        [ text colorText ]
+                    ]
+    in
+    [ textCopy
         [ text """Here's a breakdown of the commands and how Brainloller colors
             relate to different Brainfuck commands:
             """

@@ -22,17 +22,6 @@ p:first-child {
   margin: 0 auto;
 }
 
-.program-memory,
-.program-output {
-  margin: 1rem 0;
-}
-
-.program-output {
-  border: 1px solid #9e9e9e;
-  padding: 1rem;
-  background: #f3f3f3;
-}
-
 .program-cells {
   margin-top: .3rem;
   font-size: 0;
@@ -202,12 +191,15 @@ p:first-child {
 
 .program-memory-cell {
   display: inline-block;
-  width: 10%;
+  width: 50px;
+  height: 50px;
   text-align: center;
   border: 1px solid #9e9e9e;
-  padding: 1rem;
   box-sizing: border-box;
-  font-size: 1rem;
+  position: relative;
+  margin-top: -1px;
+  margin-left: -1px;
+  font-size: .9rem;
   font-family: monospace;
 }
 
@@ -216,28 +208,24 @@ p:first-child {
   color: white;
 }
 
-@media screen and (min-width: 30em) {
-  .editor-section:first-of-type {
-    padding-right: 1.5rem;
-  }
-
-  .editor-section + .editor-section {
-    padding-left: 1.5rem;
-  }
+.program-memory-cell-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
 }
 
-@media screen and (min-width: 30em) and (max-width: 60em) {
-  .editor-section:first-of-type {
-    padding-right: 1rem;
-  }
+.program-memory {
+  font-size: 0;
+  margin: 1rem 1px;
 }
 
-@media screen and (min-width: 60em) {
-  .editor-section:first-of-type {
-    padding-right: 1.5rem;
-  }
+.program-output {
+  margin: 1rem 0;
+}
 
-  .editor-section + .editor-section {
-    padding-left: 1.5rem;
-  }
+.program-output {
+  border: 1px solid #9e9e9e;
+  padding: 1rem;
+  background: #f3f3f3;
 }
