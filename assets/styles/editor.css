@@ -19,6 +19,7 @@ p:first-child {
 
 .main-container {
   max-width: 75rem;
+  box-sizing: content-box;
   margin: 0 auto;
 }
 

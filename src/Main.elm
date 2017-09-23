@@ -283,10 +283,10 @@ view model =
         , div
             [ class "cf" ]
             [ div
-                [ class "editor-section fl w-100 w-50-l pr3-l" ]
+                [ class "editor-section fl w-100 w-50-l pr4-l" ]
                 [ textCopy introText1 ]
             , div
-                [ class "editor-section fl w-100 w-50-l pl3-l" ]
+                [ class "editor-section fl w-100 w-50-l pl4-l" ]
                 [ textCopy introText2 ]
             ]
         , div
@@ -368,7 +368,7 @@ programContainer model =
     in
     div [ class "noselect" ]
         [ div
-            [ class "w-100 w-50-l" ]
+            [ class "w-100 w-50-l pr4-l" ]
             (commands ++ programCommands model)
         , div
             [ class "program-memory" ]
