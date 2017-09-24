@@ -20060,7 +20060,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 										_0: _elm_lang$html$Html_Attributes$type_('range'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('w-100'),
+											_0: _elm_lang$html$Html_Attributes$class('w-100 mt2 mt0-ns'),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),

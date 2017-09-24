@@ -462,7 +462,7 @@ programContainer model =
                 [ class "fl w-100 w-50-ns pl2-ns" ]
                 [ input
                     [ type_ "range"
-                    , class "w-100"
+                    , class "w-100 mt2 mt0-ns"
                     , value model.interpreterSpeed
                     , onInput SetSpeed
                     ]
