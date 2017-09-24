@@ -20575,6 +20575,9 @@ var _minond$brainloller$Main$programOutput = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
+var _minond$brainloller$Main$LoadMemoryProgram = function (a) {
+	return {ctor: 'LoadMemoryProgram', _0: a};
+};
 var _minond$brainloller$Main$SetSpeed = function (a) {
 	return {ctor: 'SetSpeed', _0: a};
 };
@@ -20830,7 +20833,11 @@ var _minond$brainloller$Main$programContainer = function (model) {
 									{
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$class('w-100'),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
+											_1: {ctor: '[]'}
+										}
 									},
 									{
 										ctor: '::',
@@ -21022,6 +21029,19 @@ var _minond$brainloller$Main$update = F2(
 		switch (_p3._0.ctor) {
 			case 'NoOp':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'LoadMemoryProgram':
+				var runtime = _minond$brainloller$Brainloller_Lang$createRuntime(_elm_lang$core$Maybe$Nothing);
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{runtime: runtime}),
+					_1: _minond$brainloller$Ports$pauseExecution(
+						{
+							program: _minond$brainloller$Main$historyCurr(_p3._1.work),
+							runtime: runtime
+						})
+				};
 			case 'SetSpeed':
 				var _p4 = _p3._0._0;
 				return {
@@ -21325,7 +21345,7 @@ var _minond$brainloller$Main$main = _elm_lang$html$Html$program(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _minond$brainloller$Main$main !== 'undefined') {
-    _minond$brainloller$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Main.Msg":{"args":[],"tags":{"Redo":[],"WriteCmd":["Int","Int","Bool"],"DecreaseSize":[],"Tick":["Brainloller.Lang.BLRuntime"],"ImageProcessed":["Brainloller.Lang.BLProgram"],"Start":[],"ZoomIn":[],"DownloadProgram":[],"ZoomOut":[],"Halt":["Brainloller.Lang.BLRuntime"],"EnableWrite":[],"UploadProgram":[],"Pause":[],"Reset":[],"SetSpeed":["String"],"Undo":[],"SetCmd":["Brainloller.Lang.BLOptCode"],"NoOp":[],"DisableWrite":[],"Continue":[],"IncreaseSize":[]}}},"aliases":{"Brainloller.Lang.BLProgram":{"args":[],"type":"List (List Brainloller.Lang.Pixel)"},"Brainloller.Lang.Pixel":{"args":[],"type":"{ r : Int, g : Int, b : Int }"},"Brainloller.Lang.BLRuntime":{"args":[],"type":"{ activeCoor : ( Int, Int ) , activeCell : Int , jumps : List ( Int, Int, Int ) , pointerDeg : Int , output : Maybe.Maybe String , input : Maybe.Maybe String , memory : List Int }"},"Brainloller.Lang.BLOptCode":{"args":[],"type":"String"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _minond$brainloller$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Main.Msg":{"args":[],"tags":{"Redo":[],"WriteCmd":["Int","Int","Bool"],"DecreaseSize":[],"Tick":["Brainloller.Lang.BLRuntime"],"ImageProcessed":["Brainloller.Lang.BLProgram"],"Start":[],"ZoomIn":[],"DownloadProgram":[],"ZoomOut":[],"Halt":["Brainloller.Lang.BLRuntime"],"EnableWrite":[],"UploadProgram":[],"Pause":[],"Reset":[],"SetSpeed":["String"],"Undo":[],"SetCmd":["Brainloller.Lang.BLOptCode"],"LoadMemoryProgram":["String"],"NoOp":[],"DisableWrite":[],"Continue":[],"IncreaseSize":[]}}},"aliases":{"Brainloller.Lang.BLProgram":{"args":[],"type":"List (List Brainloller.Lang.Pixel)"},"Brainloller.Lang.Pixel":{"args":[],"type":"{ r : Int, g : Int, b : Int }"},"Brainloller.Lang.BLRuntime":{"args":[],"type":"{ activeCoor : ( Int, Int ) , activeCell : Int , jumps : List ( Int, Int, Int ) , pointerDeg : Int , output : Maybe.Maybe String , input : Maybe.Maybe String , memory : List Int }"},"Brainloller.Lang.BLOptCode":{"args":[],"type":"String"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

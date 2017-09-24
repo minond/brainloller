@@ -48,6 +48,7 @@ type Msg
     = NoOp
     | SetCmd BLOptCode
     | SetSpeed String
+    | LoadMemoryProgram String
     | WriteCmd Int Int Bool
     | EnableWrite
     | DisableWrite
@@ -111,6 +112,20 @@ update message model =
     case ( message, model, model.activeCmd ) of
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
+
+        ( LoadMemoryProgram prog, { work }, _ ) ->
+            let
+                runtime =
+                    createRuntime Nothing
+            in
+            ( { model
+                | runtime = runtime
+              }
+            , pauseExecution
+                { program = historyCurr work
+                , runtime = runtime
+                }
+            )
 
         ( SetSpeed speed, _, _ ) ->
             ( { model | interpreterSpeed = speed }, setInterpreterSpeed speed )
@@ -421,7 +436,9 @@ programContainer model =
             , div
                 [ class "fl w-100 w-50-l pl4-l mt3 mt0-l" ]
                 [ select
-                    [ class "w-100" ]
+                    [ class "w-100"
+                    , onInput LoadMemoryProgram
+                    ]
                     [ option
                         []
                         [ text "helloworld.png" ]
