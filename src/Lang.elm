@@ -1,4 +1,15 @@
-module Brainloller.Lang exposing (BLEnvironment, BLOptCode, BLProgram, BLRuntime, Pixel, blCmd, blCmdPixel, createRuntime, getBlCmd)
+module Lang
+    exposing
+        ( BLEnvironment
+        , BLOptCode
+        , BLProgram
+        , BLRuntime
+        , Pixel
+        , blCmd
+        , blCmdPixel
+        , createRuntime
+        , getBlCmd
+        )
 
 
 type alias BLEnvironment =

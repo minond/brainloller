@@ -1,14 +1,5 @@
 module Main exposing (main)
 
-import Brainloller.Lang
-    exposing
-        ( BLOptCode
-        , BLProgram
-        , BLRuntime
-        , blCmdPixel
-        , createRuntime
-        , getBlCmd
-        )
 import Editor
     exposing
         ( cmdBtn
@@ -29,6 +20,15 @@ import Html exposing (Html, div, input, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
+import Lang
+    exposing
+        ( BLOptCode
+        , BLProgram
+        , BLRuntime
+        , blCmdPixel
+        , createRuntime
+        , getBlCmd
+        )
 import List
 import Maybe
 import Ports

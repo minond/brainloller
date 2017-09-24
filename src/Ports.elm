@@ -10,7 +10,7 @@ port module Ports
         , uploadProgram
         )
 
-import Brainloller.Lang exposing (BLEnvironment, BLProgram, BLRuntime)
+import Lang exposing (BLEnvironment, BLProgram, BLRuntime)
 
 
 port downloadProgram : BLProgram -> Cmd msg

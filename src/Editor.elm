@@ -17,12 +17,12 @@ module Editor
         , textCopy
         )
 
-import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
 import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
 import Html exposing (Attribute, Html, a, div, h1, img, label, node, p, text)
 import Html.Attributes exposing (class, classList, href, rel, src, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
+import Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
 import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)

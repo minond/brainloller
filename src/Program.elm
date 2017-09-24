@@ -1,6 +1,6 @@
 module Program exposing (progFib, progHelloWorld)
 
-import Brainloller.Lang exposing (BLProgram)
+import Lang exposing (BLProgram)
 
 
 progHelloWorld : BLProgram
