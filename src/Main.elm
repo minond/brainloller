@@ -5,8 +5,8 @@ import Brainloller.Pixel exposing (commandsForm, getCellMaybe, memoryTape, progr
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, span, text)
-import Html.Attributes exposing (class, id, style, type_)
-import Html.Events exposing (on, onClick)
+import Html.Attributes exposing (class, id, style, type_, value)
+import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
 import List
 import Maybe
@@ -20,6 +20,7 @@ import Util exposing (asList)
 type Msg
     = NoOp
     | SetCmd BLOptCode
+    | SetSpeed String
     | WriteCmd Int Int Bool
     | EnableWrite
     | DisableWrite
@@ -51,6 +52,7 @@ type alias Model =
     , runtime : BLRuntime
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
+    , interpreterSpeed : String
     , writeEnabled : Bool
     }
 
@@ -71,6 +73,7 @@ initialModel =
     , runtime = createRuntime Nothing
     , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
+    , interpreterSpeed = "5"
     , writeEnabled = False
     }
 
@@ -80,6 +83,9 @@ update message model =
     case ( message, model, model.activeCmd ) of
         ( NoOp, _, _ ) ->
             ( model, Cmd.none )
+
+        ( SetSpeed speed, _, _ ) ->
+            ( { model | interpreterSpeed = speed }, Cmd.none )
 
         ( Pause, { work, runtime }, _ ) ->
             ( model
@@ -359,8 +365,8 @@ programContainer model =
             case model.runtime.output of
                 Just content ->
                     div
-                        [ class "program-output" ]
-                        [ text content ]
+                        [ class "mt3 program-output" ]
+                        [ text ("Output: " ++ content) ]
 
                 Nothing ->
                     div []
@@ -368,12 +374,25 @@ programContainer model =
     in
     div [ class "noselect" ]
         [ div
-            [ class "w-100 w-50-l pr4-l" ]
-            (commands ++ programCommands model)
+            [ class "cf" ]
+            [ div
+                [ class "fl w-100 w-50-l pr4-l" ]
+                (commands ++ programCommands model)
+            , div
+                [ class "fl w-100 w-50-l pl4-l mt3 mt0-l" ]
+                [ input
+                    [ type_ "range"
+                    , class "w-100"
+                    , value model.interpreterSpeed
+                    , onInput SetSpeed
+                    ]
+                    []
+                , output
+                ]
+            ]
         , div
             [ class "program-memory" ]
             (memoryTape model.runtime)
-        , output
         , div
             []
             [ programOutput model ]

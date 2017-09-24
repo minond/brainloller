@@ -222,11 +222,6 @@ p:first-child {
 }
 
 .program-output {
-  margin: 1rem 0;
-}
-
-.program-output {
-  border: 1px solid #9e9e9e;
-  padding: 1rem;
-  background: #f3f3f3;
+  font-size: 1.2rem;
+  font-family: monospace;
 }
