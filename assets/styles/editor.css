@@ -192,14 +192,16 @@ p:first-child {
 
 .program-memory-cell {
   display: inline-block;
-  width: 50px;
+  min-width: 50px;
+  width: 5%;
   height: 50px;
   text-align: center;
-  border: 1px solid #9e9e9e;
+  border-top: 1px solid #9e9e9e;
+  border-bottom: 1px solid #9e9e9e;
+  border-right: 1px solid #9e9e9e;
   box-sizing: border-box;
   position: relative;
   margin-top: -1px;
-  margin-left: -1px;
   font-size: .9rem;
   font-family: monospace;
 }
@@ -219,6 +221,7 @@ p:first-child {
 .program-memory {
   font-size: 0;
   margin: 1rem 1px;
+  border-left: 1px solid #9e9e9e
 }
 
 .program-output {
