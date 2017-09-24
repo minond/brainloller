@@ -19,7 +19,7 @@ import Brainloller.Pixel
         , resizeProgram
         , setCellAt
         )
-import Brainloller.Program exposing (progHelloWorld)
+import Brainloller.Program exposing (progFib, progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
@@ -122,6 +122,9 @@ update message model =
                     case prog of
                         "helloworld.png" ->
                             progHelloWorld
+
+                        "fib.png" ->
+                            progFib
 
                         _ ->
                             []
