@@ -117,12 +117,21 @@ update message model =
             let
                 runtime =
                     createRuntime Nothing
+
+                program =
+                    case prog of
+                        "helloworld.png" ->
+                            progHelloWorld
+
+                        _ ->
+                            []
             in
             ( { model
                 | runtime = runtime
+                , work = Curr program
               }
             , pauseExecution
-                { program = historyCurr work
+                { program = program
                 , runtime = runtime
                 }
             )
