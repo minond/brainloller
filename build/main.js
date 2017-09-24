@@ -16260,11 +16260,14 @@ var _minond$brainloller$Main$update = F2(
 					var rewrite = _p3._0._2 || _p3._1.writeEnabled;
 					var pixel = A2(_minond$brainloller$Lang$getBlCmd, _p3._2._0, _minond$brainloller$Lang$blCmdPixel);
 					var program = _minond$brainloller$Main$historyCurr(_p17);
-					var back = {
-						ctor: '::',
-						_0: program,
-						_1: _minond$brainloller$Main$historyBack(_p17)
-					};
+					var back = A2(
+						_elm_lang$core$List$take,
+						20,
+						{
+							ctor: '::',
+							_0: program,
+							_1: _minond$brainloller$Main$historyBack(_p17)
+						});
 					var resized = rewrite ? A3(_minond$brainloller$Lang$resizeProgram, program, _p18, _p19) : program;
 					var update = function () {
 						var _p16 = {

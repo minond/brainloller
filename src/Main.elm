@@ -267,7 +267,7 @@ update message model =
                     historyCurr work
 
                 back =
-                    program :: historyBack work
+                    List.take 20 (program :: historyBack work)
 
                 pixel =
                     getBlCmd activeCmd blCmdPixel
