@@ -2,8 +2,7 @@ module Main exposing (main)
 
 import Editor
     exposing
-        ( cmdBtn
-        , cmdContentBtn
+        ( cmdContentBtn
         , cmdTextBtn
         , commandsForm
         , getCellMaybe

@@ -1,7 +1,6 @@
 module Editor
     exposing
-        ( cmdBtn
-        , cmdContentBtn
+        ( cmdContentBtn
         , cmdTextBtn
         , commandsForm
         , getCellMaybe
@@ -10,17 +9,14 @@ module Editor
         , memoryTape
         , programCells
         , programDimensions
-        , programForm
         , resizeProgram
         , setCellAt
-        , stylesheet
         , textCopy
         )
 
-import Collage exposing (Form, filled, move, square)
 import Color exposing (Color, rgb)
-import Html exposing (Attribute, Html, a, div, h1, img, label, node, p, text)
-import Html.Attributes exposing (class, classList, href, rel, src, style, tabindex, target, title)
+import Html exposing (Attribute, Html, a, div, h1, label, p, text)
+import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
 import List.Extra exposing (getAt, setAt)
@@ -52,15 +48,6 @@ link label to external =
         [ text label ]
 
 
-cmdBtn : String -> String -> List (Attribute msg) -> Html msg
-cmdBtn label imgSrc attrs =
-    div (title label :: tabindex 1 :: class "cmd-btn" :: attrs)
-        [ img
-            [ src imgSrc ]
-            []
-        ]
-
-
 cmdContentBtn : String -> List (Attribute msg) -> List (Html msg) -> Html msg
 cmdContentBtn name attrs content =
     div (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
@@ -77,15 +64,6 @@ cmdTextBtn name attrs =
             [ class "cmd-btn-content" ]
             [ text name ]
         ]
-
-
-stylesheet : String -> Html msg
-stylesheet url =
-    node "link"
-        [ rel "stylesheet"
-        , href url
-        ]
-        []
 
 
 mainTitle : String -> Html msg
@@ -228,62 +206,6 @@ programCells width height program runtime writeHandler enableHandler disableHand
         <|
             List.repeat height <|
                 div [ class "program-row" ]
-
-
-pixelForm : BoardConfig -> Int -> Pixel -> Form
-pixelForm board index pixel =
-    let
-        x =
-            rem index board.width * board.cellSize - board.startX
-
-        y =
-            (index // board.width) * board.cellSize + board.startY
-
-        point =
-            ( toFloat x, toFloat y )
-
-        color =
-            rgb pixel.r pixel.g pixel.b
-    in
-    move point <| filled color <| square 20
-
-
-programForm : BLProgram -> List Form
-programForm program =
-    let
-        cellSize =
-            20
-
-        height =
-            List.length program
-
-        width =
-            Maybe.withDefault 0 <|
-                Maybe.andThen
-                    (\row -> Just <| List.length row)
-                    (List.head program)
-
-        startX =
-            width // 2 * cellSize
-
-        startY =
-            height // 2 * cellSize * -1
-
-        continuous =
-            List.foldl (++) [] program
-
-        board =
-            { cellSize = cellSize
-            , width = width
-            , startX = width // 2 * cellSize
-            , startY = startY
-            }
-
-        processPixel =
-            \index pixel ->
-                pixelForm board index pixel
-    in
-    List.indexedMap processPixel continuous
 
 
 commandsForm : (BLOptCode -> msg) -> BLOptCode -> List (Html msg)
