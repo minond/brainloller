@@ -20597,7 +20597,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('mt3 program-output'),
+					_0: _elm_lang$html$Html_Attributes$class('program-output'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -20826,29 +20826,62 @@ var _minond$brainloller$Main$programContainer = function (model) {
 							{
 								ctor: '::',
 								_0: A2(
-									_elm_lang$html$Html$input,
+									_elm_lang$html$Html$select,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$type_('range'),
+										_0: _elm_lang$html$Html_Attributes$class('w-100'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$option,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('helloworld.png'),
+												_1: {ctor: '[]'}
+											}),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('w-100'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
-												_1: {
+											_0: A2(
+												_elm_lang$html$Html$option,
+												{ctor: '[]'},
+												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
+													_0: _elm_lang$html$Html$text('fib.png'),
 													_1: {ctor: '[]'}
-												}
-											}
+												}),
+											_1: {ctor: '[]'}
 										}
-									},
-									{ctor: '[]'}),
+									}),
 								_1: {
 									ctor: '::',
-									_0: output,
-									_1: {ctor: '[]'}
+									_0: A2(
+										_elm_lang$html$Html$input,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$type_('range'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('w-100 mt3 mb3'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										},
+										{ctor: '[]'}),
+									_1: {
+										ctor: '::',
+										_0: output,
+										_1: {ctor: '[]'}
+									}
 								}
 							}),
 						_1: {ctor: '[]'}

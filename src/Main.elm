@@ -21,7 +21,7 @@ import Brainloller.Pixel
         )
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
-import Html exposing (Html, div, input, span, text)
+import Html exposing (Html, div, input, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -124,7 +124,8 @@ update message model =
             )
 
         ( Continue, { work, runtime }, _ ) ->
-            ( model, startExecution
+            ( model
+            , startExecution
                 { program = historyCurr work
                 , runtime = runtime
                 }
@@ -404,7 +405,7 @@ programContainer model =
             case model.runtime.output of
                 Just content ->
                     div
-                        [ class "mt3 program-output" ]
+                        [ class "program-output" ]
                         [ text ("Output: " ++ content) ]
 
                 Nothing ->
@@ -419,9 +420,18 @@ programContainer model =
                 (commands ++ programCommands model)
             , div
                 [ class "fl w-100 w-50-l pl4-l mt3 mt0-l" ]
-                [ input
+                [ select
+                    [ class "w-100" ]
+                    [ option
+                        []
+                        [ text "helloworld.png" ]
+                    , option
+                        []
+                        [ text "fib.png" ]
+                    ]
+                , input
                     [ type_ "range"
-                    , class "w-100"
+                    , class "w-100 mt3 mb3"
                     , value model.interpreterSpeed
                     , onInput SetSpeed
                     ]
