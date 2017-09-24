@@ -11813,6 +11813,90 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
+var _minond$brainloller$Util$mapBoth = F2(
+	function (fn, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: fn(_p1._0),
+			_1: fn(_p1._1)
+		};
+	});
+var _minond$brainloller$Util$ternary = F3(
+	function (cond, pass, fail) {
+		return cond ? pass : fail;
+	});
+var _minond$brainloller$Util$asList = function (list) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		{ctor: '[]'},
+		list);
+};
+
+var _minond$brainloller$Lang$programDimensions = function (program) {
+	var width = A2(
+		_elm_lang$core$Maybe$withDefault,
+		0,
+		A2(
+			_elm_lang$core$Maybe$andThen,
+			function (row) {
+				return _elm_lang$core$Maybe$Just(
+					_elm_lang$core$List$length(row));
+			},
+			_elm_lang$core$List$head(program)));
+	var height = _elm_lang$core$List$length(program);
+	return {ctor: '_Tuple2', _0: width, _1: height};
+};
+var _minond$brainloller$Lang$setCellAt = F4(
+	function (program, x, y, p) {
+		var row = _minond$brainloller$Util$asList(
+			A2(_elm_community$list_extra$List_Extra$getAt, y, program));
+		var updatedRow = _minond$brainloller$Util$asList(
+			A3(_elm_community$list_extra$List_Extra$setAt, x, p, row));
+		var updatedProgram = _minond$brainloller$Util$asList(
+			A3(_elm_community$list_extra$List_Extra$setAt, y, updatedRow, program));
+		return updatedProgram;
+	});
+var _minond$brainloller$Lang$getCellMaybe = F3(
+	function (program, x, y) {
+		return A2(
+			_elm_community$list_extra$List_Extra$getAt,
+			x,
+			_minond$brainloller$Util$asList(
+				A2(_elm_community$list_extra$List_Extra$getAt, y, program)));
+	});
+var _minond$brainloller$Lang$getCellAt = F3(
+	function (program, x, y) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			{r: 255, g: 255, b: 255},
+			A3(_minond$brainloller$Lang$getCellMaybe, program, x, y));
+	});
+var _minond$brainloller$Lang$resizeProgram = F3(
+	function (program, x, y) {
+		var dims = _minond$brainloller$Lang$programDimensions(program);
+		var width = A2(
+			_elm_lang$core$Basics$max,
+			x + 1,
+			_elm_lang$core$Tuple$first(dims));
+		var height = A2(
+			_elm_lang$core$Basics$max,
+			y + 1,
+			_elm_lang$core$Tuple$second(dims));
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			F2(
+				function (y, _p0) {
+					return A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (x, _p1) {
+								return A3(_minond$brainloller$Lang$getCellAt, program, x, y);
+							}),
+						A2(_elm_lang$core$List$repeat, width, _elm_lang$core$Maybe$Nothing));
+				}),
+			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
+	});
 var _minond$brainloller$Lang$createRuntime = function (input) {
 	return {
 		activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
@@ -11826,8 +11910,8 @@ var _minond$brainloller$Lang$createRuntime = function (input) {
 };
 var _minond$brainloller$Lang$getBlCmd = F2(
 	function (key, dict) {
-		var _p0 = key;
-		switch (_p0) {
+		var _p2 = key;
+		switch (_p2) {
 			case 'shiftRight':
 				return dict.shiftRight;
 			case 'shiftLeft':
@@ -11905,26 +11989,6 @@ var _minond$brainloller$Lang$Pixel = F3(
 	function (a, b, c) {
 		return {r: a, g: b, b: c};
 	});
-
-var _minond$brainloller$Util$mapBoth = F2(
-	function (fn, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: fn(_p1._0),
-			_1: fn(_p1._1)
-		};
-	});
-var _minond$brainloller$Util$ternary = F3(
-	function (cond, pass, fail) {
-		return cond ? pass : fail;
-	});
-var _minond$brainloller$Util$asList = function (list) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		{ctor: '[]'},
-		list);
-};
 
 var _minond$brainloller$Editor$memoryTape = function (runtime) {
 	var len = _elm_lang$core$List$length(runtime.memory);
@@ -12064,70 +12128,6 @@ var _minond$brainloller$Editor$commandsForm = F2(
 			}
 		};
 	});
-var _minond$brainloller$Editor$programDimensions = function (program) {
-	var width = A2(
-		_elm_lang$core$Maybe$withDefault,
-		0,
-		A2(
-			_elm_lang$core$Maybe$andThen,
-			function (row) {
-				return _elm_lang$core$Maybe$Just(
-					_elm_lang$core$List$length(row));
-			},
-			_elm_lang$core$List$head(program)));
-	var height = _elm_lang$core$List$length(program);
-	return {ctor: '_Tuple2', _0: width, _1: height};
-};
-var _minond$brainloller$Editor$getCellMaybe = F3(
-	function (program, x, y) {
-		return A2(
-			_elm_community$list_extra$List_Extra$getAt,
-			x,
-			_minond$brainloller$Util$asList(
-				A2(_elm_community$list_extra$List_Extra$getAt, y, program)));
-	});
-var _minond$brainloller$Editor$getCellAt = F3(
-	function (program, x, y) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{r: 255, g: 255, b: 255},
-			A3(_minond$brainloller$Editor$getCellMaybe, program, x, y));
-	});
-var _minond$brainloller$Editor$resizeProgram = F3(
-	function (program, x, y) {
-		var dims = _minond$brainloller$Editor$programDimensions(program);
-		var width = A2(
-			_elm_lang$core$Basics$max,
-			x + 1,
-			_elm_lang$core$Tuple$first(dims));
-		var height = A2(
-			_elm_lang$core$Basics$max,
-			y + 1,
-			_elm_lang$core$Tuple$second(dims));
-		return A2(
-			_elm_lang$core$List$indexedMap,
-			F2(
-				function (y, _p0) {
-					return A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (x, _p1) {
-								return A3(_minond$brainloller$Editor$getCellAt, program, x, y);
-							}),
-						A2(_elm_lang$core$List$repeat, width, _elm_lang$core$Maybe$Nothing));
-				}),
-			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
-	});
-var _minond$brainloller$Editor$setCellAt = F4(
-	function (program, x, y, p) {
-		var row = _minond$brainloller$Util$asList(
-			A2(_elm_community$list_extra$List_Extra$getAt, y, program));
-		var updatedRow = _minond$brainloller$Util$asList(
-			A3(_elm_community$list_extra$List_Extra$setAt, x, p, row));
-		var updatedProgram = _minond$brainloller$Util$asList(
-			A3(_elm_community$list_extra$List_Extra$setAt, y, updatedRow, program));
-		return updatedProgram;
-	});
 var _minond$brainloller$Editor$pixelStyle = function (p) {
 	return {
 		ctor: '_Tuple2',
@@ -12178,7 +12178,7 @@ var _minond$brainloller$Editor$programCells = F7(
 										var isActive = _elm_lang$core$Native_Utils.eq(
 											runtime.activeCoor,
 											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
-										var pixel = A3(_minond$brainloller$Editor$getCellAt, program, cellIndex, rowIndex);
+										var pixel = A3(_minond$brainloller$Lang$getCellAt, program, cellIndex, rowIndex);
 										return A2(
 											cell,
 											{
@@ -12233,9 +12233,9 @@ var _minond$brainloller$Editor$programCells = F7(
 							_1: {ctor: '[]'}
 						}))));
 	});
-var _minond$brainloller$Editor$pixelColor = function (_p2) {
-	var _p3 = _p2;
-	return A3(_elm_lang$core$Color$rgb, _p3.r, _p3.g, _p3.b);
+var _minond$brainloller$Editor$pixelColor = function (_p0) {
+	var _p1 = _p0;
+	return A3(_elm_lang$core$Color$rgb, _p1.r, _p1.g, _p1.b);
 };
 var _minond$brainloller$Editor$textCopy = function (copy) {
 	var pClasses = {
@@ -15715,7 +15715,7 @@ var _minond$brainloller$Main$programOutput = function (model) {
 			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
 		});
 	var program = _minond$brainloller$Main$historyCurr(model.work);
-	var dim = _minond$brainloller$Editor$programDimensions(program);
+	var dim = _minond$brainloller$Lang$programDimensions(program);
 	var width = 2 + A2(
 		_elm_lang$core$Basics$max,
 		_elm_lang$core$Tuple$first(dim),
@@ -16200,7 +16200,7 @@ var _minond$brainloller$Main$initialModel = {
 	work: _minond$brainloller$Main$Curr(_minond$brainloller$Program$progHelloWorld),
 	activeCmd: _elm_lang$core$Maybe$Nothing,
 	runtime: _minond$brainloller$Lang$createRuntime(_elm_lang$core$Maybe$Nothing),
-	boardDimensions: _minond$brainloller$Editor$programDimensions(_minond$brainloller$Program$progHelloWorld),
+	boardDimensions: _minond$brainloller$Lang$programDimensions(_minond$brainloller$Program$progHelloWorld),
 	zoomLevel: 1,
 	interpreterSpeed: '5',
 	writeEnabled: false
@@ -16315,7 +16315,7 @@ var _minond$brainloller$Main$update = F2(
 						{
 							work: _minond$brainloller$Main$Curr(_p6),
 							zoomLevel: 1,
-							boardDimensions: _minond$brainloller$Editor$programDimensions(_p6)
+							boardDimensions: _minond$brainloller$Lang$programDimensions(_p6)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -16416,18 +16416,18 @@ var _minond$brainloller$Main$update = F2(
 						_0: program,
 						_1: _minond$brainloller$Main$historyBack(_p17)
 					};
-					var resized = rewrite ? A3(_minond$brainloller$Editor$resizeProgram, program, _p18, _p19) : program;
+					var resized = rewrite ? A3(_minond$brainloller$Lang$resizeProgram, program, _p18, _p19) : program;
 					var update = function () {
 						var _p16 = {
 							ctor: '_Tuple2',
 							_0: rewrite,
-							_1: A3(_minond$brainloller$Editor$getCellMaybe, resized, _p18, _p19)
+							_1: A3(_minond$brainloller$Lang$getCellMaybe, resized, _p18, _p19)
 						};
 						if (((_p16.ctor === '_Tuple2') && (_p16._0 === true)) && (_p16._1.ctor === 'Just')) {
 							return A2(
 								_minond$brainloller$Main$BackCurr,
 								back,
-								A4(_minond$brainloller$Editor$setCellAt, resized, _p18, _p19, pixel));
+								A4(_minond$brainloller$Lang$setCellAt, resized, _p18, _p19, pixel));
 						} else {
 							return _p17;
 						}
