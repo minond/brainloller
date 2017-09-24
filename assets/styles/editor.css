@@ -4,10 +4,15 @@ body {
 }
 
 select {
+  background: white;
   height: 30px;
   font-family: monospace;
   font-size: 1.1rem;
   border-color: silver;
+}
+
+input {
+  height: 30px;
 }
 
 p:first-child {

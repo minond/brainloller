@@ -19602,24 +19602,6 @@ var _minond$brainloller$Program$progHelloWorld = {
 	}
 };
 
-var _minond$brainloller$Main$introText2 = {
-	ctor: '::',
-	_0: _minond$brainloller$Editor$textCopy(
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
-			_1: {
-				ctor: '::',
-				_0: A3(_minond$brainloller$Editor$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n            in theory it means you can program anything. Given that\n            Brainloller code is store in a two dimensional image, the\n            language provides two additional commands for rotating the\n            instruction pointer direction.\n            '),
-					_1: {ctor: '[]'}
-				}
-			}
-		}),
-	_1: {ctor: '[]'}
-};
 var _minond$brainloller$Main$introText1 = {
 	ctor: '::',
 	_0: _minond$brainloller$Editor$textCopy(
@@ -19648,7 +19630,24 @@ var _minond$brainloller$Main$introText1 = {
 				}
 			}
 		}),
-	_1: {ctor: '[]'}
+	_1: {
+		ctor: '::',
+		_0: _minond$brainloller$Editor$textCopy(
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
+				_1: {
+					ctor: '::',
+					_0: A3(_minond$brainloller$Editor$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n            in theory it means you can program anything. Given that\n            Brainloller code is store in a two dimensional image, the\n            language provides two additional commands for rotating the\n            instruction pointer direction.\n            '),
+						_1: {ctor: '[]'}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	}
 };
 var _minond$brainloller$Main$historyBack = function (hist) {
 	var _p0 = hist;
@@ -19719,7 +19718,7 @@ var _minond$brainloller$Main$WriteCmd = F3(
 	function (a, b, c) {
 		return {ctor: 'WriteCmd', _0: a, _1: b, _2: c};
 	});
-var _minond$brainloller$Main$programOutput = function (model) {
+var _minond$brainloller$Main$programCanvas = function (model) {
 	var write = F3(
 		function (x, y, f) {
 			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
@@ -19993,7 +19992,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('cf'),
+					_0: _elm_lang$html$Html_Attributes$class('cf mb2'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -20002,86 +20001,79 @@ var _minond$brainloller$Main$programContainer = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-l pr4-l'),
+							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns pr2-ns'),
 							_1: {ctor: '[]'}
 						},
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							commands,
-							_minond$brainloller$Main$programCommands(model))),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-l pl4-l mt3 mt0-l'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$select,
-									{
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$select,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('w-100'),
+									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('w-100'),
-										_1: {
+										_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
+										_1: {ctor: '[]'}
+									}
+								},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$option,
+										{ctor: '[]'},
+										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
+											_0: _elm_lang$html$Html$text('helloworld.png'),
 											_1: {ctor: '[]'}
-										}
-									},
-									{
+										}),
+									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_lang$html$Html$option,
 											{ctor: '[]'},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text('helloworld.png'),
+												_0: _elm_lang$html$Html$text('fib.png'),
 												_1: {ctor: '[]'}
 											}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$option,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text('fib.png'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
-										}
-									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$input,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$type_('range'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$class('w-100 mt3 mb3'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
-														_1: {ctor: '[]'}
-													}
-												}
-											}
-										},
-										{ctor: '[]'}),
-									_1: {
-										ctor: '::',
-										_0: output,
 										_1: {ctor: '[]'}
 									}
-								}
+								}),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns pl2-ns'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$input,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$type_('range'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('w-100'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
 					}
@@ -20090,23 +20082,37 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				ctor: '::',
 				_0: A2(
 					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('program-memory'),
-						_1: {ctor: '[]'}
-					},
-					_minond$brainloller$Editor$memoryTape(model.runtime)),
+					{ctor: '[]'},
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						commands,
+						_minond$brainloller$Main$programCommands(model))),
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{ctor: '[]'},
-						{
+					_0: output,
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('program-memory'),
+								_1: {ctor: '[]'}
+							},
+							_minond$brainloller$Editor$memoryTape(model.runtime)),
+						_1: {
 							ctor: '::',
-							_0: _minond$brainloller$Main$programOutput(model),
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _minond$brainloller$Main$programCanvas(model),
+									_1: {ctor: '[]'}
+								}),
 							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
+						}
+					}
 				}
 			}
 		});
@@ -20155,7 +20161,7 @@ var _minond$brainloller$Main$view = function (model) {
 							_elm_lang$html$Html$div,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('editor-section fl w-100 w-50-l pr4-l'),
+								_0: _elm_lang$html$Html_Attributes$class('editor-section fl w-100 w-50-l pr3-l'),
 								_1: {ctor: '[]'}
 							},
 							{
@@ -20169,33 +20175,18 @@ var _minond$brainloller$Main$view = function (model) {
 								_elm_lang$html$Html$div,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('editor-section fl w-100 w-50-l pl4-l'),
+									_0: _elm_lang$html$Html_Attributes$class('editor-section fl w-100 w-50-l pl3-l'),
 									_1: {ctor: '[]'}
 								},
 								{
 									ctor: '::',
-									_0: _minond$brainloller$Editor$textCopy(_minond$brainloller$Main$introText2),
+									_0: _minond$brainloller$Main$programContainer(model),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}
 						}
 					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('mt1 mt2-m mt3-l'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _minond$brainloller$Main$programContainer(model),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
+				_1: {ctor: '[]'}
 			}
 		});
 };

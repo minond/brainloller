@@ -356,15 +356,12 @@ view model =
         , div
             [ class "cf" ]
             [ div
-                [ class "editor-section fl w-100 w-50-l pr4-l" ]
+                [ class "editor-section fl w-100 w-50-l pr3-l" ]
                 [ textCopy introText1 ]
             , div
-                [ class "editor-section fl w-100 w-50-l pl4-l" ]
-                [ textCopy introText2 ]
+                [ class "editor-section fl w-100 w-50-l pl3-l" ]
+                [ programContainer model ]
             ]
-        , div
-            [ class "mt1 mt2-m mt3-l" ]
-            [ programContainer model ]
         ]
 
 
@@ -443,14 +440,12 @@ programContainer model =
                     div []
                         []
     in
-    div [ class "noselect" ]
+    div
+        [ class "noselect" ]
         [ div
-            [ class "cf" ]
+            [ class "cf mb2" ]
             [ div
-                [ class "fl w-100 w-50-l pr4-l" ]
-                (commands ++ programCommands model)
-            , div
-                [ class "fl w-100 w-50-l pl4-l mt3 mt0-l" ]
+                [ class "fl w-100 w-50-ns pr2-ns" ]
                 [ select
                     [ class "w-100"
                     , onInput LoadMemoryProgram
@@ -462,27 +457,33 @@ programContainer model =
                         []
                         [ text "fib.png" ]
                     ]
-                , input
+                ]
+            , div
+                [ class "fl w-100 w-50-ns pl2-ns" ]
+                [ input
                     [ type_ "range"
-                    , class "w-100 mt3 mb3"
+                    , class "w-100"
                     , value model.interpreterSpeed
                     , onInput SetSpeed
                     ]
                     []
-                , output
                 ]
             ]
+        , div
+            []
+            (commands ++ programCommands model)
+        , output
         , div
             [ class "program-memory" ]
             (memoryTape model.runtime)
         , div
             []
-            [ programOutput model ]
+            [ programCanvas model ]
         ]
 
 
-programOutput : Model -> Html Msg
-programOutput model =
+programCanvas : Model -> Html Msg
+programCanvas model =
     let
         program =
             historyCurr model.work
@@ -564,12 +565,7 @@ introText1 =
             ending it) and input and output commands.
             """
         ]
-    ]
-
-
-introText2 : List (Html msg)
-introText2 =
-    [ textCopy
+    , textCopy
         [ text "This gives you a total of 8 commands that leave you with a "
         , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
         , text """ language, what ever that actually means in practice, but
