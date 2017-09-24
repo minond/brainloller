@@ -63,6 +63,7 @@ type Msg
     | Reset
     | Start
     | Pause
+    | Continue
     | Tick BLRuntime
     | Halt BLRuntime
 
@@ -117,6 +118,13 @@ update message model =
         ( Pause, { work, runtime }, _ ) ->
             ( model
             , pauseExecution
+                { program = historyCurr work
+                , runtime = runtime
+                }
+            )
+
+        ( Continue, { work, runtime }, _ ) ->
+            ( model, startExecution
                 { program = historyCurr work
                 , runtime = runtime
                 }
@@ -350,6 +358,9 @@ programContainer model =
         playBtn =
             cmdTextBtn "Play" [ onClick Start ]
 
+        continueBtn =
+            cmdTextBtn "Continue" [ onClick Continue ]
+
         pauseBtn =
             cmdTextBtn "Pause" [ onClick Pause ]
 
@@ -377,6 +388,7 @@ programContainer model =
         commands =
             [ playBtn
             , pauseBtn
+            , continueBtn
             , undoBtn
             , redoBtn
             , growBtn
