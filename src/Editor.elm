@@ -3,14 +3,10 @@ module Editor
         ( cmdContentBtn
         , cmdTextBtn
         , commandsForm
-        , getCellMaybe
         , link
         , mainTitle
         , memoryTape
         , programCells
-        , programDimensions
-        , resizeProgram
-        , setCellAt
         , textCopy
         )
 
@@ -18,7 +14,17 @@ import Color exposing (Color, rgb)
 import Html exposing (Attribute, Html, a, div, h1, label, p, text)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
-import Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd)
+import Lang
+    exposing
+        ( BLOptCode
+        , BLProgram
+        , BLRuntime
+        , Pixel
+        , blCmd
+        , getCellAt
+        , programDimensions
+        , resizeProgram
+        )
 import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
@@ -103,71 +109,6 @@ pixelColor { r, g, b } =
 pixelStyle : Pixel -> ( String, String )
 pixelStyle p =
     ( "backgroundColor", "rgb(" ++ toString p.r ++ ", " ++ toString p.g ++ ", " ++ toString p.b ++ ")" )
-
-
-setCellAt : BLProgram -> Int -> Int -> Pixel -> BLProgram
-setCellAt program x y p =
-    let
-        row =
-            asList (getAt y program)
-
-        updatedRow =
-            asList (setAt x p row)
-
-        updatedProgram =
-            asList (setAt y updatedRow program)
-    in
-    updatedProgram
-
-
-getCellAt : BLProgram -> Int -> Int -> Pixel
-getCellAt program x y =
-    getCellMaybe program x y
-        |> Maybe.withDefault
-            { r = 255, g = 255, b = 255 }
-
-
-getCellMaybe : BLProgram -> Int -> Int -> Maybe Pixel
-getCellMaybe program x y =
-    getAt x (asList (getAt y program))
-
-
-resizeProgram : BLProgram -> Int -> Int -> BLProgram
-resizeProgram program x y =
-    let
-        dims =
-            programDimensions program
-
-        width =
-            max (x + 1) (Tuple.first dims)
-
-        height =
-            max (y + 1) (Tuple.second dims)
-    in
-    List.indexedMap
-        (\y _ ->
-            List.indexedMap
-                (\x _ ->
-                    getCellAt program x y
-                )
-                (List.repeat width Nothing)
-        )
-        (List.repeat height Nothing)
-
-
-programDimensions : BLProgram -> ( Int, Int )
-programDimensions program =
-    let
-        height =
-            List.length program
-
-        width =
-            Maybe.withDefault 0 <|
-                Maybe.andThen
-                    (\row -> Just <| List.length row)
-                    (List.head program)
-    in
-    ( width, height )
 
 
 programCells : Int -> Int -> BLProgram -> BLRuntime -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg

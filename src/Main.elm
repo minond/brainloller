@@ -5,14 +5,10 @@ import Editor
         ( cmdContentBtn
         , cmdTextBtn
         , commandsForm
-        , getCellMaybe
         , link
         , mainTitle
         , memoryTape
         , programCells
-        , programDimensions
-        , resizeProgram
-        , setCellAt
         , textCopy
         )
 import Html exposing (Html, div, input, option, select, span, text)
@@ -27,6 +23,10 @@ import Lang
         , blCmdPixel
         , createRuntime
         , getBlCmd
+        , getCellMaybe
+        , programDimensions
+        , resizeProgram
+        , setCellAt
         )
 import List
 import Maybe
