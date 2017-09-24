@@ -1,4 +1,14 @@
-port module Ports exposing (downloadProgram, imageProcessed, interpreterHalt, interpreterTick, pauseExecution, startExecution, uploadProgram)
+port module Ports
+    exposing
+        ( downloadProgram
+        , imageProcessed
+        , interpreterHalt
+        , interpreterTick
+        , pauseExecution
+        , setInterpreterSpeed
+        , startExecution
+        , uploadProgram
+        )
 
 import Brainloller.Lang exposing (BLEnvironment, BLProgram, BLRuntime)
 
@@ -10,6 +20,9 @@ port uploadProgram : String -> Cmd msg
 
 
 port startExecution : BLEnvironment -> Cmd msg
+
+
+port setInterpreterSpeed : String -> Cmd msg
 
 
 port pauseExecution : BLEnvironment -> Cmd msg

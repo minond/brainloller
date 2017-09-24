@@ -1,7 +1,24 @@
 port module Main exposing (main)
 
-import Brainloller.Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd)
-import Brainloller.Pixel exposing (commandsForm, getCellMaybe, memoryTape, programCells, programDimensions, resizeProgram, setCellAt)
+import Brainloller.Lang
+    exposing
+        ( BLOptCode
+        , BLProgram
+        , BLRuntime
+        , blCmdPixel
+        , createRuntime
+        , getBlCmd
+        )
+import Brainloller.Pixel
+    exposing
+        ( commandsForm
+        , getCellMaybe
+        , memoryTape
+        , programCells
+        , programDimensions
+        , resizeProgram
+        , setCellAt
+        )
 import Brainloller.Program exposing (progHelloWorld)
 import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, span, text)
@@ -10,7 +27,17 @@ import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
 import List
 import Maybe
-import Ports exposing (downloadProgram, imageProcessed, interpreterHalt, interpreterTick, pauseExecution, startExecution, uploadProgram)
+import Ports
+    exposing
+        ( downloadProgram
+        , imageProcessed
+        , interpreterHalt
+        , interpreterTick
+        , pauseExecution
+        , setInterpreterSpeed
+        , startExecution
+        , uploadProgram
+        )
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -85,7 +112,7 @@ update message model =
             ( model, Cmd.none )
 
         ( SetSpeed speed, _, _ ) ->
-            ( { model | interpreterSpeed = speed }, Cmd.none )
+            ( { model | interpreterSpeed = speed }, setInterpreterSpeed speed )
 
         ( Pause, { work, runtime }, _ ) ->
             ( model

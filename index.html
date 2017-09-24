@@ -30,9 +30,18 @@
 
         function stopTimer () {
           if (timer) {
-            clearInterval(timer);
+            clearTimeout(timer);
           }
         }
+
+        app.ports.setInterpreterSpeed.subscribe(function (input) {
+          var parsed = parseInt(input);
+          var speed = Math.max(parsed * 10, 10);
+
+          if (!isNaN(parsed)) {
+            delay = speed;
+          }
+        });
 
         app.ports.pauseExecution.subscribe(function () {
           stopTimer();
@@ -199,10 +208,10 @@
             }
 
             app.ports.interpreterTick.send(runtime);
+            timer = setTimeout(tick, delay);
           }
 
           tick();
-          timer = setInterval(tick, delay);
         });
       })();
 
