@@ -112,44 +112,101 @@ p:first-child {
   box-sizing: border-box;
 }
 
+.cmd-btn:after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-family: monospace;
+  line-height: 1;
+  font-size: .9rem;
+}
+
 .cmd-btn--shiftRight {
   background-color: rgb(255, 0, 0);
+}
+
+.cmd-btn--shiftRight:after {
+  color: white;
+  content: '>';
 }
 
 .cmd-btn--shiftLeft {
   background-color: rgb(128, 0, 0);
 }
 
+.cmd-btn--shiftLeft:after {
+  color: white;
+  content: '<';
+}
+
 .cmd-btn--increment {
   background-color: rgb(0, 255, 0);
+}
+
+.cmd-btn--increment:after {
+  content: '+';
 }
 
 .cmd-btn--decrement {
   background-color: rgb(0, 128, 0);
 }
 
+.cmd-btn--decrement:after {
+  color: white;
+  content: '-';
+}
+
 .cmd-btn--ioWrite {
   background-color: rgb(0, 0, 255);
+}
+
+.cmd-btn--ioWrite:after {
+  color: white;
+  content: '.';
 }
 
 .cmd-btn--ioRead {
   background-color: rgb(0, 0, 128);
 }
 
+.cmd-btn--ioRead:after {
+  color: white;
+  content: ',';
+}
+
 .cmd-btn--loopOpen {
   background-color: rgb(255, 255, 0);
+}
+
+.cmd-btn--loopOpen:after {
+  content: '[';
 }
 
 .cmd-btn--loopClose {
   background-color: rgb(128, 128, 0);
 }
 
+.cmd-btn--loopClose:after {
+  color: white;
+  content: ']';
+}
+
 .cmd-btn--rotateClockwise {
   background-color: rgb(0, 255, 255);
 }
 
+.cmd-btn--rotateClockwise:after {
+  content: '+90';
+}
+
 .cmd-btn--rotateCounterClockwise {
   background-color: rgb(0, 128, 128);
+}
+
+.cmd-btn--rotateCounterClockwise:after {
+  color: white;
+  content: '-90';
 }
 
 .cmd-label-color {
