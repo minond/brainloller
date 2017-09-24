@@ -152,45 +152,55 @@ p:first-child {
   background-color: rgb(0, 128, 128);
 }
 
+.cmd-label-color {
+  padding: 0 2px;
+}
+
 .cmd-label--shiftRight .cmd-label-color {
-  color: rgb(255, 0, 0);
+  background-color: rgb(255, 0, 0);
+  color: white;
 }
 
 .cmd-label--shiftLeft .cmd-label-color {
-  color: rgb(128, 0, 0);
+  background-color: rgb(128, 0, 0);
+  color: white;
 }
 
 .cmd-label--increment .cmd-label-color {
-  color: rgb(0, 255, 0);
+  background-color: rgb(0, 255, 0);
 }
 
 .cmd-label--decrement .cmd-label-color {
-  color: rgb(0, 128, 0);
+  background-color: rgb(0, 128, 0);
+  color: white;
 }
 
 .cmd-label--ioWrite .cmd-label-color {
-  color: rgb(0, 0, 255);
+  background-color: rgb(0, 0, 255);
+  color: white;
 }
 
 .cmd-label--ioRead .cmd-label-color {
-  color: rgb(0, 0, 128);
+  background-color: rgb(0, 0, 128);
+  color: white;
 }
 
 .cmd-label--loopOpen .cmd-label-color {
-  background-color: #272727;
-  color: rgb(255, 255, 0);
+  background-color: rgb(255, 255, 0);
 }
 
 .cmd-label--loopClose .cmd-label-color {
-  color: rgb(128, 128, 0);
+  background-color: rgb(128, 128, 0);
+  color: white;
 }
 
 .cmd-label--rotateClockwise .cmd-label-color {
-  color: rgb(0, 255, 255);
+  background-color: rgb(0, 255, 255);
 }
 
 .cmd-label--rotateCounterClockwise .cmd-label-color {
-  color: rgb(0, 128, 128);
+  background-color: rgb(0, 128, 128);
+  color: white;
 }
 
 .cmd-label-cmd {

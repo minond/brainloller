@@ -581,12 +581,12 @@ introText2 =
                 span
                     [ class ("cmd-label--" ++ className) ]
                     [ span
-                        [ class "cmd-label-cmd" ]
-                        [ text cmdText ]
-                    , text " is "
-                    , span
                         [ class "cmd-label-color" ]
                         [ text colorText ]
+                    , text " represents "
+                    , span
+                        [ class "cmd-label-cmd" ]
+                        [ text cmdText ]
                     ]
     in
     [ textCopy
