@@ -19602,153 +19602,24 @@ var _minond$brainloller$Program$progHelloWorld = {
 	}
 };
 
-var _minond$brainloller$Main$introText2 = function () {
-	var cmdCol = F3(
-		function (cmdText, colorText, className) {
-			return A2(
-				_elm_lang$html$Html$span,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class(
-						A2(_elm_lang$core$Basics_ops['++'], 'cmd-label--', className)),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$span,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('cmd-label-color'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(colorText),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(' represents '),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$span,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('cmd-label-cmd'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(cmdText),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
-					}
-				});
-		});
-	return {
-		ctor: '::',
-		_0: _minond$brainloller$Editor$textCopy(
-			{
+var _minond$brainloller$Main$introText2 = {
+	ctor: '::',
+	_0: _minond$brainloller$Editor$textCopy(
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
+			_1: {
 				ctor: '::',
-				_0: _elm_lang$html$Html$text('Here\'s a breakdown of the commands and how Brainloller colors\n            relate to different Brainfuck commands:\n            '),
+				_0: A3(_minond$brainloller$Editor$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
 				_1: {
 					ctor: '::',
-					_0: A3(cmdCol, '>', 'red', 'shiftRight'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(', '),
-						_1: {
-							ctor: '::',
-							_0: A3(cmdCol, '<', 'dark red', 'shiftLeft'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html$text(', '),
-								_1: {
-									ctor: '::',
-									_0: A3(cmdCol, '+', 'green', 'increment'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(', '),
-										_1: {
-											ctor: '::',
-											_0: A3(cmdCol, '-', 'dark green', 'decrement'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html$text(', '),
-												_1: {
-													ctor: '::',
-													_0: A3(cmdCol, '. (period)', 'blue', 'ioWrite'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html$text(', '),
-														_1: {
-															ctor: '::',
-															_0: A3(cmdCol, ', (comma)', 'dark blue', 'ioRead'),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html$text(', '),
-																_1: {
-																	ctor: '::',
-																	_0: A3(cmdCol, '[', 'yellow', 'loopOpen'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$html$Html$text(', '),
-																		_1: {
-																			ctor: '::',
-																			_0: A3(cmdCol, ']', 'dark yellow', 'loopClose'),
-																			_1: {
-																				ctor: '::',
-																				_0: _elm_lang$html$Html$text(', '),
-																				_1: {
-																					ctor: '::',
-																					_0: A3(cmdCol, '+90', 'cyan', 'rotateClockwise'),
-																					_1: {
-																						ctor: '::',
-																						_0: _elm_lang$html$Html$text(', '),
-																						_1: {
-																							ctor: '::',
-																							_0: A3(cmdCol, '-90', 'dark cyan', 'rotateCounterClockwise'),
-																							_1: {
-																								ctor: '::',
-																								_0: _elm_lang$html$Html$text('.'),
-																								_1: {ctor: '[]'}
-																							}
-																						}
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}),
-		_1: {
-			ctor: '::',
-			_0: _minond$brainloller$Editor$textCopy(
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Below is a Brainloller program editor and interpreter.\n            Automatically loaded is a \"Hello, World\" program which simply\n            prints out the string \"Hello World!\".\n            '),
+					_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n            in theory it means you can program anything. Given that\n            Brainloller code is store in a two dimensional image, the\n            language provides two additional commands for rotating the\n            instruction pointer direction.\n            '),
 					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-}();
+				}
+			}
+		}),
+	_1: {ctor: '[]'}
+};
 var _minond$brainloller$Main$introText1 = {
 	ctor: '::',
 	_0: _minond$brainloller$Editor$textCopy(
@@ -19777,24 +19648,7 @@ var _minond$brainloller$Main$introText1 = {
 				}
 			}
 		}),
-	_1: {
-		ctor: '::',
-		_0: _minond$brainloller$Editor$textCopy(
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text('This gives you a total of 8 commands that leave you with a '),
-				_1: {
-					ctor: '::',
-					_0: A3(_minond$brainloller$Editor$link, 'turing complete', 'https://en.wikipedia.org/wiki/Turing_completeness', true),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(' language, what ever that actually means in practice, but\n            in theory it means you can program anything. Given that\n            Brainloller code is store in a two dimensional image, the\n            language provides two additional commands for rotating the\n            instruction pointer direction.\n            '),
-						_1: {ctor: '[]'}
-					}
-				}
-			}),
-		_1: {ctor: '[]'}
-	}
+	_1: {ctor: '[]'}
 };
 var _minond$brainloller$Main$historyBack = function (hist) {
 	var _p0 = hist;
@@ -20330,7 +20184,11 @@ var _minond$brainloller$Main$view = function (model) {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$div,
-						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('mt1 mt2-m mt3-l'),
+							_1: {ctor: '[]'}
+						},
 						{
 							ctor: '::',
 							_0: _minond$brainloller$Main$programContainer(model),

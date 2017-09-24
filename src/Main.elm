@@ -363,7 +363,7 @@ view model =
                 [ textCopy introText2 ]
             ]
         , div
-            []
+            [ class "mt1 mt2-m mt3-l" ]
             [ programContainer model ]
         ]
 
@@ -564,7 +564,12 @@ introText1 =
             ending it) and input and output commands.
             """
         ]
-    , textCopy
+    ]
+
+
+introText2 : List (Html msg)
+introText2 =
+    [ textCopy
         [ text "This gives you a total of 8 commands that leave you with a "
         , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
         , text """ language, what ever that actually means in practice, but
@@ -572,56 +577,6 @@ introText1 =
             Brainloller code is store in a two dimensional image, the
             language provides two additional commands for rotating the
             instruction pointer direction.
-            """
-        ]
-    ]
-
-
-introText2 : List (Html msg)
-introText2 =
-    let
-        cmdCol =
-            \cmdText colorText className ->
-                span
-                    [ class ("cmd-label--" ++ className) ]
-                    [ span
-                        [ class "cmd-label-color" ]
-                        [ text colorText ]
-                    , text " represents "
-                    , span
-                        [ class "cmd-label-cmd" ]
-                        [ text cmdText ]
-                    ]
-    in
-    [ textCopy
-        [ text """Here's a breakdown of the commands and how Brainloller colors
-            relate to different Brainfuck commands:
-            """
-        , cmdCol ">" "red" "shiftRight"
-        , text ", "
-        , cmdCol "<" "dark red" "shiftLeft"
-        , text ", "
-        , cmdCol "+" "green" "increment"
-        , text ", "
-        , cmdCol "-" "dark green" "decrement"
-        , text ", "
-        , cmdCol ". (period)" "blue" "ioWrite"
-        , text ", "
-        , cmdCol ", (comma)" "dark blue" "ioRead"
-        , text ", "
-        , cmdCol "[" "yellow" "loopOpen"
-        , text ", "
-        , cmdCol "]" "dark yellow" "loopClose"
-        , text ", "
-        , cmdCol "+90" "cyan" "rotateClockwise"
-        , text ", "
-        , cmdCol "-90" "dark cyan" "rotateCounterClockwise"
-        , text "."
-        ]
-    , textCopy
-        [ text """Below is a Brainloller program editor and interpreter.
-            Automatically loaded is a "Hello, World" program which simply
-            prints out the string "Hello World!".
             """
         ]
     ]
