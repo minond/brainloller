@@ -1,4 +1,4 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import Brainloller.Lang
     exposing
@@ -9,18 +9,22 @@ import Brainloller.Lang
         , createRuntime
         , getBlCmd
         )
-import Brainloller.Pixel
+import Editor
     exposing
-        ( commandsForm
+        ( cmdBtn
+        , cmdContentBtn
+        , cmdTextBtn
+        , commandsForm
         , getCellMaybe
+        , link
+        , mainTitle
         , memoryTape
         , programCells
         , programDimensions
         , resizeProgram
         , setCellAt
+        , textCopy
         )
-import Brainloller.Program exposing (progFib, progHelloWorld)
-import Elem exposing (cmdBtn, cmdContentBtn, cmdTextBtn, link, mainTitle, textCopy)
 import Html exposing (Html, div, input, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
@@ -38,6 +42,7 @@ import Ports
         , startExecution
         , uploadProgram
         )
+import Program exposing (progFib, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)

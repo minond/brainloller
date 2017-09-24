@@ -1,4 +1,4 @@
-module Brainloller.Program exposing (progFib, progHelloWorld)
+module Program exposing (progFib, progHelloWorld)
 
 import Brainloller.Lang exposing (BLProgram)
 
