@@ -15589,8 +15589,8 @@ var _minond$brainloller$Main$programCanvas = function (model) {
 		function (x, y, f) {
 			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
 		});
-	var minHeight = 30;
-	var minWidth = 40;
+	var minHeight = 25;
+	var minWidth = 35;
 	var program = _minond$brainloller$Main$historyCurr(model.work);
 	var dim = _minond$brainloller$Lang$programDimensions(program);
 	var width = 2 + A2(

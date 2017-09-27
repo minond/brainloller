@@ -530,10 +530,10 @@ programCanvas model =
             programDimensions program
 
         minWidth =
-            40
+            35
 
         minHeight =
-            30
+            25
 
         width =
             2 + max minWidth (max (first dim) (first model.boardDimensions))
