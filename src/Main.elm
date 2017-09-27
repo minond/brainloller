@@ -444,7 +444,7 @@ programContainer model =
         output =
             div
                 [ class "program-output" ]
-                [ text ("Output: " ++ (Maybe.withDefault "none" model.runtime.output)) ]
+                [ text (Maybe.withDefault "none" model.runtime.output) ]
     in
     div
         [ class "cf" ]
@@ -455,9 +455,7 @@ programContainer model =
                 [ textLabel
                     "Load a program"
                     [ select
-                        [ class "w-100"
-                        , onInput LoadMemoryProgram
-                        ]
+                        [ onInput LoadMemoryProgram ]
                         [ option
                             []
                             [ text "helloworld.png" ]
@@ -473,7 +471,6 @@ programContainer model =
                     "Change evaluation speed"
                     [ input
                         [ type_ "range"
-                        , class "w-100"
                         , value model.interpreterSpeed
                         , onInput SetSpeed
                         ]

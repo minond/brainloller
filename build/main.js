@@ -12240,7 +12240,7 @@ var _minond$brainloller$Editor$pixelColor = function (_p0) {
 var _minond$brainloller$Editor$textLabel = F2(
 	function (name, children) {
 		return A2(
-			_elm_lang$html$Html$label,
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
 				_0: _justgage$tachyons_elm$Tachyons$classes(
@@ -12249,13 +12249,13 @@ var _minond$brainloller$Editor$textLabel = F2(
 						_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
 						_1: {
 							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$f6,
+							_0: _justgage$tachyons_elm$Tachyons_Classes$f7,
 							_1: {
 								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$gray,
+								_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
 								_1: {
 									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
+									_0: 'label',
 									_1: {ctor: '[]'}
 								}
 							}
@@ -12265,7 +12265,14 @@ var _minond$brainloller$Editor$textLabel = F2(
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(name),
+				_0: A2(
+					_elm_lang$html$Html$span,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(name),
+						_1: {ctor: '[]'}
+					}),
 				_1: children
 			});
 	});
@@ -15653,10 +15660,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html$text(
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'Output: ',
-					A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output))),
+				A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output)),
 			_1: {ctor: '[]'}
 		});
 	var resetBtn = A2(
@@ -15863,12 +15867,8 @@ var _minond$brainloller$Main$programContainer = function (model) {
 										_elm_lang$html$Html$select,
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('w-100'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
-												_1: {ctor: '[]'}
-											}
+											_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
+											_1: {ctor: '[]'}
 										},
 										{
 											ctor: '::',
@@ -15916,15 +15916,11 @@ var _minond$brainloller$Main$programContainer = function (model) {
 												_0: _elm_lang$html$Html_Attributes$type_('range'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$class('w-100'),
+													_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
 													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
-															_1: {ctor: '[]'}
-														}
+														_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
+														_1: {ctor: '[]'}
 													}
 												}
 											},

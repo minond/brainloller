@@ -12,7 +12,7 @@ module Editor
         )
 
 import Color exposing (Color, rgb)
-import Html exposing (Attribute, Html, a, div, h1, label, p, text)
+import Html exposing (Attribute, Html, a, div, h1, label, p, span, text)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import Lang
@@ -104,15 +104,15 @@ textCopy copy =
 
 textLabel : String -> List (Html msg) -> Html msg
 textLabel name children =
-    label
+    div
         [ classes
             [ Tac.lh_copy
-            , Tac.f6
-            , Tac.gray
+            , Tac.f7
             , Tac.helvetica
+            , "label"
             ]
         ]
-        (text name :: children)
+        (span [] [ text name ] :: children)
 
 
 pixelColor : Pixel -> Color
