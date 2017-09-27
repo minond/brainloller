@@ -533,10 +533,10 @@ programCanvas model =
             30
 
         width =
-            2 + (max minWidth (max (first dim) (first model.boardDimensions)))
+            2 + max minWidth (max (first dim) (first model.boardDimensions))
 
         height =
-            2 + (max minHeight (max (second dim) (second model.boardDimensions)))
+            2 + max minHeight (max (second dim) (second model.boardDimensions))
 
         write =
             \x y f -> WriteCmd x y f
@@ -544,8 +544,11 @@ programCanvas model =
     div
         [ class "program-cells" ]
         [ div
-            [ style [ ( "zoom", toString model.zoomLevel ) ] ]
-            [ programCells width height program model.runtime write EnableWrite DisableWrite ]
+            [ class "program-cells-wrapper" ]
+            [ div
+                [ style [ ( "zoom", toString model.zoomLevel ) ] ]
+                [ programCells width height program model.runtime write EnableWrite DisableWrite ]
+            ]
         ]
 
 

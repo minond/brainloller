@@ -15620,21 +15620,32 @@ var _minond$brainloller$Main$programCanvas = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {
-								ctor: '_Tuple2',
-								_0: 'zoom',
-								_1: _elm_lang$core$Basics$toString(model.zoomLevel)
-							},
-							_1: {ctor: '[]'}
-						}),
+					_0: _elm_lang$html$Html_Attributes$class('program-cells-wrapper'),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
-					_0: A7(_minond$brainloller$Editor$programCells, width, height, program, model.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$style(
+								{
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'zoom',
+										_1: _elm_lang$core$Basics$toString(model.zoomLevel)
+									},
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A7(_minond$brainloller$Editor$programCells, width, height, program, model.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+							_1: {ctor: '[]'}
+						}),
 					_1: {ctor: '[]'}
 				}),
 			_1: {ctor: '[]'}
