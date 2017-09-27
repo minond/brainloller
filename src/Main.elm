@@ -83,6 +83,7 @@ type alias Model =
     { work : History BLProgram
     , activeCmd : Maybe BLOptCode
     , runtime : BLRuntime
+    , tickCounter : Int
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
     , interpreterSpeed : String
@@ -104,6 +105,7 @@ initialModel =
     { work = Curr progHelloWorld
     , activeCmd = Nothing
     , runtime = createRuntime Nothing
+    , tickCounter = 0
     , boardDimensions = programDimensions progHelloWorld
     , zoomLevel = 1
     , interpreterSpeed = "5"
@@ -166,6 +168,7 @@ update message model =
             ( model
             , startExecution
                 { program = historyCurr work
+                , tickCounter = 0
                 , runtime =
                     { runtime
                         | activeCoor = ( 0, 0 )
@@ -178,8 +181,13 @@ update message model =
                 }
             )
 
-        ( Tick runtime, _, _ ) ->
-            ( { model | runtime = runtime }, Cmd.none )
+        ( Tick runtime, { tickCounter }, _ ) ->
+            ( { model
+                | runtime = runtime
+                , tickCounter = tickCounter + 1
+              }
+            , Cmd.none
+            )
 
         ( Halt runtime, _, _ ) ->
             ( model, Cmd.none )
