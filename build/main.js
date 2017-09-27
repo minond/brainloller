@@ -15505,7 +15505,7 @@ var _minond$brainloller$Main$introText1 = {
 							_0: A3(_minond$brainloller$Editor$link, ' this debugger', 'http://minond.xyz/brainfuck', true),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n            Brainfuck with two additional commands for rotating the direction\n            in which the program is evaluated.\n            '),
+								_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n            Brainfuck with two additional commands for rotating the direction\n            in which the program is evaluated. Below is an editor and\n            interpreter. Automatically loaded is a \"Hello, World\" program. Run\n            it by clicking on the \"Play\" button below.\n            '),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -15589,16 +15589,24 @@ var _minond$brainloller$Main$programCanvas = function (model) {
 		function (x, y, f) {
 			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
 		});
+	var minHeight = 30;
+	var minWidth = 40;
 	var program = _minond$brainloller$Main$historyCurr(model.work);
 	var dim = _minond$brainloller$Lang$programDimensions(program);
 	var width = 2 + A2(
 		_elm_lang$core$Basics$max,
-		_elm_lang$core$Tuple$first(dim),
-		_elm_lang$core$Tuple$first(model.boardDimensions));
+		minWidth,
+		A2(
+			_elm_lang$core$Basics$max,
+			_elm_lang$core$Tuple$first(dim),
+			_elm_lang$core$Tuple$first(model.boardDimensions)));
 	var height = 2 + A2(
 		_elm_lang$core$Basics$max,
-		_elm_lang$core$Tuple$second(dim),
-		_elm_lang$core$Tuple$second(model.boardDimensions));
+		minHeight,
+		A2(
+			_elm_lang$core$Basics$max,
+			_elm_lang$core$Tuple$second(dim),
+			_elm_lang$core$Tuple$second(model.boardDimensions)));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -16084,7 +16092,7 @@ var _minond$brainloller$Main$view = function (model) {
 							_elm_lang$html$Html$div,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('w-50 mb5'),
+								_0: _elm_lang$html$Html_Attributes$class('w-100 w-40-l mb4'),
 								_1: {ctor: '[]'}
 							},
 							{

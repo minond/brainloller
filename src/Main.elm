@@ -368,7 +368,7 @@ view model =
         , div
             [ class "cf" ]
             [ div
-                [ class "w-50 mb5" ]
+                [ class "w-100 w-40-l mb4" ]
                 [ textCopy introText1 ]
             , div
                 [ class "" ]
@@ -526,11 +526,17 @@ programCanvas model =
         dim =
             programDimensions program
 
+        minWidth =
+            40
+
+        minHeight =
+            30
+
         width =
-            2 + max (first dim) (first model.boardDimensions)
+            2 + (max minWidth (max (first dim) (first model.boardDimensions)))
 
         height =
-            2 + max (second dim) (second model.boardDimensions)
+            2 + (max minHeight (max (second dim) (second model.boardDimensions)))
 
         write =
             \x y f -> WriteCmd x y f
@@ -593,7 +599,9 @@ introText1 =
         , link " this debugger" "http://minond.xyz/brainfuck" True
         , text """. Brainloller gives you the eight commands that you have in
             Brainfuck with two additional commands for rotating the direction
-            in which the program is evaluated.
+            in which the program is evaluated. Below is an editor and
+            interpreter. Automatically loaded is a "Hello, World" program. Run
+            it by clicking on the "Play" button below.
             """
         ]
     ]
