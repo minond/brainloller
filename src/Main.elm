@@ -344,8 +344,12 @@ view model =
         title =
             mainTitle "Brainloller"
 
+        cmdClass =
+            Maybe.withDefault "" model.activeCmd
+
         containerClasses =
             [ "main-container"
+            , "main-container--" ++ cmdClass
             , Tac.cf
             , Tac.pa3
             , Tac.pa4_ns

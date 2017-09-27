@@ -15962,19 +15962,24 @@ var _minond$brainloller$Main$programContainer = function (model) {
 		});
 };
 var _minond$brainloller$Main$view = function (model) {
+	var cmdClass = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
 	var containerClasses = {
 		ctor: '::',
 		_0: 'main-container',
 		_1: {
 			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
+			_0: A2(_elm_lang$core$Basics_ops['++'], 'main-container--', cmdClass),
 			_1: {
 				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
+				_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
 				_1: {
 					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
-					_1: {ctor: '[]'}
+					_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
+					_1: {
+						ctor: '::',
+						_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		}
