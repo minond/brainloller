@@ -512,6 +512,9 @@ programContainer model =
                 ]
             ]
         , div
+            [ class "helvetica program-message-status" ]
+            [ text "" ]
+        , div
             [ class "noselect fl w-100 w-50-m w-60-l" ]
             [ programCanvas model ]
         ]

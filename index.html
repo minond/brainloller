@@ -265,9 +265,22 @@
 
         var script = document.createElement('script');
         var input = document.querySelector(selector);
+        var message = document.querySelector('.program-message-status');
         var callback = 'callback_' + Date.now() + '_' + Math.random().toString().substr(-10);
         var file;
         var resp;
+
+        var setMsg = function (txt) {
+          message.innerText = txt;
+        };
+
+        var clearMsg = function (txtToCheck) {
+          setTimeout(function () {
+            if (message.innerText === txtToCheck) {
+              message.innerText = '';
+            }
+          }, 5000);
+        };
 
         if (input && input.files && input.files.length) {
           file = input.files[0];
@@ -278,12 +291,19 @@
           return;
         }
 
+        setMsg('Uploading image file...');
+
         xhr.open('POST', URL_TMLSTORE, true);
         xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4 && xhr.status == 200) {
+          if (xhr.readyState === 4 && xhr.status !== 200) {
+            setMsg('There was an error uploading the image file. Please try again.');
+            clearMsg(message.innerText);
+          } else if (xhr.readyState === 4 && xhr.status === 200) {
             try {
               resp = JSON.parse(xhr.responseText);
             } catch (err) {
+              setMsg('There was an error processing the image file. Please try again.');
+              clearMsg(message.innerText);
               console.error('uploadFile: error parsing request (%s)', err.message);
               return;
             }
@@ -293,6 +313,9 @@
                 console.error('uploadFile: error processing image (%s)', args && args.errorMessage
                   ? args.errorMessage
                   : 'Unknown error');
+
+                setMsg('There was an error processing the image file. Please try a different file.');
+                clearMsg(message.innerText);
                 return;
               }
 
@@ -314,6 +337,8 @@
               }
 
               app.ports.imageProcessed.send(program);
+              setMsg('Ready');
+              clearMsg(message.innerText);
               delete window[callback];
             };
 
@@ -325,6 +350,7 @@
               })));
 
             document.getElementsByTagName('head')[0].appendChild(script);
+            setMsg('Processing image...');
           }
         };
 

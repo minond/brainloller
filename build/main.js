@@ -16042,15 +16042,30 @@ var _minond$brainloller$Main$programContainer = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('noselect fl w-100 w-50-m w-60-l'),
+						_0: _elm_lang$html$Html_Attributes$class('helvetica program-message-status'),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _minond$brainloller$Main$programCanvas(model),
+						_0: _elm_lang$html$Html$text(''),
 						_1: {ctor: '[]'}
 					}),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('noselect fl w-100 w-50-m w-60-l'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _minond$brainloller$Main$programCanvas(model),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
