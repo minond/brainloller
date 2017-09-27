@@ -10,8 +10,9 @@ import Editor
         , memoryTape
         , programCells
         , textCopy
+        , textLabel
         )
-import Html exposing (Html, div, input, option, select, span, text)
+import Html exposing (Html, div, input, label, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -165,10 +166,9 @@ update message model =
             )
 
         ( Start, { work, runtime }, _ ) ->
-            ( model
+            ( { model | tickCounter = 0 }
             , startExecution
                 { program = historyCurr work
-                , tickCounter = 0
                 , runtime =
                     { runtime
                         | activeCoor = ( 0, 0 )
@@ -368,10 +368,10 @@ view model =
         , div
             [ class "cf" ]
             [ div
-                [ class "editor-section fl w-100 w-50-l pr3-l" ]
+                [ class "w-50 mb5" ]
                 [ textCopy introText1 ]
             , div
-                [ class "editor-section fl w-100 w-50-l pl3-l" ]
+                [ class "" ]
                 [ programContainer model ]
             ]
         ]
@@ -442,54 +442,80 @@ programContainer model =
             ]
 
         output =
-            case model.runtime.output of
-                Just content ->
-                    div
-                        [ class "program-output" ]
-                        [ text ("Output: " ++ content) ]
-
-                Nothing ->
-                    div []
-                        []
+            div
+                [ class "program-output" ]
+                [ text ("Output: " ++ (Maybe.withDefault "none" model.runtime.output)) ]
     in
     div
-        [ class "noselect" ]
+        [ class "cf" ]
         [ div
-            [ class "cf mb2" ]
+            [ class "fl w-100 w-50-m w-40-l pr3-m pr5-l" ]
             [ div
-                [ class "fl w-100 w-50-ns pr2-ns" ]
-                [ select
-                    [ class "w-100"
-                    , onInput LoadMemoryProgram
-                    ]
-                    [ option
-                        []
-                        [ text "helloworld.png" ]
-                    , option
-                        []
-                        [ text "fib.png" ]
+                []
+                [ textLabel
+                    "Load a program"
+                    [ select
+                        [ class "w-100"
+                        , onInput LoadMemoryProgram
+                        ]
+                        [ option
+                            []
+                            [ text "helloworld.png" ]
+                        , option
+                            []
+                            [ text "fib.png" ]
+                        ]
                     ]
                 ]
             , div
-                [ class "fl w-100 w-50-ns pl2-ns" ]
-                [ input
-                    [ type_ "range"
-                    , class "w-100 mt2 mt0-ns"
-                    , value model.interpreterSpeed
-                    , onInput SetSpeed
+                []
+                [ textLabel
+                    "Change evaluation speed"
+                    [ input
+                        [ type_ "range"
+                        , class "w-100"
+                        , value model.interpreterSpeed
+                        , onInput SetSpeed
+                        ]
+                        []
                     ]
-                    []
+                ]
+            , div
+                []
+                [ textLabel
+                    "Editor and program commands"
+                    [ div
+                        []
+                        commands
+                    ]
+                ]
+            , div
+                []
+                [ textLabel
+                    "Brainloller commands"
+                    [ div
+                        []
+                        (programCommands model)
+                    ]
+                ]
+            , div
+                []
+                [ textLabel
+                    "Program output"
+                    [ output ]
+                ]
+            , div
+                []
+                [ textLabel
+                    "Program memory"
+                    [ div
+                        [ class "program-memory" ]
+                        (memoryTape model.runtime)
+                    ]
                 ]
             ]
         , div
-            []
-            (commands ++ programCommands model)
-        , output
-        , div
-            [ class "program-memory" ]
-            (memoryTape model.runtime)
-        , div
-            []
+            [ class "noselect fl w-100 w-50-m w-60-l" ]
             [ programCanvas model ]
         ]
 
@@ -563,28 +589,14 @@ introText1 =
     [ textCopy
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is "
-        , link "Brainfuck" "http://minond.xyz/brainfuck" False
-        , text """ but represented as an image. In Brainfuck you start
-            with a tape of cells ranging from 0 to, in this case,
+        , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
+        , text """ but represented as an image. If you're not familiar with
+            Brainfuck already, go checkout
             """
-        , link "infinity" "https://en.wikipedia.org/wiki/Infinity" True
-        , text """ or as much as your browser can store. This is your
-            program's memory. Memory is manipulated using commands that let
-            increment and decrement the value of the current cell and that
-            let you shift the active cell to the left or to the right. In
-            addition to the cell manipulating commands you have a loop
-            construct (a command for starting a loop and a separate one for
-            ending it) and input and output commands.
-            """
-        ]
-    , textCopy
-        [ text "This gives you a total of 8 commands that leave you with a "
-        , link "turing complete" "https://en.wikipedia.org/wiki/Turing_completeness" True
-        , text """ language, what ever that actually means in practice, but
-            in theory it means you can program anything. Given that
-            Brainloller code is store in a two dimensional image, the
-            language provides two additional commands for rotating the
-            instruction pointer direction.
+        , link " this debugger" "http://minond.xyz/brainfuck" True
+        , text """. Brainloller gives you the eight commands that you have in
+            Brainfuck with two additional commands for rotating the direction
+            in which the program is evaluated.
             """
         ]
     ]

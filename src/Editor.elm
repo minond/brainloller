@@ -8,6 +8,7 @@ module Editor
         , memoryTape
         , programCells
         , textCopy
+        , textLabel
         )
 
 import Color exposing (Color, rgb)
@@ -99,6 +100,19 @@ textCopy copy =
     p
         [ classes pClasses ]
         copy
+
+
+textLabel : String -> List (Html msg) -> Html msg
+textLabel name children =
+    label
+        [ classes
+            [ Tac.lh_copy
+            , Tac.f6
+            , Tac.gray
+            , Tac.helvetica
+            ]
+        ]
+        (text name :: children)
 
 
 pixelColor : Pixel -> Color
