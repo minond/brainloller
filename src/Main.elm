@@ -42,7 +42,7 @@ import Ports
         , startExecution
         , uploadProgram
         )
-import Program exposing (progFib, progHelloWorld)
+import Program exposing (progCat, progFib, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
@@ -129,6 +129,9 @@ update message model =
                     case prog of
                         "helloworld.png" ->
                             progHelloWorld
+
+                        "cat.png" ->
+                            progCat
 
                         "fib.png" ->
                             progFib
@@ -459,6 +462,9 @@ programContainer model =
                         [ option
                             []
                             [ text "helloworld.png" ]
+                        , option
+                            []
+                            [ text "cat.png" ]
                         , option
                             []
                             [ text "fib.png" ]

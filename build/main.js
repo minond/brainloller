@@ -12746,6 +12746,67 @@ var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.i
 				},
 				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
 
+var _minond$brainloller$Program$progCat = {
+	ctor: '::',
+	_0: {
+		ctor: '::',
+		_0: {r: 0, g: 0, b: 128},
+		_1: {
+			ctor: '::',
+			_0: {r: 255, g: 255, b: 0},
+			_1: {
+				ctor: '::',
+				_0: {r: 255, g: 0, b: 0},
+				_1: {
+					ctor: '::',
+					_0: {r: 0, g: 0, b: 128},
+					_1: {
+						ctor: '::',
+						_0: {r: 128, g: 128, b: 0},
+						_1: {
+							ctor: '::',
+							_0: {r: 128, g: 0, b: 0},
+							_1: {
+								ctor: '::',
+								_0: {r: 255, g: 255, b: 0},
+								_1: {
+									ctor: '::',
+									_0: {r: 128, g: 0, b: 0},
+									_1: {
+										ctor: '::',
+										_0: {r: 128, g: 128, b: 0},
+										_1: {
+											ctor: '::',
+											_0: {r: 255, g: 0, b: 0},
+											_1: {
+												ctor: '::',
+												_0: {r: 255, g: 255, b: 0},
+												_1: {
+													ctor: '::',
+													_0: {r: 0, g: 0, b: 255},
+													_1: {
+														ctor: '::',
+														_0: {r: 255, g: 0, b: 0},
+														_1: {
+															ctor: '::',
+															_0: {r: 128, g: 128, b: 0},
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	_1: {ctor: '[]'}
+};
 var _minond$brainloller$Program$progFib = {
 	ctor: '::',
 	_0: {
@@ -15906,10 +15967,21 @@ var _minond$brainloller$Main$programContainer = function (model) {
 													{ctor: '[]'},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('fib.png'),
+														_0: _elm_lang$html$Html$text('cat.png'),
 														_1: {ctor: '[]'}
 													}),
-												_1: {ctor: '[]'}
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$option,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('fib.png'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
 											}
 										}),
 									_1: {ctor: '[]'}
@@ -16180,6 +16252,8 @@ var _minond$brainloller$Main$update = F2(
 					switch (_p3) {
 						case 'helloworld.png':
 							return _minond$brainloller$Program$progHelloWorld;
+						case 'cat.png':
+							return _minond$brainloller$Program$progCat;
 						case 'fib.png':
 							return _minond$brainloller$Program$progFib;
 						default:
