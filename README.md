@@ -1,7 +1,12 @@
-A Brainloller debugger and code editor.
+A Brainloller debugger and code editor.  To play around with the debugger, go
+to [my site](http://minond.xyz/brainloller/) or run locally by downloading this
+repo and running `make install run`.
 
-To run this project locally, run `make install build serve` which builds once
-and starts server, or `make install reactor` which runs Elm's reactor instead.
+
+### Resources on Brainloller
+
+- https://esolangs.org/wiki/Brainloller
+
 
 ### Image processing flow
 
@@ -25,8 +30,3 @@ imgprocess="https://8rwnim1cq1.execute-api.us-west-2.amazonaws.com/prod/pixels_p
 curl "https://paddedjson.herokuapp.com/?url=$imgprocess&method=POST&body=%7B%22path%22:%22$imgfileurl%22%7D"
 # -> callback({"isBase64Encoded":false,"statusCode":400,"headers":{},"body":{"pixels":[[{"R":255,"G":0,"B":0,"A":255}, ...
 ```
-
-### Resources
-
-- https://esolangs.org/wiki/Brainloller
-- https://github.com/Fedcomp/brainloller-php
