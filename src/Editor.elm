@@ -12,7 +12,7 @@ module Editor
         )
 
 import Color exposing (Color, rgb)
-import Html exposing (Attribute, Html, a, div, h1, label, p, span, text)
+import Html exposing (Attribute, Html, a, div, h1, label, p, span, text, button)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import Lang
@@ -56,21 +56,17 @@ link label to external =
 
 
 cmdContentBtn : String -> List (Attribute msg) -> List (Html msg) -> Html msg
-cmdContentBtn name attrs content =
-    div (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
-        [ label
-            [ class "cmd-btn-content" ]
-            ([ text name ] ++ content)
-        ]
+cmdContentBtn val attrs content =
+    button
+        ([ class "mr2 mb2 pointer" ] ++ attrs)
+        ([ text val ] ++ content)
 
 
 cmdTextBtn : String -> List (Attribute msg) -> Html msg
-cmdTextBtn name attrs =
-    div (title name :: tabindex 1 :: class "cmd-btn" :: attrs)
-        [ label
-            [ class "cmd-btn-content" ]
-            [ text name ]
-        ]
+cmdTextBtn val attrs =
+    button
+        ([ class "mr2 mb2 pointer" ] ++ attrs)
+        [ text val ]
 
 
 mainTitle : String -> Html msg
@@ -107,7 +103,6 @@ textLabel name children =
     div
         [ classes
             [ Tac.lh_copy
-            , Tac.f7
             , Tac.helvetica
             , "label"
             ]

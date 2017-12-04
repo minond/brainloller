@@ -3,23 +3,8 @@ body {
   letter-spacing: .7px;
 }
 
-select {
-  background: white;
-  height: 30px;
-  font-family: monospace;
-  font-size: .9rem;
-  text-transform: uppercase;
-  border-color: silver;
-}
-
 input {
   height: 30px;
-}
-
-select,
-input[type=range] {
-  width: 100%;
-  max-width: 80%;
 }
 
 p:first-child {
@@ -90,67 +75,6 @@ p:first-child {
 
 .program-row + .program-row .program-cell {
   border-top: 0;
-}
-
-.cmd-btn {
-  text-align: center;
-  outline: 0;
-  display: inline-block;
-  padding: 0;
-  box-sizing: border-box;
-  height: 30px;
-  min-width: 30px;
-  cursor: pointer;
-  border: 1px solid #9e9e9e;
-  background: #fbfcfe;
-  position: relative;
-  transition: box-shadow .1s;
-  margin-right: .6rem;
-  margin-bottom: .4rem;
-}
-
-.cmd-btn.cmd-btn-active {
-  box-shadow: 3px 3px 1px #b9b9b9 !important;
-}
-
-.cmd-btn img {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-  top: 0%;
-  left: 0%;
-}
-
-.cmd-btn-content {
-  width: 50px;
-}
-
-.cmd-btn-content {
-  cursor: pointer;
-}
-
-.cmd-btn-content {
-  font-family: monospace;
-  font-size: .875rem;
-  line-height: 1.2;
-  text-transform: uppercase;
-  display: table;
-  width: 100%;
-  text-align: center;
-  transform: translateY(50%);
-  white-space: nowrap;
-  padding: 0 13px;
-  box-sizing: border-box;
-}
-
-.cmd-btn:after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  font-family: monospace;
-  line-height: 1;
-  font-size: .875rem;
 }
 
 .main-container--shiftRight .program-cell:hover,

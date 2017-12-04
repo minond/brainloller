@@ -3,7 +3,6 @@ module Main exposing (main)
 import Editor
     exposing
         ( cmdContentBtn
-        , cmdTextBtn
         , commandsForm
         , link
         , mainTitle
@@ -12,7 +11,7 @@ import Editor
         , textCopy
         , textLabel
         )
-import Html exposing (Html, div, input, label, option, select, span, text)
+import Html exposing (Html, Attribute, div, input, label, option, select, span, text, button)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -360,6 +359,7 @@ view model =
 
         containerClasses =
             [ "main-container"
+            , "helvetica"
             , "main-container--" ++ cmdClass
             , Tac.cf
             , Tac.pa3
@@ -397,37 +397,37 @@ programContainer model =
                 ]
 
         downloadBtn =
-            cmdTextBtn "Download" [ onClick DownloadProgram ]
+            btn "Download" [ onClick DownloadProgram ]
 
         playBtn =
-            cmdTextBtn "Play" [ onClick Start ]
+            btn "Play" [ onClick Start ]
 
         continueBtn =
-            cmdTextBtn "Continue" [ onClick Continue ]
+            btn "Continue" [ onClick Continue ]
 
         pauseBtn =
-            cmdTextBtn "Pause" [ onClick Pause ]
+            btn "Pause" [ onClick Pause ]
 
         undoBtn =
-            cmdTextBtn "Undo" [ onClick Undo ]
+            btn "Undo" [ onClick Undo ]
 
         redoBtn =
-            cmdTextBtn "Redo" [ onClick Redo ]
+            btn "Redo" [ onClick Redo ]
 
         growBtn =
-            cmdTextBtn "Expand canvas" [ onClick IncreaseSize ]
+            btn "Expand canvas" [ onClick IncreaseSize ]
 
         shrinkBtn =
-            cmdTextBtn "Contract canvas" [ onClick DecreaseSize ]
+            btn "Contract canvas" [ onClick DecreaseSize ]
 
         zoomInBtn =
-            cmdTextBtn "Zoom in" [ onClick ZoomIn ]
+            btn "Zoom in" [ onClick ZoomIn ]
 
         zoomOutBtn =
-            cmdTextBtn "Zoom out" [ onClick ZoomOut ]
+            btn "Zoom out" [ onClick ZoomOut ]
 
         resetBtn =
-            cmdTextBtn "Clear" [ onClick Reset ]
+            btn "Clear" [ onClick Reset ]
 
         commands =
             [ playBtn
@@ -452,13 +452,15 @@ programContainer model =
     div
         [ class "cf" ]
         [ div
-            [ class "fl w-100 w-50-m w-40-l pr3-m pr5-l" ]
+            [ class "fl w-100 w-50-ns pr3-m pr5-l" ]
             [ div
                 []
                 [ textLabel
                     "Load a program"
                     [ select
-                        [ onInput LoadMemoryProgram ]
+                        [ onInput LoadMemoryProgram
+                        , class "w-50"
+                        ]
                         [ option
                             []
                             [ text "helloworld.png" ]
@@ -477,6 +479,7 @@ programContainer model =
                     "Change evaluation speed"
                     [ input
                         [ type_ "range"
+                        , class "w-50"
                         , value model.interpreterSpeed
                         , onInput SetSpeed
                         ]
@@ -521,7 +524,7 @@ programContainer model =
             [ class "helvetica program-message-status" ]
             [ text "" ]
         , div
-            [ class "noselect fl w-100 w-50-m w-60-l" ]
+            [ class "noselect fl w-100 w-50-ns" ]
             [ programCanvas model ]
         ]
 
@@ -617,3 +620,10 @@ introText1 =
             """
         ]
     ]
+
+
+btn : String -> List (Attribute msg) -> Html msg
+btn val attrs =
+    button
+        ([ class "mr2 mb2 pointer" ] ++ attrs)
+        [ text val ]
