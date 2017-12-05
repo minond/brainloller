@@ -6446,172 +6446,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-var _elm_lang$core$Color$fmod = F2(
-	function (f, n) {
-		var integer = _elm_lang$core$Basics$floor(f);
-		return (_elm_lang$core$Basics$toFloat(
-			A2(_elm_lang$core$Basics_ops['%'], integer, n)) + f) - _elm_lang$core$Basics$toFloat(integer);
-	});
-var _elm_lang$core$Color$rgbToHsl = F3(
-	function (red, green, blue) {
-		var b = _elm_lang$core$Basics$toFloat(blue) / 255;
-		var g = _elm_lang$core$Basics$toFloat(green) / 255;
-		var r = _elm_lang$core$Basics$toFloat(red) / 255;
-		var cMax = A2(
-			_elm_lang$core$Basics$max,
-			A2(_elm_lang$core$Basics$max, r, g),
-			b);
-		var cMin = A2(
-			_elm_lang$core$Basics$min,
-			A2(_elm_lang$core$Basics$min, r, g),
-			b);
-		var c = cMax - cMin;
-		var lightness = (cMax + cMin) / 2;
-		var saturation = _elm_lang$core$Native_Utils.eq(lightness, 0) ? 0 : (c / (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)));
-		var hue = _elm_lang$core$Basics$degrees(60) * (_elm_lang$core$Native_Utils.eq(cMax, r) ? A2(_elm_lang$core$Color$fmod, (g - b) / c, 6) : (_elm_lang$core$Native_Utils.eq(cMax, g) ? (((b - r) / c) + 2) : (((r - g) / c) + 4)));
-		return {ctor: '_Tuple3', _0: hue, _1: saturation, _2: lightness};
-	});
-var _elm_lang$core$Color$hslToRgb = F3(
-	function (hue, saturation, lightness) {
-		var normHue = hue / _elm_lang$core$Basics$degrees(60);
-		var chroma = (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)) * saturation;
-		var x = chroma * (1 - _elm_lang$core$Basics$abs(
-			A2(_elm_lang$core$Color$fmod, normHue, 2) - 1));
-		var _p0 = (_elm_lang$core$Native_Utils.cmp(normHue, 0) < 0) ? {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 1) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: x, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 2) < 0) ? {ctor: '_Tuple3', _0: x, _1: chroma, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 3) < 0) ? {ctor: '_Tuple3', _0: 0, _1: chroma, _2: x} : ((_elm_lang$core$Native_Utils.cmp(normHue, 4) < 0) ? {ctor: '_Tuple3', _0: 0, _1: x, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 5) < 0) ? {ctor: '_Tuple3', _0: x, _1: 0, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 6) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: 0, _2: x} : {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0}))))));
-		var r = _p0._0;
-		var g = _p0._1;
-		var b = _p0._2;
-		var m = lightness - (chroma / 2);
-		return {ctor: '_Tuple3', _0: r + m, _1: g + m, _2: b + m};
-	});
-var _elm_lang$core$Color$toRgb = function (color) {
-	var _p1 = color;
-	if (_p1.ctor === 'RGBA') {
-		return {red: _p1._0, green: _p1._1, blue: _p1._2, alpha: _p1._3};
-	} else {
-		var _p2 = A3(_elm_lang$core$Color$hslToRgb, _p1._0, _p1._1, _p1._2);
-		var r = _p2._0;
-		var g = _p2._1;
-		var b = _p2._2;
-		return {
-			red: _elm_lang$core$Basics$round(255 * r),
-			green: _elm_lang$core$Basics$round(255 * g),
-			blue: _elm_lang$core$Basics$round(255 * b),
-			alpha: _p1._3
-		};
-	}
-};
-var _elm_lang$core$Color$toHsl = function (color) {
-	var _p3 = color;
-	if (_p3.ctor === 'HSLA') {
-		return {hue: _p3._0, saturation: _p3._1, lightness: _p3._2, alpha: _p3._3};
-	} else {
-		var _p4 = A3(_elm_lang$core$Color$rgbToHsl, _p3._0, _p3._1, _p3._2);
-		var h = _p4._0;
-		var s = _p4._1;
-		var l = _p4._2;
-		return {hue: h, saturation: s, lightness: l, alpha: _p3._3};
-	}
-};
-var _elm_lang$core$Color$HSLA = F4(
-	function (a, b, c, d) {
-		return {ctor: 'HSLA', _0: a, _1: b, _2: c, _3: d};
-	});
-var _elm_lang$core$Color$hsla = F4(
-	function (hue, saturation, lightness, alpha) {
-		return A4(
-			_elm_lang$core$Color$HSLA,
-			hue - _elm_lang$core$Basics$turns(
-				_elm_lang$core$Basics$toFloat(
-					_elm_lang$core$Basics$floor(hue / (2 * _elm_lang$core$Basics$pi)))),
-			saturation,
-			lightness,
-			alpha);
-	});
-var _elm_lang$core$Color$hsl = F3(
-	function (hue, saturation, lightness) {
-		return A4(_elm_lang$core$Color$hsla, hue, saturation, lightness, 1);
-	});
-var _elm_lang$core$Color$complement = function (color) {
-	var _p5 = color;
-	if (_p5.ctor === 'HSLA') {
-		return A4(
-			_elm_lang$core$Color$hsla,
-			_p5._0 + _elm_lang$core$Basics$degrees(180),
-			_p5._1,
-			_p5._2,
-			_p5._3);
-	} else {
-		var _p6 = A3(_elm_lang$core$Color$rgbToHsl, _p5._0, _p5._1, _p5._2);
-		var h = _p6._0;
-		var s = _p6._1;
-		var l = _p6._2;
-		return A4(
-			_elm_lang$core$Color$hsla,
-			h + _elm_lang$core$Basics$degrees(180),
-			s,
-			l,
-			_p5._3);
-	}
-};
-var _elm_lang$core$Color$grayscale = function (p) {
-	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
-};
-var _elm_lang$core$Color$greyscale = function (p) {
-	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
-};
-var _elm_lang$core$Color$RGBA = F4(
-	function (a, b, c, d) {
-		return {ctor: 'RGBA', _0: a, _1: b, _2: c, _3: d};
-	});
-var _elm_lang$core$Color$rgba = _elm_lang$core$Color$RGBA;
-var _elm_lang$core$Color$rgb = F3(
-	function (r, g, b) {
-		return A4(_elm_lang$core$Color$RGBA, r, g, b, 1);
-	});
-var _elm_lang$core$Color$lightRed = A4(_elm_lang$core$Color$RGBA, 239, 41, 41, 1);
-var _elm_lang$core$Color$red = A4(_elm_lang$core$Color$RGBA, 204, 0, 0, 1);
-var _elm_lang$core$Color$darkRed = A4(_elm_lang$core$Color$RGBA, 164, 0, 0, 1);
-var _elm_lang$core$Color$lightOrange = A4(_elm_lang$core$Color$RGBA, 252, 175, 62, 1);
-var _elm_lang$core$Color$orange = A4(_elm_lang$core$Color$RGBA, 245, 121, 0, 1);
-var _elm_lang$core$Color$darkOrange = A4(_elm_lang$core$Color$RGBA, 206, 92, 0, 1);
-var _elm_lang$core$Color$lightYellow = A4(_elm_lang$core$Color$RGBA, 255, 233, 79, 1);
-var _elm_lang$core$Color$yellow = A4(_elm_lang$core$Color$RGBA, 237, 212, 0, 1);
-var _elm_lang$core$Color$darkYellow = A4(_elm_lang$core$Color$RGBA, 196, 160, 0, 1);
-var _elm_lang$core$Color$lightGreen = A4(_elm_lang$core$Color$RGBA, 138, 226, 52, 1);
-var _elm_lang$core$Color$green = A4(_elm_lang$core$Color$RGBA, 115, 210, 22, 1);
-var _elm_lang$core$Color$darkGreen = A4(_elm_lang$core$Color$RGBA, 78, 154, 6, 1);
-var _elm_lang$core$Color$lightBlue = A4(_elm_lang$core$Color$RGBA, 114, 159, 207, 1);
-var _elm_lang$core$Color$blue = A4(_elm_lang$core$Color$RGBA, 52, 101, 164, 1);
-var _elm_lang$core$Color$darkBlue = A4(_elm_lang$core$Color$RGBA, 32, 74, 135, 1);
-var _elm_lang$core$Color$lightPurple = A4(_elm_lang$core$Color$RGBA, 173, 127, 168, 1);
-var _elm_lang$core$Color$purple = A4(_elm_lang$core$Color$RGBA, 117, 80, 123, 1);
-var _elm_lang$core$Color$darkPurple = A4(_elm_lang$core$Color$RGBA, 92, 53, 102, 1);
-var _elm_lang$core$Color$lightBrown = A4(_elm_lang$core$Color$RGBA, 233, 185, 110, 1);
-var _elm_lang$core$Color$brown = A4(_elm_lang$core$Color$RGBA, 193, 125, 17, 1);
-var _elm_lang$core$Color$darkBrown = A4(_elm_lang$core$Color$RGBA, 143, 89, 2, 1);
-var _elm_lang$core$Color$black = A4(_elm_lang$core$Color$RGBA, 0, 0, 0, 1);
-var _elm_lang$core$Color$white = A4(_elm_lang$core$Color$RGBA, 255, 255, 255, 1);
-var _elm_lang$core$Color$lightGrey = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
-var _elm_lang$core$Color$grey = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
-var _elm_lang$core$Color$darkGrey = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
-var _elm_lang$core$Color$lightGray = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
-var _elm_lang$core$Color$gray = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
-var _elm_lang$core$Color$darkGray = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
-var _elm_lang$core$Color$lightCharcoal = A4(_elm_lang$core$Color$RGBA, 136, 138, 133, 1);
-var _elm_lang$core$Color$charcoal = A4(_elm_lang$core$Color$RGBA, 85, 87, 83, 1);
-var _elm_lang$core$Color$darkCharcoal = A4(_elm_lang$core$Color$RGBA, 46, 52, 54, 1);
-var _elm_lang$core$Color$Radial = F5(
-	function (a, b, c, d, e) {
-		return {ctor: 'Radial', _0: a, _1: b, _2: c, _3: d, _4: e};
-	});
-var _elm_lang$core$Color$radial = _elm_lang$core$Color$Radial;
-var _elm_lang$core$Color$Linear = F3(
-	function (a, b, c) {
-		return {ctor: 'Linear', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$core$Color$linear = _elm_lang$core$Color$Linear;
-
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
 var _elm_lang$core$Task$spawnCmd = F2(
@@ -15969,6 +15803,80 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
+var _minond$brainloller$Brainloller$memoryTape = function (runtime) {
+	var len = _elm_lang$core$List$length(runtime.memory);
+	var padding = A2(
+		_elm_lang$core$List$drop,
+		len,
+		A2(_elm_lang$core$List$repeat, 10, 0));
+	var cells = A2(_elm_lang$core$Basics_ops['++'], runtime.memory, padding);
+	var cell = F2(
+		function (i, val) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'program-memory-cell', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'program-memory-cell--active',
+									_1: _elm_lang$core$Native_Utils.eq(runtime.activeCell, i)
+								},
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(val)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		});
+	return A2(_elm_lang$core$List$indexedMap, cell, cells);
+};
+var _minond$brainloller$Brainloller$pixelStyle = function (p) {
+	return {
+		ctor: '_Tuple2',
+		_0: 'backgroundColor',
+		_1: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'rgb(',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(p.r),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					', ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(p.g),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							', ',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(p.b),
+								')'))))))
+	};
+};
 var _minond$brainloller$Brainloller$dimensions = function (program) {
 	var width = A2(
 		_elm_lang$core$Maybe$withDefault,
@@ -16029,6 +15937,86 @@ var _minond$brainloller$Brainloller$resize = F3(
 				}),
 			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
 	});
+var _minond$brainloller$Brainloller$programCells = F7(
+	function (width, height, program, runtime, writeHandler, enableHandler, disableHandler) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
+					_1: {ctor: '[]'}
+				}
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (rowIndex, row) {
+						return row(
+							A2(
+								_elm_lang$core$List$indexedMap,
+								F2(
+									function (cellIndex, cell) {
+										var isActive = _elm_lang$core$Native_Utils.eq(
+											runtime.activeCoor,
+											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
+										var pixel = A3(_minond$brainloller$Brainloller$getCellAt, program, cellIndex, rowIndex);
+										return A2(
+											cell,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													A3(writeHandler, cellIndex, rowIndex, true)),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onMouseDown(
+														A3(writeHandler, cellIndex, rowIndex, true)),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onMouseOver(
+															A3(writeHandler, cellIndex, rowIndex, false)),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$style(
+																{
+																	ctor: '::',
+																	_0: _minond$brainloller$Brainloller$pixelStyle(pixel),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$classList(
+																	{
+																		ctor: '::',
+																		_0: {ctor: '_Tuple2', _0: 'program-cell', _1: true},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple2', _0: 'program-cell--active', _1: isActive},
+																			_1: {ctor: '[]'}
+																		}
+																	}),
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											},
+											{ctor: '[]'});
+									}),
+								A2(_elm_lang$core$List$repeat, width, _elm_lang$html$Html$div)));
+					}),
+				A2(
+					_elm_lang$core$List$repeat,
+					height,
+					_elm_lang$html$Html$div(
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('program-row'),
+							_1: {ctor: '[]'}
+						}))));
+	});
 var _minond$brainloller$Brainloller$setCellAt = F4(
 	function (program, x, y, p) {
 		var row = _minond$brainloller$Brainloller$asList(
@@ -16079,6 +16067,95 @@ var _minond$brainloller$Brainloller$getCmd = F2(
 		}
 	});
 var _minond$brainloller$Brainloller$cmds = {shiftRight: 'shiftRight', shiftLeft: 'shiftLeft', increment: 'increment', decrement: 'decrement', ioWrite: 'ioWrite', ioRead: 'ioRead', loopOpen: 'loopOpen', loopClose: 'loopClose', rotateClockwise: 'rotateClockwise', rotateCounterClockwise: 'rotateCounterClockwise', noop: 'noop'};
+var _minond$brainloller$Brainloller$commands = F2(
+	function (cmdSetter, activeCmd) {
+		var picker = F2(
+			function (label, cmd) {
+				return A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(
+							cmdSetter(cmd)),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$tabindex(1),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$title(label),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$classList(
+										{
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
+											_1: {
+												ctor: '::',
+												_0: {
+													ctor: '_Tuple2',
+													_0: 'cmd-btn-active',
+													_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
+												},
+												_1: {
+													ctor: '::',
+													_0: {
+														ctor: '_Tuple2',
+														_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
+														_1: true
+													},
+													_1: {ctor: '[]'}
+												}
+											}
+										}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					},
+					{ctor: '[]'});
+			});
+		return {
+			ctor: '::',
+			_0: A2(picker, '>', _minond$brainloller$Brainloller$cmds.shiftRight),
+			_1: {
+				ctor: '::',
+				_0: A2(picker, '<', _minond$brainloller$Brainloller$cmds.shiftLeft),
+				_1: {
+					ctor: '::',
+					_0: A2(picker, '+', _minond$brainloller$Brainloller$cmds.increment),
+					_1: {
+						ctor: '::',
+						_0: A2(picker, '-', _minond$brainloller$Brainloller$cmds.decrement),
+						_1: {
+							ctor: '::',
+							_0: A2(picker, '.', _minond$brainloller$Brainloller$cmds.ioWrite),
+							_1: {
+								ctor: '::',
+								_0: A2(picker, ',', _minond$brainloller$Brainloller$cmds.ioRead),
+								_1: {
+									ctor: '::',
+									_0: A2(picker, '[', _minond$brainloller$Brainloller$cmds.loopOpen),
+									_1: {
+										ctor: '::',
+										_0: A2(picker, ']', _minond$brainloller$Brainloller$cmds.loopClose),
+										_1: {
+											ctor: '::',
+											_0: A2(picker, '+90', _minond$brainloller$Brainloller$cmds.rotateClockwise),
+											_1: {
+												ctor: '::',
+												_0: A2(picker, '-90', _minond$brainloller$Brainloller$cmds.rotateCounterClockwise),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+	});
 var _minond$brainloller$Brainloller$pixel = F3(
 	function (r, g, b) {
 		return {r: r, g: g, b: b};
@@ -16130,251 +16207,6 @@ var _minond$brainloller$Brainloller$BLCmd = function (a) {
 var _minond$brainloller$Brainloller$Pixel = F3(
 	function (a, b, c) {
 		return {r: a, g: b, b: c};
-	});
-
-var _minond$brainloller$Editor$memoryTape = function (runtime) {
-	var len = _elm_lang$core$List$length(runtime.memory);
-	var padding = A2(
-		_elm_lang$core$List$drop,
-		len,
-		A2(_elm_lang$core$List$repeat, 10, 0));
-	var cells = A2(_elm_lang$core$Basics_ops['++'], runtime.memory, padding);
-	var cell = F2(
-		function (i, val) {
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$classList(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'program-memory-cell', _1: true},
-							_1: {
-								ctor: '::',
-								_0: {
-									ctor: '_Tuple2',
-									_0: 'program-memory-cell--active',
-									_1: _elm_lang$core$Native_Utils.eq(runtime.activeCell, i)
-								},
-								_1: {ctor: '[]'}
-							}
-						}),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(
-								_elm_lang$core$Basics$toString(val)),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				});
-		});
-	return A2(_elm_lang$core$List$indexedMap, cell, cells);
-};
-var _minond$brainloller$Editor$commandsForm = F2(
-	function (cmdSetter, activeCmd) {
-		var picker = F2(
-			function (label, cmd) {
-				return A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(
-							cmdSetter(cmd)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$tabindex(1),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$title(label),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$classList(
-										{
-											ctor: '::',
-											_0: {ctor: '_Tuple2', _0: 'cmd-btn', _1: true},
-											_1: {
-												ctor: '::',
-												_0: {
-													ctor: '_Tuple2',
-													_0: 'cmd-btn-active',
-													_1: _elm_lang$core$Native_Utils.eq(cmd, activeCmd)
-												},
-												_1: {
-													ctor: '::',
-													_0: {
-														ctor: '_Tuple2',
-														_0: A2(_elm_lang$core$Basics_ops['++'], 'cmd-btn--', cmd),
-														_1: true
-													},
-													_1: {ctor: '[]'}
-												}
-											}
-										}),
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					},
-					{ctor: '[]'});
-			});
-		var cmds = _minond$brainloller$Brainloller$cmds;
-		return {
-			ctor: '::',
-			_0: A2(picker, '>', cmds.shiftRight),
-			_1: {
-				ctor: '::',
-				_0: A2(picker, '<', cmds.shiftLeft),
-				_1: {
-					ctor: '::',
-					_0: A2(picker, '+', cmds.increment),
-					_1: {
-						ctor: '::',
-						_0: A2(picker, '-', cmds.decrement),
-						_1: {
-							ctor: '::',
-							_0: A2(picker, '.', cmds.ioWrite),
-							_1: {
-								ctor: '::',
-								_0: A2(picker, ',', cmds.ioRead),
-								_1: {
-									ctor: '::',
-									_0: A2(picker, '[', cmds.loopOpen),
-									_1: {
-										ctor: '::',
-										_0: A2(picker, ']', cmds.loopClose),
-										_1: {
-											ctor: '::',
-											_0: A2(picker, '+90', cmds.rotateClockwise),
-											_1: {
-												ctor: '::',
-												_0: A2(picker, '-90', cmds.rotateCounterClockwise),
-												_1: {ctor: '[]'}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		};
-	});
-var _minond$brainloller$Editor$pixelStyle = function (p) {
-	return {
-		ctor: '_Tuple2',
-		_0: 'backgroundColor',
-		_1: A2(
-			_elm_lang$core$Basics_ops['++'],
-			'rgb(',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(p.r),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					', ',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(p.g),
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							', ',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(p.b),
-								')'))))))
-	};
-};
-var _minond$brainloller$Editor$programCells = F7(
-	function (width, height, program, runtime, writeHandler, enableHandler, disableHandler) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
-					_1: {ctor: '[]'}
-				}
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (rowIndex, row) {
-						return row(
-							A2(
-								_elm_lang$core$List$indexedMap,
-								F2(
-									function (cellIndex, cell) {
-										var isActive = _elm_lang$core$Native_Utils.eq(
-											runtime.activeCoor,
-											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
-										var pixel = A3(_minond$brainloller$Brainloller$getCellAt, program, cellIndex, rowIndex);
-										return A2(
-											cell,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(
-													A3(writeHandler, cellIndex, rowIndex, true)),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onMouseDown(
-														A3(writeHandler, cellIndex, rowIndex, true)),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onMouseOver(
-															A3(writeHandler, cellIndex, rowIndex, false)),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$style(
-																{
-																	ctor: '::',
-																	_0: _minond$brainloller$Editor$pixelStyle(pixel),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$classList(
-																	{
-																		ctor: '::',
-																		_0: {ctor: '_Tuple2', _0: 'program-cell', _1: true},
-																		_1: {
-																			ctor: '::',
-																			_0: {ctor: '_Tuple2', _0: 'program-cell--active', _1: isActive},
-																			_1: {ctor: '[]'}
-																		}
-																	}),
-																_1: {ctor: '[]'}
-															}
-														}
-													}
-												}
-											},
-											{ctor: '[]'});
-									}),
-								A2(_elm_lang$core$List$repeat, width, _elm_lang$html$Html$div)));
-					}),
-				A2(
-					_elm_lang$core$List$repeat,
-					height,
-					_elm_lang$html$Html$div(
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('program-row'),
-							_1: {ctor: '[]'}
-						}))));
 	});
 
 var _minond$brainloller$Program$progCat = {
@@ -19330,7 +19162,7 @@ var _minond$brainloller$Main$editorMemory = function (_p2) {
 					_0: _elm_lang$html$Html_Attributes$class('program-memory'),
 					_1: {ctor: '[]'}
 				},
-				_minond$brainloller$Editor$memoryTape(_p3.runtime)),
+				_minond$brainloller$Brainloller$memoryTape(_p3.runtime)),
 			_1: {ctor: '[]'}
 		}
 	};
@@ -19963,7 +19795,7 @@ var _minond$brainloller$Main$editorCanvas = function (_p5) {
 						},
 						{
 							ctor: '::',
-							_0: A7(_minond$brainloller$Editor$programCells, width, height, program, _p6.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+							_0: A7(_minond$brainloller$Brainloller$programCells, width, height, program, _p6.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
 							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
@@ -20085,7 +19917,7 @@ var _minond$brainloller$Main$editorOptcodes = function (model) {
 					_0: _elm_lang$html$Html_Attributes$class('mb2'),
 					_1: {ctor: '[]'}
 				},
-				A2(_minond$brainloller$Editor$commandsForm, setCmd, activeCmd)),
+				A2(_minond$brainloller$Brainloller$commands, setCmd, activeCmd)),
 			_1: {ctor: '[]'}
 		}
 	};

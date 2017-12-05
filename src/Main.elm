@@ -1,7 +1,6 @@
 port module Main exposing (main)
 
 import Brainloller
-import Editor exposing (commandsForm, memoryTape, programCells)
 import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, p, section, select, span, text)
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
@@ -443,7 +442,7 @@ editorOptcodes model =
     [ lbl "Brainloller commands"
     , div
         [ class "mb2" ]
-        (commandsForm setCmd activeCmd)
+        (Brainloller.commands setCmd activeCmd)
     ]
 
 
@@ -452,7 +451,7 @@ editorMemory { runtime } =
     [ lbl "Program memory"
     , div
         [ class "program-memory" ]
-        (memoryTape runtime)
+        (Brainloller.memoryTape runtime)
     ]
 
 
@@ -589,7 +588,7 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
             [ class "program-cells-wrapper" ]
             [ div
                 [ style [ ( "zoom", toString zoomLevel ) ] ]
-                [ programCells width height program runtime write EnableWrite DisableWrite ]
+                [ Brainloller.programCells width height program runtime write EnableWrite DisableWrite ]
             ]
         ]
 
