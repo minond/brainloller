@@ -5,7 +5,7 @@ import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, o
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import Lang exposing (BLEnvironment, BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd, getCellMaybe, programDimensions, resizeProgram, setCellAt)
+import Brainloller
 import List
 import Maybe
 import Program exposing (progCat, progFib, progHelloWorld)
@@ -15,32 +15,32 @@ import Tuple exposing (first, second)
 import Util exposing (asList)
 
 
-port downloadProgram : BLProgram -> Cmd msg
+port downloadProgram : Brainloller.Program -> Cmd msg
 
 
 port uploadProgram : String -> Cmd msg
 
 
-port startExecution : BLEnvironment -> Cmd msg
+port startExecution : Brainloller.Environment -> Cmd msg
 
 
 port setInterpreterSpeed : String -> Cmd msg
 
 
-port pauseExecution : BLEnvironment -> Cmd msg
+port pauseExecution : Brainloller.Environment -> Cmd msg
 
 
-port imageProcessed : (BLProgram -> msg) -> Sub msg
+port imageProcessed : (Brainloller.Program -> msg) -> Sub msg
 
 
-port interpreterTick : (BLRuntime -> msg) -> Sub msg
+port interpreterTick : (Brainloller.Runtime -> msg) -> Sub msg
 
 
-port interpreterHalt : (BLRuntime -> msg) -> Sub msg
+port interpreterHalt : (Brainloller.Runtime -> msg) -> Sub msg
 
 
 type Msg
-    = SetCmd BLOptCode
+    = SetCmd Brainloller.Optcode
     | SetSpeed String
     | LoadMemoryProgram String
     | WriteCmd Int Int Bool
@@ -50,7 +50,7 @@ type Msg
     | DecreaseSize
     | DownloadProgram
     | UploadProgram
-    | ImageProcessed BLProgram
+    | ImageProcessed Brainloller.Program
     | Undo
     | Redo
     | ZoomIn
@@ -59,8 +59,8 @@ type Msg
     | Start
     | Pause
     | Continue
-    | Tick BLRuntime
-    | Halt BLRuntime
+    | Tick Brainloller.Runtime
+    | Halt Brainloller.Runtime
 
 
 type History a
@@ -70,9 +70,9 @@ type History a
 
 
 type alias Model =
-    { work : History BLProgram
-    , activeCmd : Maybe BLOptCode
-    , runtime : BLRuntime
+    { work : History Brainloller.Program
+    , activeCmd : Maybe Brainloller.Optcode
+    , runtime : Brainloller.Runtime
     , tickCounter : Int
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
@@ -94,9 +94,9 @@ initialModel : Model
 initialModel =
     { work = Curr progHelloWorld
     , activeCmd = Nothing
-    , runtime = createRuntime Nothing
+    , runtime = Brainloller.create Nothing
     , tickCounter = 0
-    , boardDimensions = programDimensions progHelloWorld
+    , boardDimensions = Brainloller.dimensions progHelloWorld
     , zoomLevel = 1
     , interpreterSpeed = "5"
     , writeEnabled = False
@@ -109,7 +109,7 @@ update message model =
         ( LoadMemoryProgram prog, { work }, _ ) ->
             let
                 runtime =
-                    createRuntime Nothing
+                    Brainloller.create Nothing
 
                 program =
                     case prog of
@@ -191,7 +191,7 @@ update message model =
             ( { model
                 | work = Curr prog
                 , zoomLevel = 1
-                , boardDimensions = programDimensions prog
+                , boardDimensions = Brainloller.dimensions prog
               }
             , Cmd.none
             )
@@ -267,21 +267,21 @@ update message model =
                     List.take 20 (program :: historyBack work)
 
                 pixel =
-                    getBlCmd activeCmd blCmdPixel
+                    Brainloller.getCmd activeCmd Brainloller.cmdToPixel
 
                 rewrite =
                     force || writeEnabled
 
                 resized =
                     if rewrite then
-                        resizeProgram program x y
+                        Brainloller.resize program x y
                     else
                         program
 
                 update =
-                    case ( rewrite, getCellMaybe resized x y ) of
+                    case ( rewrite, Brainloller.getCellMaybe resized x y ) of
                         ( True, Just _ ) ->
-                            BackCurr back (setCellAt resized x y pixel)
+                            BackCurr back (Brainloller.setCellAt resized x y pixel)
 
                         _ ->
                             work
@@ -574,7 +574,7 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
             historyCurr work
 
         dim =
-            programDimensions program
+            Brainloller.dimensions program
 
         minWidth =
             35

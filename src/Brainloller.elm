@@ -1,18 +1,18 @@
-module Lang
+module Brainloller
     exposing
-        ( BLEnvironment
-        , BLOptCode
-        , BLProgram
-        , BLRuntime
+        ( Environment
+        , Optcode
+        , Program
+        , Runtime
         , Pixel
-        , blCmd
-        , blCmdPixel
-        , createRuntime
-        , getBlCmd
+        , cmds
+        , cmdToPixel
+        , create
+        , getCmd
         , getCellAt
         , getCellMaybe
-        , programDimensions
-        , resizeProgram
+        , dimensions
+        , resize
         , setCellAt
         )
 
@@ -20,21 +20,21 @@ import List.Extra exposing (getAt, setAt)
 import Util exposing (asList)
 
 
-type alias BLEnvironment =
-    { runtime : BLRuntime
-    , program : BLProgram
+type alias Environment =
+    { runtime : Runtime
+    , program : Program
     }
 
 
-type alias BLOptCode =
+type alias Optcode =
     String
 
 
-type alias BLProgram =
+type alias Program =
     List (List Pixel)
 
 
-type alias BLRuntime =
+type alias Runtime =
     { activeCoor : ( Int, Int )
     , activeCell : Int
     , jumps : List ( Int, Int, Int )
@@ -75,8 +75,8 @@ pixel r g b =
     }
 
 
-blCmd : BLCmd String
-blCmd =
+cmds : BLCmd String
+cmds =
     { shiftRight = "shiftRight"
     , shiftLeft = "shiftLeft"
     , increment = "increment"
@@ -91,8 +91,8 @@ blCmd =
     }
 
 
-blCmdPixel : BLCmd Pixel
-blCmdPixel =
+cmdToPixel : BLCmd Pixel
+cmdToPixel =
     { shiftRight = pixel 255 0 0 -- >, red
     , shiftLeft = pixel 128 0 0 -- <, dark red
     , increment = pixel 0 255 0 -- +, green
@@ -107,8 +107,8 @@ blCmdPixel =
     }
 
 
-getBlCmd : BLOptCode -> BLCmd a -> a
-getBlCmd key dict =
+getCmd : Optcode -> BLCmd a -> a
+getCmd key dict =
     case key of
         "shiftRight" ->
             dict.shiftRight
@@ -144,8 +144,8 @@ getBlCmd key dict =
             dict.noop
 
 
-createRuntime : Maybe String -> BLRuntime
-createRuntime input =
+create : Maybe String -> Runtime
+create input =
     { activeCoor = ( 0, 0 )
     , activeCell = 0
     , jumps = []
@@ -156,19 +156,19 @@ createRuntime input =
     }
 
 
-getCellAt : BLProgram -> Int -> Int -> Pixel
+getCellAt : Program -> Int -> Int -> Pixel
 getCellAt program x y =
     getCellMaybe program x y
         |> Maybe.withDefault
             { r = 255, g = 255, b = 255 }
 
 
-getCellMaybe : BLProgram -> Int -> Int -> Maybe Pixel
+getCellMaybe : Program -> Int -> Int -> Maybe Pixel
 getCellMaybe program x y =
     getAt x (asList (getAt y program))
 
 
-setCellAt : BLProgram -> Int -> Int -> Pixel -> BLProgram
+setCellAt : Program -> Int -> Int -> Pixel -> Program
 setCellAt program x y p =
     let
         row =
@@ -183,8 +183,8 @@ setCellAt program x y p =
     updatedProgram
 
 
-programDimensions : BLProgram -> ( Int, Int )
-programDimensions program =
+dimensions : Program -> ( Int, Int )
+dimensions program =
     let
         height =
             List.length program
@@ -198,11 +198,11 @@ programDimensions program =
     ( width, height )
 
 
-resizeProgram : BLProgram -> Int -> Int -> BLProgram
-resizeProgram program x y =
+resize : Program -> Int -> Int -> Program
+resize program x y =
     let
         dims =
-            programDimensions program
+            dimensions program
 
         width =
             max (x + 1) (Tuple.first dims)

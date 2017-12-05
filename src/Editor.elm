@@ -9,19 +9,19 @@ import Color exposing (Color, rgb)
 import Html exposing (Attribute, Html, a, button, div, h1, label, p, span, text)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
-import Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd, getCellAt, programDimensions, resizeProgram)
+import Brainloller
 import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 
 
-pixelStyle : Pixel -> ( String, String )
+pixelStyle : Brainloller.Pixel -> ( String, String )
 pixelStyle p =
     ( "backgroundColor", "rgb(" ++ toString p.r ++ ", " ++ toString p.g ++ ", " ++ toString p.b ++ ")" )
 
 
-programCells : Int -> Int -> BLProgram -> BLRuntime -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
+programCells : Int -> Int -> Brainloller.Program -> Brainloller.Runtime -> (Int -> Int -> Bool -> msg) -> msg -> msg -> Html msg
 programCells width height program runtime writeHandler enableHandler disableHandler =
     div
         [ onMouseDown enableHandler
@@ -35,7 +35,7 @@ programCells width height program runtime writeHandler enableHandler disableHand
                         (\cellIndex cell ->
                             let
                                 pixel =
-                                    getCellAt program cellIndex rowIndex
+                                    Brainloller.getCellAt program cellIndex rowIndex
 
                                 isActive =
                                     runtime.activeCoor == ( cellIndex, rowIndex )
@@ -59,9 +59,12 @@ programCells width height program runtime writeHandler enableHandler disableHand
                 div [ class "program-row" ]
 
 
-commandsForm : (BLOptCode -> msg) -> BLOptCode -> List (Html msg)
+commandsForm : (Brainloller.Optcode -> msg) -> Brainloller.Optcode -> List (Html msg)
 commandsForm cmdSetter activeCmd =
     let
+        cmds =
+            Brainloller.cmds
+
         picker =
             \label cmd ->
                 div
@@ -76,20 +79,20 @@ commandsForm cmdSetter activeCmd =
                     ]
                     []
     in
-    [ picker ">" blCmd.shiftRight
-    , picker "<" blCmd.shiftLeft
-    , picker "+" blCmd.increment
-    , picker "-" blCmd.decrement
-    , picker "." blCmd.ioWrite
-    , picker "," blCmd.ioRead
-    , picker "[" blCmd.loopOpen
-    , picker "]" blCmd.loopClose
-    , picker "+90" blCmd.rotateClockwise
-    , picker "-90" blCmd.rotateCounterClockwise
+    [ picker ">" cmds.shiftRight
+    , picker "<" cmds.shiftLeft
+    , picker "+" cmds.increment
+    , picker "-" cmds.decrement
+    , picker "." cmds.ioWrite
+    , picker "," cmds.ioRead
+    , picker "[" cmds.loopOpen
+    , picker "]" cmds.loopClose
+    , picker "+90" cmds.rotateClockwise
+    , picker "-90" cmds.rotateCounterClockwise
     ]
 
 
-memoryTape : BLRuntime -> List (Html msg)
+memoryTape : Brainloller.Runtime -> List (Html msg)
 memoryTape runtime =
     let
         cell =
