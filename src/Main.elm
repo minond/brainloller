@@ -1,7 +1,7 @@
 module Main exposing (main)
 
-import Editor exposing (commandsForm, mainTitle, memoryTape, programCells)
-import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, select, span, text)
+import Editor exposing (commandsForm, memoryTape, programCells)
+import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, p, section, select, span, text)
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -315,47 +315,30 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        title =
-            mainTitle "Brainloller"
-
         cmdClass =
             Maybe.withDefault "" model.activeCmd
-
-        containerClasses =
-            [ "main-container"
-            , "helvetica"
-            , "lh-copy"
-            , "main-container--" ++ cmdClass
-            , Tac.cf
-            , Tac.pa3
-            , Tac.pa4_ns
-            ]
     in
-    div [ classes containerClasses ]
+    div [ class ("cf pa3 pa4-ns container helvetica main-container--" ++ cmdClass) ]
         [ h1
             [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
             [ text "Brainloller" ]
         , div
-            [ class "cf" ]
+            [ class "fl w-100 w-50-ns editor-section" ]
+            [ section [] <| editorIntroduction
+            , section [] <| editorRunControls model
+            , section [] <| editorControls model
+            , section [] <| editorOptcodes model
+            , section [] <| editorMemory model
+            , section [] <| editorOutput model
+            ]
+        , div
+            [ class "fl w-100 w-50-ns pl3-ns editor-section" ]
             [ div
-                [ class "w-100 w-40-l mb4" ]
-                [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
-                , text " is "
-                , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
-                , text """ but represented as an image. If you're not familiar with
-                    Brainfuck already, go checkout
-                    """
-                , link " this debugger" "http://minond.xyz/brainfuck" True
-                , text """. Brainloller gives you the eight commands that you have in
-                    Brainfuck with two additional commands for rotating the direction
-                    in which the program is evaluated. Below is an editor and
-                    interpreter. Automatically loaded is a "Hello, World" program. Run
-                    it by clicking on the "Play" button below.
-                    """
-                ]
+                [ class "noselect" ]
+                [ editorCanvas model ]
             , div
-                [ class "" ]
-                [ programContainer model ]
+                [ class "helvetica program-message-status" ]
+                [ text "" ]
             ]
         ]
 
@@ -396,8 +379,37 @@ link label to external =
         [ text label ]
 
 
-programContainer : Model -> Html Msg
-programContainer model =
+editorOutput : Model -> List (Html Msg)
+editorOutput model =
+    let
+        output =
+            Maybe.withDefault "none" model.runtime.output
+    in
+    [ lbl "Output"
+    , mono output
+    ]
+
+
+editorOptcodes : Model -> List (Html Msg)
+editorOptcodes model =
+    [ lbl "Brainloller commands"
+    , div
+        [ class "mb2" ]
+        (programCommands model)
+    ]
+
+
+editorMemory : Model -> List (Html Msg)
+editorMemory { runtime } =
+    [ lbl "Program memory"
+    , div
+        [ class "program-memory" ]
+        (memoryTape runtime)
+    ]
+
+
+editorControls : Model -> List (Html Msg)
+editorControls _ =
     let
         uploadBtn =
             label
@@ -463,66 +475,47 @@ programContainer model =
             , uploadBtn
             , downloadBtn
             ]
-
-        output =
-            Maybe.withDefault "none" model.runtime.output
     in
-    div
-        [ class "cf" ]
-        [ div
-            [ class "fl w-100 w-50-ns pr3-m pr5-l" ]
-            [ lbl "Load a program"
-            , select
-                [ onInput LoadMemoryProgram
-                , class "w-50 mb3"
-                ]
-                [ option
-                    []
-                    [ text "helloworld.png" ]
-                , option
-                    []
-                    [ text "cat.png" ]
-                , option
-                    []
-                    [ text "fib.png" ]
-                ]
-            , lbl ("Change evaluation delay (" ++ model.interpreterSpeed ++ ")")
-            , input
-                [ type_ "range"
-                , class "w-50 mb2"
-                , value model.interpreterSpeed
-                , onInput SetSpeed
-                ]
-                []
-            , lbl "Program controls"
-            , div
-                [ class "mb2" ]
-                commands
-            , lbl "Brainloller commands"
-            , div
-                [ class "mb2" ]
-                (programCommands model)
-            , lbl "Program memory"
-            , div
-                [ class "program-memory" ]
-                (memoryTape model.runtime)
-            , lbl "Output"
-            , mono output
-            ]
-        , div
-            [ class "helvetica program-message-status" ]
-            [ text "" ]
-        , div
-            [ class "noselect fl w-100 w-50-ns" ]
-            [ programCanvas model ]
+    [ lbl "Program controls"
+    , div
+        [ class "mb2" ]
+        commands
+    ]
+
+
+editorRunControls : Model -> List (Html Msg)
+editorRunControls { interpreterSpeed } =
+    [ lbl "Load a program"
+    , select
+        [ onInput LoadMemoryProgram
+        , class "w-50 mb3"
         ]
+        [ option
+            []
+            [ text "helloworld.png" ]
+        , option
+            []
+            [ text "cat.png" ]
+        , option
+            []
+            [ text "fib.png" ]
+        ]
+    , lbl ("Change evaluation delay (" ++ interpreterSpeed ++ ")")
+    , input
+        [ type_ "range"
+        , class "w-50 mb2"
+        , value interpreterSpeed
+        , onInput SetSpeed
+        ]
+        []
+    ]
 
 
-programCanvas : Model -> Html Msg
-programCanvas model =
+editorCanvas : Model -> Html Msg
+editorCanvas { work, boardDimensions, zoomLevel, runtime } =
     let
         program =
-            historyCurr model.work
+            historyCurr work
 
         dim =
             programDimensions program
@@ -534,10 +527,10 @@ programCanvas model =
             25
 
         width =
-            2 + max minWidth (max (first dim) (first model.boardDimensions))
+            2 + max minWidth (max (first dim) (first boardDimensions))
 
         height =
-            2 + max minHeight (max (second dim) (second model.boardDimensions))
+            2 + max minHeight (max (second dim) (second boardDimensions))
 
         write =
             \x y f -> WriteCmd x y f
@@ -547,8 +540,8 @@ programCanvas model =
         [ div
             [ class "program-cells-wrapper" ]
             [ div
-                [ style [ ( "zoom", toString model.zoomLevel ) ] ]
-                [ programCells width height program model.runtime write EnableWrite DisableWrite ]
+                [ style [ ( "zoom", toString zoomLevel ) ] ]
+                [ programCells width height program runtime write EnableWrite DisableWrite ]
             ]
         ]
 
@@ -589,3 +582,23 @@ historyBack hist =
 
         BackCurrForw back _ _ ->
             back
+
+
+editorIntroduction : List (Html Msg)
+editorIntroduction =
+    [ p [ class "mt0 lh-copy" ]
+        [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
+        , text " is "
+        , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
+        , text """ but represented as an image. If you're not familiar with
+            Brainfuck already, go checkout
+            """
+        , link " this debugger" "http://minond.xyz/brainfuck" True
+        , text """. Brainloller gives you the eight commands that you have in
+            Brainfuck with two additional commands for rotating the direction
+            in which the program is evaluated. Below is an editor and
+            interpreter. Automatically loaded is a "Hello, World" program. Run
+            it by clicking on the "Play" button below.
+            """
+        ]
+    ]

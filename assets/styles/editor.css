@@ -3,26 +3,6 @@ body {
   letter-spacing: .7px;
 }
 
-input {
-  height: 30px;
-}
-
-p:first-child {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-.label {
-  display: block;
-  margin-bottom: 15px;
-}
-
-.label > span {
-  display: block;
-  margin-bottom: 3px;
-  color: #7d7d7d;
-}
-
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -32,10 +12,10 @@ p:first-child {
   user-select: none;
 }
 
-.main-container {
+.container {
   max-width: 75rem;
-  box-sizing: content-box;
   margin: 0 auto;
+  box-sizing: content-box;
 }
 
 .program-cells {

@@ -1,7 +1,6 @@
 module Editor
     exposing
         ( commandsForm
-        , mainTitle
         , memoryTape
         , programCells
         )
@@ -15,22 +14,6 @@ import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
-
-
-mainTitle : String -> Html msg
-mainTitle title =
-    let
-        h1Classes =
-            [ Tac.mt0
-            , Tac.f3
-            , Tac.f2_m
-            , Tac.f1_l
-            , Tac.fw1
-            , Tac.baskerville
-            ]
-    in
-    h1 [ classes h1Classes ]
-        [ text title ]
 
 
 pixelStyle : Pixel -> ( String, String )
