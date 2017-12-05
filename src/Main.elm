@@ -1,7 +1,24 @@
 port module Main exposing (main)
 
 import Brainloller
-import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, p, section, select, span, text)
+import Html
+    exposing
+        ( Attribute
+        , Html
+        , a
+        , button
+        , code
+        , div
+        , h1
+        , input
+        , label
+        , option
+        , p
+        , section
+        , select
+        , span
+        , text
+        )
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
