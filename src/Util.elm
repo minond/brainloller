@@ -1,4 +1,4 @@
-module Util exposing (asList, mapBoth, ternary)
+module Util exposing (asList, mapBoth)
 
 import Maybe
 import Tuple exposing (first, second)
@@ -7,14 +7,6 @@ import Tuple exposing (first, second)
 asList : Maybe (List a) -> List a
 asList list =
     Maybe.withDefault [] list
-
-
-ternary : Bool -> a -> a -> a
-ternary cond pass fail =
-    if cond then
-        pass
-    else
-        fail
 
 
 mapBoth : (a -> b) -> ( a, a ) -> ( b, b )

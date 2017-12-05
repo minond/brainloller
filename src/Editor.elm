@@ -2,7 +2,6 @@ module Editor
     exposing
         ( cmdTextBtn
         , commandsForm
-        , link
         , mainTitle
         , memoryTape
         , programCells
@@ -14,22 +13,12 @@ import Color exposing (Color, rgb)
 import Html exposing (Attribute, Html, a, button, div, h1, label, p, span, text)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
-import Lang
-    exposing
-        ( BLOptCode
-        , BLProgram
-        , BLRuntime
-        , Pixel
-        , blCmd
-        , getCellAt
-        , programDimensions
-        , resizeProgram
-        )
+import Lang exposing (BLOptCode, BLProgram, BLRuntime, Pixel, blCmd, getCellAt, programDimensions, resizeProgram)
 import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
-import Util exposing (asList, ternary)
+import Util exposing (asList)
 
 
 type alias BoardConfig =
@@ -38,20 +27,6 @@ type alias BoardConfig =
     , startX : Int
     , startY : Int
     }
-
-
-link : String -> String -> Bool -> Html msg
-link label to external =
-    a
-        [ href to
-        , target (ternary external "_blank" "_self")
-        , classes
-            [ Tac.link
-            , Tac.dim
-            , Tac.blue
-            ]
-        ]
-        [ text label ]
 
 
 cmdTextBtn : String -> List (Attribute msg) -> Html msg

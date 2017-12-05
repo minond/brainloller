@@ -1,45 +1,14 @@
 module Main exposing (main)
 
-import Editor
-    exposing
-        ( commandsForm
-        , link
-        , mainTitle
-        , memoryTape
-        , programCells
-        , textCopy
-        , textLabel
-        )
-import Html exposing (Attribute, Html, button, code, div, input, label, option, select, span, text)
-import Html.Attributes exposing (class, id, style, type_, value)
+import Editor exposing (commandsForm, mainTitle, memoryTape, programCells, textCopy, textLabel)
+import Html exposing (Attribute, Html, a, button, code, div, input, label, option, select, span, text)
+import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import Lang
-    exposing
-        ( BLOptCode
-        , BLProgram
-        , BLRuntime
-        , blCmdPixel
-        , createRuntime
-        , getBlCmd
-        , getCellMaybe
-        , programDimensions
-        , resizeProgram
-        , setCellAt
-        )
+import Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd, getCellMaybe, programDimensions, resizeProgram, setCellAt)
 import List
 import Maybe
-import Ports
-    exposing
-        ( downloadProgram
-        , imageProcessed
-        , interpreterHalt
-        , interpreterTick
-        , pauseExecution
-        , setInterpreterSpeed
-        , startExecution
-        , uploadProgram
-        )
+import Ports exposing (downloadProgram, imageProcessed, interpreterHalt, interpreterTick, pauseExecution, setInterpreterSpeed, startExecution, uploadProgram)
 import Program exposing (progCat, progFib, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
@@ -375,6 +344,42 @@ view model =
         ]
 
 
+btn : String -> List (Attribute msg) -> Html msg
+btn val attrs =
+    button
+        ([ class "mr2 mb2 pointer" ] ++ attrs)
+        [ text val ]
+
+
+lbl : String -> Html Msg
+lbl txt =
+    div
+        [ class "f6 mb2 gray i" ]
+        [ text txt ]
+
+
+mono : String -> Html Msg
+mono str =
+    code
+        [ class "f6 ph1 tc bg-light-gray word-wrap" ]
+        [ text str ]
+
+
+link : String -> String -> Bool -> Html msg
+link label to external =
+    a
+        [ href to
+        , target
+            (if external then
+                "_blank"
+             else
+                "_self"
+            )
+        , class "link dim blue"
+        ]
+        [ text label ]
+
+
 programContainer : Model -> Html Msg
 programContainer model =
     let
@@ -588,24 +593,3 @@ introText1 =
             """
         ]
     ]
-
-
-btn : String -> List (Attribute msg) -> Html msg
-btn val attrs =
-    button
-        ([ class "mr2 mb2 pointer" ] ++ attrs)
-        [ text val ]
-
-
-lbl : String -> Html Msg
-lbl txt =
-    div
-        [ class "f6 mb2 gray i" ]
-        [ text txt ]
-
-
-mono : String -> Html Msg
-mono str =
-    code
-        [ class "f6 ph1 tc bg-light-gray word-wrap" ]
-        [ text str ]
