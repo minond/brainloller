@@ -1,19 +1,42 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Editor exposing (commandsForm, memoryTape, programCells)
 import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, p, section, select, span, text)
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import Lang exposing (BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd, getCellMaybe, programDimensions, resizeProgram, setCellAt)
+import Lang exposing (BLEnvironment, BLOptCode, BLProgram, BLRuntime, blCmdPixel, createRuntime, getBlCmd, getCellMaybe, programDimensions, resizeProgram, setCellAt)
 import List
 import Maybe
-import Ports exposing (downloadProgram, imageProcessed, interpreterHalt, interpreterTick, pauseExecution, setInterpreterSpeed, startExecution, uploadProgram)
 import Program exposing (progCat, progFib, progHelloWorld)
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
 import Util exposing (asList)
+
+
+port downloadProgram : BLProgram -> Cmd msg
+
+
+port uploadProgram : String -> Cmd msg
+
+
+port startExecution : BLEnvironment -> Cmd msg
+
+
+port setInterpreterSpeed : String -> Cmd msg
+
+
+port pauseExecution : BLEnvironment -> Cmd msg
+
+
+port imageProcessed : (BLProgram -> msg) -> Sub msg
+
+
+port interpreterTick : (BLRuntime -> msg) -> Sub msg
+
+
+port interpreterHalt : (BLRuntime -> msg) -> Sub msg
 
 
 type Msg
@@ -379,6 +402,32 @@ link label to external =
         [ text label ]
 
 
+historyCurr : History a -> a
+historyCurr hist =
+    case hist of
+        Curr val ->
+            val
+
+        BackCurr _ val ->
+            val
+
+        BackCurrForw _ val _ ->
+            val
+
+
+historyBack : History a -> List a
+historyBack hist =
+    case hist of
+        Curr _ ->
+            []
+
+        BackCurr back _ ->
+            back
+
+        BackCurrForw back _ _ ->
+            back
+
+
 editorOutput : Model -> List (Html Msg)
 editorOutput model =
     let
@@ -392,10 +441,17 @@ editorOutput model =
 
 editorOptcodes : Model -> List (Html Msg)
 editorOptcodes model =
+    let
+        setCmd =
+            \cmd -> SetCmd cmd
+
+        activeCmd =
+            Maybe.withDefault "" model.activeCmd
+    in
     [ lbl "Brainloller commands"
     , div
         [ class "mb2" ]
-        (programCommands model)
+        (commandsForm setCmd activeCmd)
     ]
 
 
@@ -544,44 +600,6 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
                 [ programCells width height program runtime write EnableWrite DisableWrite ]
             ]
         ]
-
-
-programCommands : Model -> List (Html Msg)
-programCommands model =
-    let
-        setCmd =
-            \cmd -> SetCmd cmd
-
-        activeCmd =
-            Maybe.withDefault "" model.activeCmd
-    in
-    commandsForm setCmd activeCmd
-
-
-historyCurr : History a -> a
-historyCurr hist =
-    case hist of
-        Curr val ->
-            val
-
-        BackCurr _ val ->
-            val
-
-        BackCurrForw _ val _ ->
-            val
-
-
-historyBack : History a -> List a
-historyBack hist =
-    case hist of
-        Curr _ ->
-            []
-
-        BackCurr back _ ->
-            back
-
-        BackCurrForw back _ _ ->
-            back
 
 
 editorIntroduction : List (Html Msg)

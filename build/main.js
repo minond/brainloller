@@ -16377,305 +16377,6 @@ var _minond$brainloller$Editor$programCells = F7(
 						}))));
 	});
 
-var _minond$brainloller$Ports$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
-	'downloadProgram',
-	function (v) {
-		return _elm_lang$core$Native_List.toArray(v).map(
-			function (v) {
-				return _elm_lang$core$Native_List.toArray(v).map(
-					function (v) {
-						return {r: v.r, g: v.g, b: v.b};
-					});
-			});
-	});
-var _minond$brainloller$Ports$uploadProgram = _elm_lang$core$Native_Platform.outgoingPort(
-	'uploadProgram',
-	function (v) {
-		return v;
-	});
-var _minond$brainloller$Ports$startExecution = _elm_lang$core$Native_Platform.outgoingPort(
-	'startExecution',
-	function (v) {
-		return {
-			runtime: {
-				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
-				activeCell: v.runtime.activeCell,
-				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
-					function (v) {
-						return [v._0, v._1, v._2];
-					}),
-				pointerDeg: v.runtime.pointerDeg,
-				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
-				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
-					function (v) {
-						return v;
-					})
-			},
-			program: _elm_lang$core$Native_List.toArray(v.program).map(
-				function (v) {
-					return _elm_lang$core$Native_List.toArray(v).map(
-						function (v) {
-							return {r: v.r, g: v.g, b: v.b};
-						});
-				})
-		};
-	});
-var _minond$brainloller$Ports$setInterpreterSpeed = _elm_lang$core$Native_Platform.outgoingPort(
-	'setInterpreterSpeed',
-	function (v) {
-		return v;
-	});
-var _minond$brainloller$Ports$pauseExecution = _elm_lang$core$Native_Platform.outgoingPort(
-	'pauseExecution',
-	function (v) {
-		return {
-			runtime: {
-				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
-				activeCell: v.runtime.activeCell,
-				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
-					function (v) {
-						return [v._0, v._1, v._2];
-					}),
-				pointerDeg: v.runtime.pointerDeg,
-				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
-				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
-					function (v) {
-						return v;
-					})
-			},
-			program: _elm_lang$core$Native_List.toArray(v.program).map(
-				function (v) {
-					return _elm_lang$core$Native_List.toArray(v).map(
-						function (v) {
-							return {r: v.r, g: v.g, b: v.b};
-						});
-				})
-		};
-	});
-var _minond$brainloller$Ports$imageProcessed = _elm_lang$core$Native_Platform.incomingPort(
-	'imageProcessed',
-	_elm_lang$core$Json_Decode$list(
-		_elm_lang$core$Json_Decode$list(
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (r) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (g) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (b) {
-									return _elm_lang$core$Json_Decode$succeed(
-										{r: r, g: g, b: b});
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'b', _elm_lang$core$Json_Decode$int));
-						},
-						A2(_elm_lang$core$Json_Decode$field, 'g', _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'r', _elm_lang$core$Json_Decode$int)))));
-var _minond$brainloller$Ports$interpreterTick = _elm_lang$core$Native_Platform.incomingPort(
-	'interpreterTick',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (activeCoor) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (activeCell) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (jumps) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (pointerDeg) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (output) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (input) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (memory) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'memory',
-															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'input',
-													_elm_lang$core$Json_Decode$oneOf(
-														{
-															ctor: '::',
-															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-															_1: {
-																ctor: '::',
-																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-																_1: {ctor: '[]'}
-															}
-														})));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'output',
-											_elm_lang$core$Json_Decode$oneOf(
-												{
-													ctor: '::',
-													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-													_1: {
-														ctor: '::',
-														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-														_1: {ctor: '[]'}
-													}
-												})));
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'jumps',
-							_elm_lang$core$Json_Decode$list(
-								A2(
-									_elm_lang$core$Json_Decode$andThen,
-									function (x0) {
-										return A2(
-											_elm_lang$core$Json_Decode$andThen,
-											function (x1) {
-												return A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (x2) {
-														return _elm_lang$core$Json_Decode$succeed(
-															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
-													},
-													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
-											},
-											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-									},
-									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
-		},
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'activeCoor',
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (x0) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (x1) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple2', _0: x0, _1: x1});
-						},
-						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.incomingPort(
-	'interpreterHalt',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (activeCoor) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (activeCell) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (jumps) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (pointerDeg) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (output) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (input) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (memory) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'memory',
-															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'input',
-													_elm_lang$core$Json_Decode$oneOf(
-														{
-															ctor: '::',
-															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-															_1: {
-																ctor: '::',
-																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-																_1: {ctor: '[]'}
-															}
-														})));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'output',
-											_elm_lang$core$Json_Decode$oneOf(
-												{
-													ctor: '::',
-													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-													_1: {
-														ctor: '::',
-														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-														_1: {ctor: '[]'}
-													}
-												})));
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'jumps',
-							_elm_lang$core$Json_Decode$list(
-								A2(
-									_elm_lang$core$Json_Decode$andThen,
-									function (x0) {
-										return A2(
-											_elm_lang$core$Json_Decode$andThen,
-											function (x1) {
-												return A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (x2) {
-														return _elm_lang$core$Json_Decode$succeed(
-															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
-													},
-													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
-											},
-											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-									},
-									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
-		},
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'activeCoor',
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (x0) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (x1) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple2', _0: x0, _1: x1});
-						},
-						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-
 var _minond$brainloller$Program$progCat = {
 	ctor: '::',
 	_0: {
@@ -19635,6 +19336,304 @@ var _minond$brainloller$Main$btn = F2(
 				_1: {ctor: '[]'}
 			});
 	});
+var _minond$brainloller$Main$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'downloadProgram',
+	function (v) {
+		return _elm_lang$core$Native_List.toArray(v).map(
+			function (v) {
+				return _elm_lang$core$Native_List.toArray(v).map(
+					function (v) {
+						return {r: v.r, g: v.g, b: v.b};
+					});
+			});
+	});
+var _minond$brainloller$Main$uploadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'uploadProgram',
+	function (v) {
+		return v;
+	});
+var _minond$brainloller$Main$startExecution = _elm_lang$core$Native_Platform.outgoingPort(
+	'startExecution',
+	function (v) {
+		return {
+			runtime: {
+				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
+				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
+					function (v) {
+						return [v._0, v._1, v._2];
+					}),
+				pointerDeg: v.runtime.pointerDeg,
+				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
+			},
+			program: _elm_lang$core$Native_List.toArray(v.program).map(
+				function (v) {
+					return _elm_lang$core$Native_List.toArray(v).map(
+						function (v) {
+							return {r: v.r, g: v.g, b: v.b};
+						});
+				})
+		};
+	});
+var _minond$brainloller$Main$setInterpreterSpeed = _elm_lang$core$Native_Platform.outgoingPort(
+	'setInterpreterSpeed',
+	function (v) {
+		return v;
+	});
+var _minond$brainloller$Main$pauseExecution = _elm_lang$core$Native_Platform.outgoingPort(
+	'pauseExecution',
+	function (v) {
+		return {
+			runtime: {
+				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
+				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
+					function (v) {
+						return [v._0, v._1, v._2];
+					}),
+				pointerDeg: v.runtime.pointerDeg,
+				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
+			},
+			program: _elm_lang$core$Native_List.toArray(v.program).map(
+				function (v) {
+					return _elm_lang$core$Native_List.toArray(v).map(
+						function (v) {
+							return {r: v.r, g: v.g, b: v.b};
+						});
+				})
+		};
+	});
+var _minond$brainloller$Main$imageProcessed = _elm_lang$core$Native_Platform.incomingPort(
+	'imageProcessed',
+	_elm_lang$core$Json_Decode$list(
+		_elm_lang$core$Json_Decode$list(
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (r) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (g) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (b) {
+									return _elm_lang$core$Json_Decode$succeed(
+										{r: r, g: g, b: b});
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'b', _elm_lang$core$Json_Decode$int));
+						},
+						A2(_elm_lang$core$Json_Decode$field, 'g', _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'r', _elm_lang$core$Json_Decode$int)))));
+var _minond$brainloller$Main$interpreterTick = _elm_lang$core$Native_Platform.incomingPort(
+	'interpreterTick',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (activeCoor) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (activeCell) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (jumps) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (pointerDeg) {
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (output) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (input) {
+													return A2(
+														_elm_lang$core$Json_Decode$andThen,
+														function (memory) {
+															return _elm_lang$core$Json_Decode$succeed(
+																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+														},
+														A2(
+															_elm_lang$core$Json_Decode$field,
+															'memory',
+															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'input',
+													_elm_lang$core$Json_Decode$oneOf(
+														{
+															ctor: '::',
+															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+															_1: {
+																ctor: '::',
+																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+																_1: {ctor: '[]'}
+															}
+														})));
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'output',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+						},
+						A2(
+							_elm_lang$core$Json_Decode$field,
+							'jumps',
+							_elm_lang$core$Json_Decode$list(
+								A2(
+									_elm_lang$core$Json_Decode$andThen,
+									function (x0) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											function (x1) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													function (x2) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
+													},
+													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
+											},
+											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+									},
+									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
+		},
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'activeCoor',
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (x0) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (x1) {
+							return _elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple2', _0: x0, _1: x1});
+						},
+						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+var _minond$brainloller$Main$interpreterHalt = _elm_lang$core$Native_Platform.incomingPort(
+	'interpreterHalt',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (activeCoor) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (activeCell) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (jumps) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (pointerDeg) {
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (output) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (input) {
+													return A2(
+														_elm_lang$core$Json_Decode$andThen,
+														function (memory) {
+															return _elm_lang$core$Json_Decode$succeed(
+																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+														},
+														A2(
+															_elm_lang$core$Json_Decode$field,
+															'memory',
+															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'input',
+													_elm_lang$core$Json_Decode$oneOf(
+														{
+															ctor: '::',
+															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+															_1: {
+																ctor: '::',
+																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+																_1: {ctor: '[]'}
+															}
+														})));
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'output',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+						},
+						A2(
+							_elm_lang$core$Json_Decode$field,
+							'jumps',
+							_elm_lang$core$Json_Decode$list(
+								A2(
+									_elm_lang$core$Json_Decode$andThen,
+									function (x0) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											function (x1) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													function (x2) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
+													},
+													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
+											},
+											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+									},
+									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
+		},
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'activeCoor',
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (x0) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (x1) {
+							return _elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple2', _0: x0, _1: x1});
+						},
+						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
 var _minond$brainloller$Main$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {work: a, activeCmd: b, runtime: c, tickCounter: d, boardDimensions: e, zoomLevel: f, interpreterSpeed: g, writeEnabled: h};
@@ -19660,13 +19659,13 @@ var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
-			_0: _minond$brainloller$Ports$imageProcessed(_minond$brainloller$Main$ImageProcessed),
+			_0: _minond$brainloller$Main$imageProcessed(_minond$brainloller$Main$ImageProcessed),
 			_1: {
 				ctor: '::',
-				_0: _minond$brainloller$Ports$interpreterTick(_minond$brainloller$Main$Tick),
+				_0: _minond$brainloller$Main$interpreterTick(_minond$brainloller$Main$Tick),
 				_1: {
 					ctor: '::',
-					_0: _minond$brainloller$Ports$interpreterHalt(_minond$brainloller$Main$Halt),
+					_0: _minond$brainloller$Main$interpreterHalt(_minond$brainloller$Main$Halt),
 					_1: {ctor: '[]'}
 				}
 			}
@@ -20052,14 +20051,11 @@ var _minond$brainloller$Main$editorRunControls = function (_p8) {
 var _minond$brainloller$Main$SetCmd = function (a) {
 	return {ctor: 'SetCmd', _0: a};
 };
-var _minond$brainloller$Main$programCommands = function (model) {
+var _minond$brainloller$Main$editorOptcodes = function (model) {
 	var activeCmd = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
 	var setCmd = function (cmd) {
 		return _minond$brainloller$Main$SetCmd(cmd);
 	};
-	return A2(_minond$brainloller$Editor$commandsForm, setCmd, activeCmd);
-};
-var _minond$brainloller$Main$editorOptcodes = function (model) {
 	return {
 		ctor: '::',
 		_0: _minond$brainloller$Main$lbl('Brainloller commands'),
@@ -20072,7 +20068,7 @@ var _minond$brainloller$Main$editorOptcodes = function (model) {
 					_0: _elm_lang$html$Html_Attributes$class('mb2'),
 					_1: {ctor: '[]'}
 				},
-				_minond$brainloller$Main$programCommands(model)),
+				A2(_minond$brainloller$Editor$commandsForm, setCmd, activeCmd)),
 			_1: {ctor: '[]'}
 		}
 	};
@@ -20246,7 +20242,7 @@ var _minond$brainloller$Main$update = F2(
 							runtime: runtime,
 							work: _minond$brainloller$Main$Curr(program)
 						}),
-					_1: _minond$brainloller$Ports$pauseExecution(
+					_1: _minond$brainloller$Main$pauseExecution(
 						{program: program, runtime: runtime})
 				};
 			case 'SetSpeed':
@@ -20256,13 +20252,13 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{interpreterSpeed: _p13}),
-					_1: _minond$brainloller$Ports$setInterpreterSpeed(_p13)
+					_1: _minond$brainloller$Main$setInterpreterSpeed(_p13)
 				};
 			case 'Pause':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$pauseExecution(
+					_1: _minond$brainloller$Main$pauseExecution(
 						{
 							program: _minond$brainloller$Main$historyCurr(_p11._1.work),
 							runtime: _p11._1.runtime
@@ -20272,7 +20268,7 @@ var _minond$brainloller$Main$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$startExecution(
+					_1: _minond$brainloller$Main$startExecution(
 						{
 							program: _minond$brainloller$Main$historyCurr(_p11._1.work),
 							runtime: _p11._1.runtime
@@ -20284,7 +20280,7 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{tickCounter: 0}),
-					_1: _minond$brainloller$Ports$startExecution(
+					_1: _minond$brainloller$Main$startExecution(
 						{
 							program: _minond$brainloller$Main$historyCurr(_p11._1.work),
 							runtime: _elm_lang$core$Native_Utils.update(
@@ -20313,13 +20309,13 @@ var _minond$brainloller$Main$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$uploadProgram('#fileupload')
+					_1: _minond$brainloller$Main$uploadProgram('#fileupload')
 				};
 			case 'DownloadProgram':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$downloadProgram(
+					_1: _minond$brainloller$Main$downloadProgram(
 						_minond$brainloller$Main$historyCurr(_p11._1.work))
 				};
 			case 'ImageProcessed':
