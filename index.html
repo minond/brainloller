@@ -245,6 +245,11 @@
           }
         }
 
+        document.body.appendChild(link)
+        link.style.position = 'absolute';
+        link.style.top = '-1000000px';
+        link.style.left = '-1000000px';
+
         link.href = canvas.toDataURL();
         link.download = 'brainloller-program.png';
         link.click();
