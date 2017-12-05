@@ -12,7 +12,7 @@ module Editor
         )
 
 import Color exposing (Color, rgb)
-import Html exposing (Attribute, Html, a, div, h1, label, p, span, text, button)
+import Html exposing (Attribute, Html, a, button, div, h1, label, p, span, text)
 import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import Lang

@@ -11,7 +11,7 @@ import Editor
         , textCopy
         , textLabel
         )
-import Html exposing (Html, Attribute, div, input, label, option, select, span, text, button)
+import Html exposing (Attribute, Html, button, code, div, input, label, option, select, span, text)
 import Html.Attributes exposing (class, id, style, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -370,10 +370,10 @@ view model =
         [ title
         , div
             [ class "cf" ]
+            -- [ div
+            --     [ class "w-100 w-40-l mb4" ]
+            --     [ textCopy introText1 ]
             [ div
-                [ class "w-100 w-40-l mb4" ]
-                [ textCopy introText1 ]
-            , div
                 [ class "" ]
                 [ programContainer model ]
             ]
@@ -445,80 +445,49 @@ programContainer model =
             ]
 
         output =
-            div
-                [ class "program-output" ]
-                [ text (Maybe.withDefault "none" model.runtime.output) ]
+            Maybe.withDefault "none" model.runtime.output
     in
     div
         [ class "cf" ]
         [ div
             [ class "fl w-100 w-50-ns pr3-m pr5-l" ]
-            [ div
-                []
-                [ textLabel
-                    "Load a program"
-                    [ select
-                        [ onInput LoadMemoryProgram
-                        , class "w-50"
-                        ]
-                        [ option
-                            []
-                            [ text "helloworld.png" ]
-                        , option
-                            []
-                            [ text "cat.png" ]
-                        , option
-                            []
-                            [ text "fib.png" ]
-                        ]
-                    ]
+            [ lbl "Load a program"
+            , select
+                [ onInput LoadMemoryProgram
+                , class "w-50 mb3"
                 ]
+                [ option
+                    []
+                    [ text "helloworld.png" ]
+                , option
+                    []
+                    [ text "cat.png" ]
+                , option
+                    []
+                    [ text "fib.png" ]
+                ]
+            , lbl ("Change evaluation delay (" ++ model.interpreterSpeed ++ ")")
+            , input
+                [ type_ "range"
+                , class "w-50 mb2"
+                , value model.interpreterSpeed
+                , onInput SetSpeed
+                ]
+                []
+            , lbl "Program controls"
             , div
-                []
-                [ textLabel
-                    "Change evaluation speed"
-                    [ input
-                        [ type_ "range"
-                        , class "w-50"
-                        , value model.interpreterSpeed
-                        , onInput SetSpeed
-                        ]
-                        []
-                    ]
-                ]
+                [ class "mb2" ]
+                commands
+            , lbl "Brainloller commands"
             , div
-                []
-                [ textLabel
-                    "Editor and program commands"
-                    [ div
-                        []
-                        commands
-                    ]
-                ]
+                [ class "mb2" ]
+                (programCommands model)
+            , lbl "Program memory"
             , div
-                []
-                [ textLabel
-                    "Brainloller commands"
-                    [ div
-                        []
-                        (programCommands model)
-                    ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Program output"
-                    [ output ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Program memory"
-                    [ div
-                        [ class "program-memory" ]
-                        (memoryTape model.runtime)
-                    ]
-                ]
+                [ class "program-memory" ]
+                (memoryTape model.runtime)
+            , lbl "Output"
+            , mono output
             ]
         , div
             [ class "helvetica program-message-status" ]
@@ -627,3 +596,17 @@ btn val attrs =
     button
         ([ class "mr2 mb2 pointer" ] ++ attrs)
         [ text val ]
+
+
+lbl : String -> Html Msg
+lbl txt =
+    div
+        [ class "f6 mb2 gray i" ]
+        [ text txt ]
+
+
+mono : String -> Html Msg
+mono str =
+    code
+        [ class "f6 ph1 tc bg-light-gray word-wrap" ]
+        [ text str ]
