@@ -349,17 +349,17 @@ view model =
             [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
             [ text "Brainloller" ]
         , div
-            [ class "fl w-100 w-50-ns editor-section" ]
-            [ section [] <| editorIntroduction model
-            , section [] <| editorInformation model
-            , section [] <| editorRunControls model
+            [ class "fl w-75 w-50-l editor-section" ]
+            -- section [] <| editorIntroduction model
+            -- section [] <| editorInformation model
+            [ section [] <| editorRunControls model
             , section [] <| editorControls model
             , section [] <| editorOptcodes model
             , section [] <| editorMemory model
             , section [] <| editorOutput model
             ]
         , div
-            [ class "fl w-100 w-50-ns editor-section" ]
+            [ class "fl w-100 w-50-l editor-section" ]
             [ div
                 [ class "noselect" ]
                 [ editorCanvas model ]
@@ -438,8 +438,11 @@ editorOutput model =
         output =
             Maybe.withDefault "none" model.runtime.output
     in
-    [ lbl "Output"
-    , mono output
+    [ div
+        [ class "mb3" ]
+        [ lbl "Output"
+        , mono output
+        ]
     ]
 
 

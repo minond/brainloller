@@ -254,6 +254,11 @@ button,
 
 /* large */
 @media screen and (min-width: 60em) {
+  .editor-section {
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+  }
+
   .editor-section:first-of-type {
     padding-right: 1.5rem;
   }

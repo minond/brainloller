@@ -17199,12 +17199,23 @@ var _minond$brainloller$Main$editorOutput = function (model) {
 	var output = A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output);
 	return {
 		ctor: '::',
-		_0: _minond$brainloller$Main$lbl('Output'),
-		_1: {
-			ctor: '::',
-			_0: _minond$brainloller$Main$mono(output),
-			_1: {ctor: '[]'}
-		}
+		_0: A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('mb3'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _minond$brainloller$Main$lbl('Output'),
+				_1: {
+					ctor: '::',
+					_0: _minond$brainloller$Main$mono(output),
+					_1: {ctor: '[]'}
+				}
+			}),
+		_1: {ctor: '[]'}
 	};
 };
 var _minond$brainloller$Main$editorMemory = function (_p7) {
@@ -18011,7 +18022,7 @@ var _minond$brainloller$Main$view = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns editor-section'),
+						_0: _elm_lang$html$Html_Attributes$class('fl w-75 w-50-l editor-section'),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -18019,46 +18030,32 @@ var _minond$brainloller$Main$view = function (model) {
 						_0: A2(
 							_elm_lang$html$Html$section,
 							{ctor: '[]'},
-							_minond$brainloller$Main$editorIntroduction(model)),
+							_minond$brainloller$Main$editorRunControls(model)),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_lang$html$Html$section,
 								{ctor: '[]'},
-								_minond$brainloller$Main$editorInformation(model)),
+								_minond$brainloller$Main$editorControls(model)),
 							_1: {
 								ctor: '::',
 								_0: A2(
 									_elm_lang$html$Html$section,
 									{ctor: '[]'},
-									_minond$brainloller$Main$editorRunControls(model)),
+									_minond$brainloller$Main$editorOptcodes(model)),
 								_1: {
 									ctor: '::',
 									_0: A2(
 										_elm_lang$html$Html$section,
 										{ctor: '[]'},
-										_minond$brainloller$Main$editorControls(model)),
+										_minond$brainloller$Main$editorMemory(model)),
 									_1: {
 										ctor: '::',
 										_0: A2(
 											_elm_lang$html$Html$section,
 											{ctor: '[]'},
-											_minond$brainloller$Main$editorOptcodes(model)),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$section,
-												{ctor: '[]'},
-												_minond$brainloller$Main$editorMemory(model)),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$section,
-													{ctor: '[]'},
-													_minond$brainloller$Main$editorOutput(model)),
-												_1: {ctor: '[]'}
-											}
-										}
+											_minond$brainloller$Main$editorOutput(model)),
+										_1: {ctor: '[]'}
 									}
 								}
 							}
@@ -18070,7 +18067,7 @@ var _minond$brainloller$Main$view = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns editor-section'),
+							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-l editor-section'),
 							_1: {ctor: '[]'}
 						},
 						{
