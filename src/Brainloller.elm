@@ -2,22 +2,21 @@ module Brainloller
     exposing
         ( Environment
         , Optcode
+        , Pixel
         , Program
         , Runtime
-        , Pixel
-        , cmds
         , cmdToPixel
+        , cmds
         , create
-        , getCmd
+        , dimensions
         , getCellAt
         , getCellMaybe
-        , dimensions
+        , getCmd
         , resize
         , setCellAt
         )
 
 import List.Extra exposing (getAt, setAt)
-import Util exposing (asList)
 
 
 type alias Environment =
@@ -154,6 +153,11 @@ create input =
     , input = input
     , memory = []
     }
+
+
+asList : Maybe (List a) -> List a
+asList list =
+    Maybe.withDefault [] list
 
 
 getCellAt : Program -> Int -> Int -> Pixel

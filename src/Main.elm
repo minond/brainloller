@@ -1,18 +1,17 @@
 port module Main exposing (main)
 
+import Brainloller
 import Editor exposing (commandsForm, memoryTape, programCells)
 import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, p, section, select, span, text)
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import Brainloller
 import List
 import Maybe
-import Program exposing (progCat, progFib, progHelloWorld)
+import Program
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
 import Tuple exposing (first, second)
-import Util exposing (asList)
 
 
 port downloadProgram : Brainloller.Program -> Cmd msg
@@ -92,11 +91,15 @@ main =
 
 initialModel : Model
 initialModel =
-    { work = Curr progHelloWorld
+    let
+        program =
+            Program.load "helloworld.png"
+    in
+    { work = Curr program
     , activeCmd = Nothing
     , runtime = Brainloller.create Nothing
     , tickCounter = 0
-    , boardDimensions = Brainloller.dimensions progHelloWorld
+    , boardDimensions = Brainloller.dimensions program
     , zoomLevel = 1
     , interpreterSpeed = "5"
     , writeEnabled = False
@@ -112,18 +115,7 @@ update message model =
                     Brainloller.create Nothing
 
                 program =
-                    case prog of
-                        "helloworld.png" ->
-                            progHelloWorld
-
-                        "cat.png" ->
-                            progCat
-
-                        "fib.png" ->
-                            progFib
-
-                        _ ->
-                            []
+                    Program.load prog
             in
             ( { model
                 | runtime = runtime
@@ -204,10 +196,10 @@ update message model =
                 BackCurr back curr ->
                     let
                         newCurr =
-                            asList <| List.head back
+                            Maybe.withDefault [] <| List.head back
 
                         newBack =
-                            asList <| List.tail back
+                            Maybe.withDefault [] <| List.tail back
 
                         newForw =
                             [ curr ]
