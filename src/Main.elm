@@ -358,7 +358,7 @@ view model =
             , section [] <| editorOutput model
             ]
         , div
-            [ class "fl w-100 w-50-ns pl3-ns editor-section" ]
+            [ class "fl w-100 w-50-ns editor-section" ]
             [ div
                 [ class "noselect" ]
                 [ editorCanvas model ]

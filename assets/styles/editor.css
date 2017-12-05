@@ -240,3 +240,25 @@ button,
   line-height: 1;
   font-size: .875rem;
 }
+
+.editor-section {
+  box-sizing: border-box;
+}
+
+/* medium */
+@media screen and (min-width: 45em) and (max-width: 60em) {
+  .editor-section:first-of-type {
+    padding-right: 1rem;
+  }
+}
+
+/* large */
+@media screen and (min-width: 60em) {
+  .editor-section:first-of-type {
+    padding-right: 1.5rem;
+  }
+
+  .editor-section + .editor-section {
+    padding-left: 1.5rem;
+  }
+}

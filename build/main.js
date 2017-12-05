@@ -17956,7 +17956,7 @@ var _minond$brainloller$Main$view = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns pl3-ns editor-section'),
+							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-ns editor-section'),
 							_1: {ctor: '[]'}
 						},
 						{
