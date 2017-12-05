@@ -1,12 +1,9 @@
 module Editor
     exposing
-        ( cmdTextBtn
-        , commandsForm
+        ( commandsForm
         , mainTitle
         , memoryTape
         , programCells
-        , textCopy
-        , textLabel
         )
 
 import Color exposing (Color, rgb)
@@ -18,22 +15,6 @@ import List.Extra exposing (getAt, setAt)
 import Maybe
 import Tachyons exposing (classes)
 import Tachyons.Classes as Tac
-import Util exposing (asList)
-
-
-type alias BoardConfig =
-    { cellSize : Int
-    , width : Int
-    , startX : Int
-    , startY : Int
-    }
-
-
-cmdTextBtn : String -> List (Attribute msg) -> Html msg
-cmdTextBtn val attrs =
-    button
-        ([ class "mr2 mb2 pointer" ] ++ attrs)
-        [ text val ]
 
 
 mainTitle : String -> Html msg
@@ -50,36 +31,6 @@ mainTitle title =
     in
     h1 [ classes h1Classes ]
         [ text title ]
-
-
-textCopy : List (Html msg) -> Html msg
-textCopy copy =
-    let
-        pClasses =
-            [ Tac.lh_copy
-            , Tac.helvetica
-            ]
-    in
-    p
-        [ classes pClasses ]
-        copy
-
-
-textLabel : String -> List (Html msg) -> Html msg
-textLabel name children =
-    div
-        [ classes
-            [ Tac.lh_copy
-            , Tac.helvetica
-            , "label"
-            ]
-        ]
-        (span [] [ text name ] :: children)
-
-
-pixelColor : Pixel -> Color
-pixelColor { r, g, b } =
-    rgb r g b
 
 
 pixelStyle : Pixel -> ( String, String )

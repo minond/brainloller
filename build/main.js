@@ -15969,19 +15969,6 @@ var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l
 var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
 var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
 
-var _minond$brainloller$Util$mapBoth = F2(
-	function (fn, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: fn(_p1._0),
-			_1: fn(_p1._1)
-		};
-	});
-var _minond$brainloller$Util$ternary = F3(
-	function (cond, pass, fail) {
-		return cond ? pass : fail;
-	});
 var _minond$brainloller$Util$asList = function (list) {
 	return A2(
 		_elm_lang$core$Maybe$withDefault,
@@ -16389,64 +16376,6 @@ var _minond$brainloller$Editor$programCells = F7(
 							_1: {ctor: '[]'}
 						}))));
 	});
-var _minond$brainloller$Editor$pixelColor = function (_p0) {
-	var _p1 = _p0;
-	return A3(_elm_lang$core$Color$rgb, _p1.r, _p1.g, _p1.b);
-};
-var _minond$brainloller$Editor$textLabel = F2(
-	function (name, children) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons$classes(
-					{
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
-							_1: {
-								ctor: '::',
-								_0: 'label',
-								_1: {ctor: '[]'}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$span,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(name),
-						_1: {ctor: '[]'}
-					}),
-				_1: children
-			});
-	});
-var _minond$brainloller$Editor$textCopy = function (copy) {
-	var pClasses = {
-		ctor: '::',
-		_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
-		_1: {
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
-			_1: {ctor: '[]'}
-		}
-	};
-	return A2(
-		_elm_lang$html$Html$p,
-		{
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(pClasses),
-			_1: {ctor: '[]'}
-		},
-		copy);
-};
 var _minond$brainloller$Editor$mainTitle = function (title) {
 	var h1Classes = {
 		ctor: '::',
@@ -16486,65 +16415,6 @@ var _minond$brainloller$Editor$mainTitle = function (title) {
 			_1: {ctor: '[]'}
 		});
 };
-var _minond$brainloller$Editor$cmdTextBtn = F2(
-	function (val, attrs) {
-		return A2(
-			_elm_lang$html$Html$button,
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('mr2 mb2 pointer'),
-					_1: {ctor: '[]'}
-				},
-				attrs),
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(val),
-				_1: {ctor: '[]'}
-			});
-	});
-var _minond$brainloller$Editor$link = F3(
-	function (label, to, external) {
-		return A2(
-			_elm_lang$html$Html$a,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$href(to),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$target(
-						A3(_minond$brainloller$Util$ternary, external, '_blank', '_self')),
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons$classes(
-							{
-								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$link,
-								_1: {
-									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
-									_1: {
-										ctor: '::',
-										_0: _justgage$tachyons_elm$Tachyons_Classes$blue,
-										_1: {ctor: '[]'}
-									}
-								}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}
-			},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(label),
-				_1: {ctor: '[]'}
-			});
-	});
-var _minond$brainloller$Editor$BoardConfig = F4(
-	function (a, b, c, d) {
-		return {cellSize: a, width: b, startX: c, startY: d};
-	});
 
 var _minond$brainloller$Ports$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
 	'downloadProgram',
@@ -19645,6 +19515,52 @@ var _minond$brainloller$Program$progHelloWorld = {
 	}
 };
 
+var _minond$brainloller$Main$historyBack = function (hist) {
+	var _p0 = hist;
+	switch (_p0.ctor) {
+		case 'Curr':
+			return {ctor: '[]'};
+		case 'BackCurr':
+			return _p0._0;
+		default:
+			return _p0._0;
+	}
+};
+var _minond$brainloller$Main$historyCurr = function (hist) {
+	var _p1 = hist;
+	switch (_p1.ctor) {
+		case 'Curr':
+			return _p1._0;
+		case 'BackCurr':
+			return _p1._1;
+		default:
+			return _p1._1;
+	}
+};
+var _minond$brainloller$Main$link = F3(
+	function (label, to, external) {
+		return A2(
+			_elm_lang$html$Html$a,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href(to),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$target(
+						external ? '_blank' : '_self'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('link dim blue'),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(label),
+				_1: {ctor: '[]'}
+			});
+	});
 var _minond$brainloller$Main$mono = function (str) {
 	return A2(
 		_elm_lang$html$Html$code,
@@ -19691,58 +19607,6 @@ var _minond$brainloller$Main$btn = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _minond$brainloller$Main$introText1 = {
-	ctor: '::',
-	_0: _minond$brainloller$Editor$textCopy(
-		{
-			ctor: '::',
-			_0: A3(_minond$brainloller$Editor$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(' is '),
-				_1: {
-					ctor: '::',
-					_0: A3(_minond$brainloller$Editor$link, 'Brainfuck', 'https://esolangs.org/wiki/Brainfuck', false),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(' but represented as an image. If you\'re not familiar with\n            Brainfuck already, go checkout\n            '),
-						_1: {
-							ctor: '::',
-							_0: A3(_minond$brainloller$Editor$link, ' this debugger', 'http://minond.xyz/brainfuck', true),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n            Brainfuck with two additional commands for rotating the direction\n            in which the program is evaluated. Below is an editor and\n            interpreter. Automatically loaded is a \"Hello, World\" program. Run\n            it by clicking on the \"Play\" button below.\n            '),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}
-			}
-		}),
-	_1: {ctor: '[]'}
-};
-var _minond$brainloller$Main$historyBack = function (hist) {
-	var _p0 = hist;
-	switch (_p0.ctor) {
-		case 'Curr':
-			return {ctor: '[]'};
-		case 'BackCurr':
-			return _p0._0;
-		default:
-			return _p0._0;
-	}
-};
-var _minond$brainloller$Main$historyCurr = function (hist) {
-	var _p1 = hist;
-	switch (_p1.ctor) {
-		case 'Curr':
-			return _p1._0;
-		case 'BackCurr':
-			return _p1._1;
-		default:
-			return _p1._1;
-	}
-};
 var _minond$brainloller$Main$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {work: a, activeCmd: b, runtime: c, tickCounter: d, boardDimensions: e, zoomLevel: f, interpreterSpeed: g, writeEnabled: h};
@@ -20257,17 +20121,21 @@ var _minond$brainloller$Main$view = function (model) {
 			_0: 'helvetica',
 			_1: {
 				ctor: '::',
-				_0: A2(_elm_lang$core$Basics_ops['++'], 'main-container--', cmdClass),
+				_0: 'lh-copy',
 				_1: {
 					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
+					_0: A2(_elm_lang$core$Basics_ops['++'], 'main-container--', cmdClass),
 					_1: {
 						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
+						_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
 						_1: {
 							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
-							_1: {ctor: '[]'}
+							_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
+							_1: {
+								ctor: '::',
+								_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
@@ -20284,7 +20152,18 @@ var _minond$brainloller$Main$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: title,
+			_0: A2(
+				_elm_lang$html$Html$h1,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('mt0 f3 f2-m f1-l title fw1 baskerville'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Brainloller'),
+					_1: {ctor: '[]'}
+				}),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -20300,15 +20179,50 @@ var _minond$brainloller$Main$view = function (model) {
 							_elm_lang$html$Html$div,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class(''),
+								_0: _elm_lang$html$Html_Attributes$class('w-100 w-40-l mb4'),
 								_1: {ctor: '[]'}
 							},
 							{
 								ctor: '::',
-								_0: _minond$brainloller$Main$programContainer(model),
-								_1: {ctor: '[]'}
+								_0: A3(_minond$brainloller$Main$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(' is '),
+									_1: {
+										ctor: '::',
+										_0: A3(_minond$brainloller$Main$link, 'Brainfuck', 'https://esolangs.org/wiki/Brainfuck', false),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(' but represented as an image. If you\'re not familiar with\n                    Brainfuck already, go checkout\n                    '),
+											_1: {
+												ctor: '::',
+												_0: A3(_minond$brainloller$Main$link, ' this debugger', 'http://minond.xyz/brainfuck', true),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n                    Brainfuck with two additional commands for rotating the direction\n                    in which the program is evaluated. Below is an editor and\n                    interpreter. Automatically loaded is a \"Hello, World\" program. Run\n                    it by clicking on the \"Play\" button below.\n                    '),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class(''),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _minond$brainloller$Main$programContainer(model),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}),
 				_1: {ctor: '[]'}
 			}

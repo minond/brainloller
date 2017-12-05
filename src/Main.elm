@@ -1,7 +1,7 @@
 module Main exposing (main)
 
-import Editor exposing (commandsForm, mainTitle, memoryTape, programCells, textCopy, textLabel)
-import Html exposing (Attribute, Html, a, button, code, div, input, label, option, select, span, text)
+import Editor exposing (commandsForm, mainTitle, memoryTape, programCells)
+import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, option, select, span, text)
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
@@ -324,6 +324,7 @@ view model =
         containerClasses =
             [ "main-container"
             , "helvetica"
+            , "lh-copy"
             , "main-container--" ++ cmdClass
             , Tac.cf
             , Tac.pa3
@@ -331,13 +332,28 @@ view model =
             ]
     in
     div [ classes containerClasses ]
-        [ title
+        [ h1
+            [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
+            [ text "Brainloller" ]
         , div
             [ class "cf" ]
-            -- [ div
-            --     [ class "w-100 w-40-l mb4" ]
-            --     [ textCopy introText1 ]
             [ div
+                [ class "w-100 w-40-l mb4" ]
+                [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
+                , text " is "
+                , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
+                , text """ but represented as an image. If you're not familiar with
+                    Brainfuck already, go checkout
+                    """
+                , link " this debugger" "http://minond.xyz/brainfuck" True
+                , text """. Brainloller gives you the eight commands that you have in
+                    Brainfuck with two additional commands for rotating the direction
+                    in which the program is evaluated. Below is an editor and
+                    interpreter. Automatically loaded is a "Hello, World" program. Run
+                    it by clicking on the "Play" button below.
+                    """
+                ]
+            , div
                 [ class "" ]
                 [ programContainer model ]
             ]
@@ -573,23 +589,3 @@ historyBack hist =
 
         BackCurrForw back _ _ ->
             back
-
-
-introText1 : List (Html msg)
-introText1 =
-    [ textCopy
-        [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
-        , text " is "
-        , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
-        , text """ but represented as an image. If you're not familiar with
-            Brainfuck already, go checkout
-            """
-        , link " this debugger" "http://minond.xyz/brainfuck" True
-        , text """. Brainloller gives you the eight commands that you have in
-            Brainfuck with two additional commands for rotating the direction
-            in which the program is evaluated. Below is an editor and
-            interpreter. Automatically loaded is a "Hello, World" program. Run
-            it by clicking on the "Play" button below.
-            """
-        ]
-    ]
