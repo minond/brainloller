@@ -19,13 +19,10 @@ module Brainloller
         , setCellAt
         )
 
-import Html exposing (Attribute, Html, a, button, div, h1, label, p, span, text)
-import Html.Attributes exposing (class, classList, href, style, tabindex, target, title)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class, classList, style, tabindex, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
-import Maybe
-import Tachyons exposing (classes)
-import Tachyons.Classes as Tac
 
 
 type alias Environment =

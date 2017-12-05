@@ -5,12 +5,7 @@ import Html exposing (Attribute, Html, a, button, code, div, h1, input, label, o
 import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import List
-import Maybe
 import Program
-import Tachyons exposing (classes)
-import Tachyons.Classes as Tac
-import Tuple exposing (first, second)
 
 
 port downloadProgram : Brainloller.Program -> Cmd msg
@@ -294,7 +289,7 @@ update message model =
         ( IncreaseSize, { boardDimensions }, _ ) ->
             ( { model
                 | boardDimensions =
-                    ( first boardDimensions + 1, second boardDimensions + 1 )
+                    ( Tuple.first boardDimensions + 1, Tuple.second boardDimensions + 1 )
               }
             , Cmd.none
             )
@@ -302,7 +297,7 @@ update message model =
         ( DecreaseSize, { boardDimensions }, _ ) ->
             ( { model
                 | boardDimensions =
-                    ( first boardDimensions - 1, second boardDimensions - 1 )
+                    ( Tuple.first boardDimensions - 1, Tuple.second boardDimensions - 1 )
               }
             , Cmd.none
             )
@@ -574,10 +569,10 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
             25
 
         width =
-            2 + max minWidth (max (first dim) (first boardDimensions))
+            2 + max minWidth (max (Tuple.first dim) (Tuple.first boardDimensions))
 
         height =
-            2 + max minHeight (max (second dim) (second boardDimensions))
+            2 + max minHeight (max (Tuple.second dim) (Tuple.second boardDimensions))
 
         write =
             \x y f -> WriteCmd x y f
