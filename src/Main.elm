@@ -350,7 +350,8 @@ view model =
             [ text "Brainloller" ]
         , div
             [ class "fl w-100 w-50-ns editor-section" ]
-            [ section [] <| editorIntroduction
+            [ section [] <| editorIntroduction model
+            , section [] <| editorInformation model
             , section [] <| editorRunControls model
             , section [] <| editorControls model
             , section [] <| editorOptcodes model
@@ -605,8 +606,8 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
         ]
 
 
-editorIntroduction : List (Html Msg)
-editorIntroduction =
+editorIntroduction : Model -> List (Html Msg)
+editorIntroduction _ =
     [ p [ class "mt0 lh-copy" ]
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is "
@@ -621,5 +622,61 @@ editorIntroduction =
             interpreter. Automatically loaded is a "Hello, World" program. Run
             it by clicking on the "Play" button below.
             """
+        ]
+    ]
+
+
+editorInformation : Model -> List (Html Msg)
+editorInformation { work, runtime } =
+    let
+        program =
+            historyCurr work
+
+        dims =
+            Brainloller.dimensions program
+
+        width =
+            Tuple.first dims
+
+        height =
+            Tuple.second dims
+
+        x =
+            Tuple.first runtime.activeCoor
+
+        y =
+            Tuple.second runtime.activeCoor
+
+        opt =
+            Brainloller.getCellAt program x y
+
+        outputMessage =
+            case runtime.output of
+                Nothing ->
+                    text "The program has had no output yet."
+
+                Just str ->
+                    span
+                        []
+                        [ text "Output length is "
+                        , mono <| toString <| String.length str
+                        , text " characters long."
+                        ]
+    in
+    [ p
+        [ class "mt0 lh-copy" ]
+        [ text "Here's some information about your program: it is "
+        , mono <| toString width
+        , text " pixels wide by "
+        , mono <| toString height
+        , text " pixels tall."
+        , text " of which are valid commands. The interpreter is going to interpret the character at coordinates "
+        , mono <| toString runtime.activeCoor
+        , text ", which is "
+        , mono <| toString opt
+        , text ", and is rotated "
+        , mono <| toString runtime.pointerDeg
+        , text " degrees. "
+        , outputMessage
         ]
     ]
