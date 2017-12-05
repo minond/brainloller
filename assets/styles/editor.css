@@ -220,3 +220,34 @@ p:first-child {
   color: #357edd;
   height: 15px;
 }
+
+.cmd-btn {
+  text-align: center;
+  outline: 0;
+  display: inline-block;
+  padding: 0;
+  box-sizing: border-box;
+  height: 30px;
+  min-width: 30px;
+  cursor: pointer;
+  border: 1px solid #9e9e9e;
+  background: #fbfcfe;
+  position: relative;
+  transition: box-shadow .1s;
+  margin-right: .6rem;
+  margin-bottom: .4rem;
+}
+
+.cmd-btn.cmd-btn-active {
+  box-shadow: 3px 3px 1px #b9b9b9 !important;
+}
+
+.cmd-btn:after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-family: monospace;
+  line-height: 1;
+  font-size: .875rem;
+}
