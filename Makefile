@@ -1,23 +1,8 @@
-ELMMAKE = elm-make
-ELMLIVE = elm-live
-YARN = yarn
-
-.PHONY: build
-build: vendor
-	$(ELMMAKE) src/Main.elm --output=build/main.js
-
-.PHONY: dev
-dev:
-	$(ELMLIVE) src/Main.elm --output=build/main.js --open --debug
-
-vendor:
-	cp node_modules/tachyons/css/tachyons.min.css build/tachyons.min.css
+build: install
+	elm make src/Main.elm --output=build/main.js
 
 install:
-	$(YARN)
+	elm package install
 
-.PHONY: serve
-serve:
-	@echo "Opening http://localhost:$(PORT)"
-	(sleep 1 && open http://localhost:$(PORT)) &
-	python -m SimpleHTTPServer $(PORT)
+run:
+	elm live src/Main.elm --output=build/main.js --open --debug

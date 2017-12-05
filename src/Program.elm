@@ -1,10 +1,26 @@
-module Program exposing (progCat, progFib, progHelloWorld)
+module Program exposing (load)
 
-import Lang exposing (BLProgram)
+import Brainloller
 
 
-progHelloWorld : BLProgram
-progHelloWorld =
+load : String -> Brainloller.Program
+load prog =
+    case prog of
+        "helloworld.png" ->
+            programHelloWorld
+
+        "cat.png" ->
+            progCat
+
+        "fib.png" ->
+            progFib
+
+        _ ->
+            [ [] ]
+
+
+programHelloWorld : Brainloller.Program
+programHelloWorld =
     [ [ { r = 255, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 255, g = 255, b = 0 }, { r = 128, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
     , [ { r = 0, g = 128, b = 128 }, { r = 0, g = 0, b = 255 }, { r = 128, g = 0, b = 0 }, { r = 128, g = 128, b = 0 }, { r = 0, g = 128, b = 0 }, { r = 255, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
     , [ { r = 0, g = 128, b = 128 }, { r = 255, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 255, g = 255, b = 0 }, { r = 128, g = 0, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
@@ -20,7 +36,7 @@ progHelloWorld =
     ]
 
 
-progFib : BLProgram
+progFib : Brainloller.Program
 progFib =
     [ [ { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
     , [ { r = 0, g = 128, b = 128 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 0 }, { r = 0, g = 255, b = 255 } ]
@@ -46,6 +62,6 @@ progFib =
     ]
 
 
-progCat : BLProgram
+progCat : Brainloller.Program
 progCat =
     [ [ { r = 0, g = 0, b = 128 }, { r = 255, g = 255, b = 0 }, { r = 255, g = 0, b = 0 }, { r = 0, g = 0, b = 128 }, { r = 128, g = 128, b = 0 }, { r = 128, g = 0, b = 0 }, { r = 255, g = 255, b = 0 }, { r = 128, g = 0, b = 0 }, { r = 128, g = 128, b = 0 }, { r = 255, g = 0, b = 0 }, { r = 255, g = 255, b = 0 }, { r = 0, g = 0, b = 255 }, { r = 255, g = 0, b = 0 }, { r = 128, g = 128, b = 0 } ] ]

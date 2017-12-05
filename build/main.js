@@ -135,973 +135,6 @@ function A9(fun, a, b, c, d, e, f, g, h, i)
     : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-//import Native.List //
-
-var _elm_lang$core$Native_Array = function() {
-
-// A RRB-Tree has two distinct data types.
-// Leaf -> "height"  is always 0
-//         "table"   is an array of elements
-// Node -> "height"  is always greater than 0
-//         "table"   is an array of child nodes
-//         "lengths" is an array of accumulated lengths of the child nodes
-
-// M is the maximal table size. 32 seems fast. E is the allowed increase
-// of search steps when concatting to find an index. Lower values will
-// decrease balancing, but will increase search steps.
-var M = 32;
-var E = 2;
-
-// An empty array.
-var empty = {
-	ctor: '_Array',
-	height: 0,
-	table: []
-};
-
-
-function get(i, array)
-{
-	if (i < 0 || i >= length(array))
-	{
-		throw new Error(
-			'Index ' + i + ' is out of range. Check the length of ' +
-			'your array first or use getMaybe or getWithDefault.');
-	}
-	return unsafeGet(i, array);
-}
-
-
-function unsafeGet(i, array)
-{
-	for (var x = array.height; x > 0; x--)
-	{
-		var slot = i >> (x * 5);
-		while (array.lengths[slot] <= i)
-		{
-			slot++;
-		}
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array = array.table[slot];
-	}
-	return array.table[i];
-}
-
-
-// Sets the value at the index i. Only the nodes leading to i will get
-// copied and updated.
-function set(i, item, array)
-{
-	if (i < 0 || length(array) <= i)
-	{
-		return array;
-	}
-	return unsafeSet(i, item, array);
-}
-
-
-function unsafeSet(i, item, array)
-{
-	array = nodeCopy(array);
-
-	if (array.height === 0)
-	{
-		array.table[i] = item;
-	}
-	else
-	{
-		var slot = getSlot(i, array);
-		if (slot > 0)
-		{
-			i -= array.lengths[slot - 1];
-		}
-		array.table[slot] = unsafeSet(i, item, array.table[slot]);
-	}
-	return array;
-}
-
-
-function initialize(len, f)
-{
-	if (len <= 0)
-	{
-		return empty;
-	}
-	var h = Math.floor( Math.log(len) / Math.log(M) );
-	return initialize_(f, h, 0, len);
-}
-
-function initialize_(f, h, from, to)
-{
-	if (h === 0)
-	{
-		var table = new Array((to - from) % (M + 1));
-		for (var i = 0; i < table.length; i++)
-		{
-		  table[i] = f(from + i);
-		}
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: table
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-function fromList(list)
-{
-	if (list.ctor === '[]')
-	{
-		return empty;
-	}
-
-	// Allocate M sized blocks (table) and write list elements to it.
-	var table = new Array(M);
-	var nodes = [];
-	var i = 0;
-
-	while (list.ctor !== '[]')
-	{
-		table[i] = list._0;
-		list = list._1;
-		i++;
-
-		// table is full, so we can push a leaf containing it into the
-		// next node.
-		if (i === M)
-		{
-			var leaf = {
-				ctor: '_Array',
-				height: 0,
-				table: table
-			};
-			fromListPush(leaf, nodes);
-			table = new Array(M);
-			i = 0;
-		}
-	}
-
-	// Maybe there is something left on the table.
-	if (i > 0)
-	{
-		var leaf = {
-			ctor: '_Array',
-			height: 0,
-			table: table.splice(0, i)
-		};
-		fromListPush(leaf, nodes);
-	}
-
-	// Go through all of the nodes and eventually push them into higher nodes.
-	for (var h = 0; h < nodes.length - 1; h++)
-	{
-		if (nodes[h].table.length > 0)
-		{
-			fromListPush(nodes[h], nodes);
-		}
-	}
-
-	var head = nodes[nodes.length - 1];
-	if (head.height > 0 && head.table.length === 1)
-	{
-		return head.table[0];
-	}
-	else
-	{
-		return head;
-	}
-}
-
-// Push a node into a higher node as a child.
-function fromListPush(toPush, nodes)
-{
-	var h = toPush.height;
-
-	// Maybe the node on this height does not exist.
-	if (nodes.length === h)
-	{
-		var node = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-		nodes.push(node);
-	}
-
-	nodes[h].table.push(toPush);
-	var len = length(toPush);
-	if (nodes[h].lengths.length > 0)
-	{
-		len += nodes[h].lengths[nodes[h].lengths.length - 1];
-	}
-	nodes[h].lengths.push(len);
-
-	if (nodes[h].table.length === M)
-	{
-		fromListPush(nodes[h], nodes);
-		nodes[h] = {
-			ctor: '_Array',
-			height: h + 1,
-			table: [],
-			lengths: []
-		};
-	}
-}
-
-// Pushes an item via push_ to the bottom right of a tree.
-function push(item, a)
-{
-	var pushed = push_(item, a);
-	if (pushed !== null)
-	{
-		return pushed;
-	}
-
-	var newTree = create(item, a.height);
-	return siblise(a, newTree);
-}
-
-// Recursively tries to push an item to the bottom-right most
-// tree possible. If there is no space left for the item,
-// null will be returned.
-function push_(item, a)
-{
-	// Handle resursion stop at leaf level.
-	if (a.height === 0)
-	{
-		if (a.table.length < M)
-		{
-			var newA = {
-				ctor: '_Array',
-				height: 0,
-				table: a.table.slice()
-			};
-			newA.table.push(item);
-			return newA;
-		}
-		else
-		{
-		  return null;
-		}
-	}
-
-	// Recursively push
-	var pushed = push_(item, botRight(a));
-
-	// There was space in the bottom right tree, so the slot will
-	// be updated.
-	if (pushed !== null)
-	{
-		var newA = nodeCopy(a);
-		newA.table[newA.table.length - 1] = pushed;
-		newA.lengths[newA.lengths.length - 1]++;
-		return newA;
-	}
-
-	// When there was no space left, check if there is space left
-	// for a new slot with a tree which contains only the item
-	// at the bottom.
-	if (a.table.length < M)
-	{
-		var newSlot = create(item, a.height - 1);
-		var newA = nodeCopy(a);
-		newA.table.push(newSlot);
-		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
-		return newA;
-	}
-	else
-	{
-		return null;
-	}
-}
-
-// Converts an array into a list of elements.
-function toList(a)
-{
-	return toList_(_elm_lang$core$Native_List.Nil, a);
-}
-
-function toList_(list, a)
-{
-	for (var i = a.table.length - 1; i >= 0; i--)
-	{
-		list =
-			a.height === 0
-				? _elm_lang$core$Native_List.Cons(a.table[i], list)
-				: toList_(list, a.table[i]);
-	}
-	return list;
-}
-
-// Maps a function over the elements of an array.
-function map(f, a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? f(a.table[i])
-				: map(f, a.table[i]);
-	}
-	return newA;
-}
-
-// Maps a function over the elements with their index as first argument.
-function indexedMap(f, a)
-{
-	return indexedMap_(f, a, 0);
-}
-
-function indexedMap_(f, a, from)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: new Array(a.table.length)
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths;
-	}
-	for (var i = 0; i < a.table.length; i++)
-	{
-		newA.table[i] =
-			a.height === 0
-				? A2(f, from + i, a.table[i])
-				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
-	}
-	return newA;
-}
-
-function foldl(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = 0; i < a.table.length; i++)
-		{
-			b = foldl(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-function foldr(f, b, a)
-{
-	if (a.height === 0)
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = A2(f, a.table[i], b);
-		}
-	}
-	else
-	{
-		for (var i = a.table.length; i--; )
-		{
-			b = foldr(f, b, a.table[i]);
-		}
-	}
-	return b;
-}
-
-// TODO: currently, it slices the right, then the left. This can be
-// optimized.
-function slice(from, to, a)
-{
-	if (from < 0)
-	{
-		from += length(a);
-	}
-	if (to < 0)
-	{
-		to += length(a);
-	}
-	return sliceLeft(from, sliceRight(to, a));
-}
-
-function sliceRight(to, a)
-{
-	if (to === length(a))
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(0, to);
-		return newA;
-	}
-
-	// Slice the right recursively.
-	var right = getSlot(to, a);
-	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (right === 0)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(0, right),
-		lengths: a.lengths.slice(0, right)
-	};
-	if (sliced.table.length > 0)
-	{
-		newA.table[right] = sliced;
-		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
-	}
-	return newA;
-}
-
-function sliceLeft(from, a)
-{
-	if (from === 0)
-	{
-		return a;
-	}
-
-	// Handle leaf level.
-	if (a.height === 0)
-	{
-		var newA = { ctor:'_Array', height:0 };
-		newA.table = a.table.slice(from, a.table.length + 1);
-		return newA;
-	}
-
-	// Slice the left recursively.
-	var left = getSlot(from, a);
-	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
-
-	// Maybe the a node is not even needed, as sliced contains the whole slice.
-	if (left === a.table.length - 1)
-	{
-		return sliced;
-	}
-
-	// Create new node.
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice(left, a.table.length + 1),
-		lengths: new Array(a.table.length - left)
-	};
-	newA.table[0] = sliced;
-	var len = 0;
-	for (var i = 0; i < newA.table.length; i++)
-	{
-		len += length(newA.table[i]);
-		newA.lengths[i] = len;
-	}
-
-	return newA;
-}
-
-// Appends two trees.
-function append(a,b)
-{
-	if (a.table.length === 0)
-	{
-		return b;
-	}
-	if (b.table.length === 0)
-	{
-		return a;
-	}
-
-	var c = append_(a, b);
-
-	// Check if both nodes can be crunshed together.
-	if (c[0].table.length + c[1].table.length <= M)
-	{
-		if (c[0].table.length === 0)
-		{
-			return c[1];
-		}
-		if (c[1].table.length === 0)
-		{
-			return c[0];
-		}
-
-		// Adjust .table and .lengths
-		c[0].table = c[0].table.concat(c[1].table);
-		if (c[0].height > 0)
-		{
-			var len = length(c[0]);
-			for (var i = 0; i < c[1].lengths.length; i++)
-			{
-				c[1].lengths[i] += len;
-			}
-			c[0].lengths = c[0].lengths.concat(c[1].lengths);
-		}
-
-		return c[0];
-	}
-
-	if (c[0].height > 0)
-	{
-		var toRemove = calcToRemove(a, b);
-		if (toRemove > E)
-		{
-			c = shuffle(c[0], c[1], toRemove);
-		}
-	}
-
-	return siblise(c[0], c[1]);
-}
-
-// Returns an array of two nodes; right and left. One node _may_ be empty.
-function append_(a, b)
-{
-	if (a.height === 0 && b.height === 0)
-	{
-		return [a, b];
-	}
-
-	if (a.height !== 1 || b.height !== 1)
-	{
-		if (a.height === b.height)
-		{
-			a = nodeCopy(a);
-			b = nodeCopy(b);
-			var appended = append_(botRight(a), botLeft(b));
-
-			insertRight(a, appended[1]);
-			insertLeft(b, appended[0]);
-		}
-		else if (a.height > b.height)
-		{
-			a = nodeCopy(a);
-			var appended = append_(botRight(a), b);
-
-			insertRight(a, appended[0]);
-			b = parentise(appended[1], appended[1].height + 1);
-		}
-		else
-		{
-			b = nodeCopy(b);
-			var appended = append_(a, botLeft(b));
-
-			var left = appended[0].table.length === 0 ? 0 : 1;
-			var right = left === 0 ? 1 : 0;
-			insertLeft(b, appended[left]);
-			a = parentise(appended[right], appended[right].height + 1);
-		}
-	}
-
-	// Check if balancing is needed and return based on that.
-	if (a.table.length === 0 || b.table.length === 0)
-	{
-		return [a, b];
-	}
-
-	var toRemove = calcToRemove(a, b);
-	if (toRemove <= E)
-	{
-		return [a, b];
-	}
-	return shuffle(a, b, toRemove);
-}
-
-// Helperfunctions for append_. Replaces a child node at the side of the parent.
-function insertRight(parent, node)
-{
-	var index = parent.table.length - 1;
-	parent.table[index] = node;
-	parent.lengths[index] = length(node);
-	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
-}
-
-function insertLeft(parent, node)
-{
-	if (node.table.length > 0)
-	{
-		parent.table[0] = node;
-		parent.lengths[0] = length(node);
-
-		var len = length(parent.table[0]);
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			len += length(parent.table[i]);
-			parent.lengths[i] = len;
-		}
-	}
-	else
-	{
-		parent.table.shift();
-		for (var i = 1; i < parent.lengths.length; i++)
-		{
-			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
-		}
-		parent.lengths.shift();
-	}
-}
-
-// Returns the extra search steps for E. Refer to the paper.
-function calcToRemove(a, b)
-{
-	var subLengths = 0;
-	for (var i = 0; i < a.table.length; i++)
-	{
-		subLengths += a.table[i].table.length;
-	}
-	for (var i = 0; i < b.table.length; i++)
-	{
-		subLengths += b.table[i].table.length;
-	}
-
-	var toRemove = a.table.length + b.table.length;
-	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
-}
-
-// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
-function get2(a, b, index)
-{
-	return index < a.length
-		? a[index]
-		: b[index - a.length];
-}
-
-function set2(a, b, index, value)
-{
-	if (index < a.length)
-	{
-		a[index] = value;
-	}
-	else
-	{
-		b[index - a.length] = value;
-	}
-}
-
-function saveSlot(a, b, index, slot)
-{
-	set2(a.table, b.table, index, slot);
-
-	var l = (index === 0 || index === a.lengths.length)
-		? 0
-		: get2(a.lengths, a.lengths, index - 1);
-
-	set2(a.lengths, b.lengths, index, l + length(slot));
-}
-
-// Creates a node or leaf with a given length at their arrays for perfomance.
-// Is only used by shuffle.
-function createNode(h, length)
-{
-	if (length < 0)
-	{
-		length = 0;
-	}
-	var a = {
-		ctor: '_Array',
-		height: h,
-		table: new Array(length)
-	};
-	if (h > 0)
-	{
-		a.lengths = new Array(length);
-	}
-	return a;
-}
-
-// Returns an array of two balanced nodes.
-function shuffle(a, b, toRemove)
-{
-	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
-	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
-
-	// Skip the slots with size M. More precise: copy the slot references
-	// to the new node
-	var read = 0;
-	while (get2(a.table, b.table, read).table.length % M === 0)
-	{
-		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
-		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
-		read++;
-	}
-
-	// Pulling items from left to right, caching in a slot before writing
-	// it into the new nodes.
-	var write = read;
-	var slot = new createNode(a.height - 1, 0);
-	var from = 0;
-
-	// If the current slot is still containing data, then there will be at
-	// least one more write, so we do not break this loop yet.
-	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
-	{
-		// Find out the max possible items for copying.
-		var source = get2(a.table, b.table, read);
-		var to = Math.min(M - slot.table.length, source.table.length);
-
-		// Copy and adjust size table.
-		slot.table = slot.table.concat(source.table.slice(from, to));
-		if (slot.height > 0)
-		{
-			var len = slot.lengths.length;
-			for (var i = len; i < len + to - from; i++)
-			{
-				slot.lengths[i] = length(slot.table[i]);
-				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
-			}
-		}
-
-		from += to;
-
-		// Only proceed to next slots[i] if the current one was
-		// fully copied.
-		if (source.table.length <= to)
-		{
-			read++; from = 0;
-		}
-
-		// Only create a new slot if the current one is filled up.
-		if (slot.table.length === M)
-		{
-			saveSlot(newA, newB, write, slot);
-			slot = createNode(a.height - 1, 0);
-			write++;
-		}
-	}
-
-	// Cleanup after the loop. Copy the last slot into the new nodes.
-	if (slot.table.length > 0)
-	{
-		saveSlot(newA, newB, write, slot);
-		write++;
-	}
-
-	// Shift the untouched slots to the left
-	while (read < a.table.length + b.table.length )
-	{
-		saveSlot(newA, newB, write, get2(a.table, b.table, read));
-		read++;
-		write++;
-	}
-
-	return [newA, newB];
-}
-
-// Navigation functions
-function botRight(a)
-{
-	return a.table[a.table.length - 1];
-}
-function botLeft(a)
-{
-	return a.table[0];
-}
-
-// Copies a node for updating. Note that you should not use this if
-// only updating only one of "table" or "lengths" for performance reasons.
-function nodeCopy(a)
-{
-	var newA = {
-		ctor: '_Array',
-		height: a.height,
-		table: a.table.slice()
-	};
-	if (a.height > 0)
-	{
-		newA.lengths = a.lengths.slice();
-	}
-	return newA;
-}
-
-// Returns how many items are in the tree.
-function length(array)
-{
-	if (array.height === 0)
-	{
-		return array.table.length;
-	}
-	else
-	{
-		return array.lengths[array.lengths.length - 1];
-	}
-}
-
-// Calculates in which slot of "table" the item probably is, then
-// find the exact slot via forward searching in  "lengths". Returns the index.
-function getSlot(i, a)
-{
-	var slot = i >> (5 * a.height);
-	while (a.lengths[slot] <= i)
-	{
-		slot++;
-	}
-	return slot;
-}
-
-// Recursively creates a tree with a given height containing
-// only the given item.
-function create(item, h)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: [item]
-		};
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [create(item, h - 1)],
-		lengths: [1]
-	};
-}
-
-// Recursively creates a tree that contains the given tree.
-function parentise(tree, h)
-{
-	if (h === tree.height)
-	{
-		return tree;
-	}
-
-	return {
-		ctor: '_Array',
-		height: h,
-		table: [parentise(tree, h - 1)],
-		lengths: [length(tree)]
-	};
-}
-
-// Emphasizes blood brotherhood beneath two trees.
-function siblise(a, b)
-{
-	return {
-		ctor: '_Array',
-		height: a.height + 1,
-		table: [a, b],
-		lengths: [length(a), length(a) + length(b)]
-	};
-}
-
-function toJSArray(a)
-{
-	var jsArray = new Array(length(a));
-	toJSArray_(jsArray, 0, a);
-	return jsArray;
-}
-
-function toJSArray_(jsArray, i, a)
-{
-	for (var t = 0; t < a.table.length; t++)
-	{
-		if (a.height === 0)
-		{
-			jsArray[i + t] = a.table[t];
-		}
-		else
-		{
-			var inc = t === 0 ? 0 : a.lengths[t - 1];
-			toJSArray_(jsArray, i + inc, a.table[t]);
-		}
-	}
-}
-
-function fromJSArray(jsArray)
-{
-	if (jsArray.length === 0)
-	{
-		return empty;
-	}
-	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
-	return fromJSArray_(jsArray, h, 0, jsArray.length);
-}
-
-function fromJSArray_(jsArray, h, from, to)
-{
-	if (h === 0)
-	{
-		return {
-			ctor: '_Array',
-			height: 0,
-			table: jsArray.slice(from, to)
-		};
-	}
-
-	var step = Math.pow(M, h);
-	var table = new Array(Math.ceil((to - from) / step));
-	var lengths = new Array(table.length);
-	for (var i = 0; i < table.length; i++)
-	{
-		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
-		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
-	}
-	return {
-		ctor: '_Array',
-		height: h,
-		table: table,
-		lengths: lengths
-	};
-}
-
-return {
-	empty: empty,
-	fromList: fromList,
-	toList: toList,
-	initialize: F2(initialize),
-	append: F2(append),
-	push: F2(push),
-	slice: F3(slice),
-	get: F2(get),
-	set: F3(set),
-	map: F2(map),
-	indexedMap: F2(indexedMap),
-	foldl: F3(foldl),
-	foldr: F3(foldr),
-	length: length,
-
-	toJSArray: toJSArray,
-	fromJSArray: fromJSArray
-};
-
-}();
 //import Native.Utils //
 
 var _elm_lang$core$Native_Basics = function() {
@@ -2619,61 +1652,6 @@ var _elm_lang$core$List$indexedMap = F2(
 				_elm_lang$core$List$length(xs) - 1),
 			xs);
 	});
-
-var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
-var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
-var _elm_lang$core$Array$isEmpty = function (array) {
-	return _elm_lang$core$Native_Utils.eq(
-		_elm_lang$core$Array$length(array),
-		0);
-};
-var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
-var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
-var _elm_lang$core$Array$get = F2(
-	function (i, array) {
-		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
-			i,
-			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
-			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
-	});
-var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
-var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
-var _elm_lang$core$Array$filter = F2(
-	function (isOkay, arr) {
-		var update = F2(
-			function (x, xs) {
-				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
-			});
-		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
-	});
-var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
-var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
-var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
-var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
-var _elm_lang$core$Array$toIndexedList = function (array) {
-	return A3(
-		_elm_lang$core$List$map2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
-			}),
-		A2(
-			_elm_lang$core$List$range,
-			0,
-			_elm_lang$core$Native_Array.length(array) - 1),
-		_elm_lang$core$Native_Array.toList(array));
-};
-var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
-var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
-var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
-var _elm_lang$core$Array$repeat = F2(
-	function (n, e) {
-		return A2(
-			_elm_lang$core$Array$initialize,
-			n,
-			_elm_lang$core$Basics$always(e));
-	});
-var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
 //import Native.Utils //
 
@@ -4205,658 +3183,136 @@ var _elm_lang$core$Dict$diff = F2(
 			t2);
 	});
 
-//import Maybe, Native.Array, Native.List, Native.Utils, Result //
-
-var _elm_lang$core$Native_Json = function() {
-
-
-// CORE DECODERS
-
-function succeed(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'succeed',
-		msg: msg
-	};
-}
-
-function fail(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'fail',
-		msg: msg
-	};
-}
-
-function decodePrimitive(tag)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag
-	};
-}
-
-function decodeContainer(tag, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag,
-		decoder: decoder
-	};
-}
-
-function decodeNull(value)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
-	};
-}
-
-function decodeField(field, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'field',
-		field: field,
-		decoder: decoder
-	};
-}
-
-function decodeIndex(index, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'index',
-		index: index,
-		decoder: decoder
-	};
-}
-
-function decodeKeyValuePairs(decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'key-value',
-		decoder: decoder
-	};
-}
-
-function mapMany(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'map-many',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function andThen(callback, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
-
-
-// DECODING OBJECTS
-
-function map1(f, d1)
-{
-	return mapMany(f, [d1]);
-}
-
-function map2(f, d1, d2)
-{
-	return mapMany(f, [d1, d2]);
-}
-
-function map3(f, d1, d2, d3)
-{
-	return mapMany(f, [d1, d2, d3]);
-}
-
-function map4(f, d1, d2, d3, d4)
-{
-	return mapMany(f, [d1, d2, d3, d4]);
-}
-
-function map5(f, d1, d2, d3, d4, d5)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5]);
-}
-
-function map6(f, d1, d2, d3, d4, d5, d6)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function map7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function map8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODE HELPERS
-
-function ok(value)
-{
-	return { tag: 'ok', value: value };
-}
-
-function badPrimitive(type, value)
-{
-	return { tag: 'primitive', type: type, value: value };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badField(field, nestedProblems)
-{
-	return { tag: 'field', field: field, rest: nestedProblems };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badOneOf(problems)
-{
-	return { tag: 'oneOf', problems: problems };
-}
-
-function bad(msg)
-{
-	return { tag: 'fail', msg: msg };
-}
-
-function badToString(problem)
-{
-	var context = '_';
-	while (problem)
-	{
-		switch (problem.tag)
-		{
-			case 'primitive':
-				return 'Expecting ' + problem.type
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ' but instead got: ' + jsToString(problem.value);
-
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
-			case 'field':
-				context += '.' + problem.field;
-				problem = problem.rest;
-				break;
-
-			case 'oneOf':
-				var problems = problem.problems;
-				for (var i = 0; i < problems.length; i++)
-				{
-					problems[i] = badToString(problems[i]);
-				}
-				return 'I ran into the following problems'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ':\n\n' + problems.join('\n');
-
-			case 'fail':
-				return 'I ran into a `fail` decoder'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ': ' + problem.msg;
-		}
-	}
-}
-
-function jsToString(value)
-{
-	return value === undefined
-		? 'undefined'
-		: JSON.stringify(value);
-}
-
-
-// DECODE
-
-function runOnString(decoder, string)
-{
-	var json;
-	try
-	{
-		json = JSON.parse(string);
-	}
-	catch (e)
-	{
-		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
-	}
-	return run(decoder, json);
-}
-
-function run(decoder, value)
-{
-	var result = runHelp(decoder, value);
-	return (result.tag === 'ok')
-		? _elm_lang$core$Result$Ok(result.value)
-		: _elm_lang$core$Result$Err(badToString(result));
-}
-
-function runHelp(decoder, value)
-{
-	switch (decoder.tag)
-	{
-		case 'bool':
-			return (typeof value === 'boolean')
-				? ok(value)
-				: badPrimitive('a Bool', value);
-
-		case 'int':
-			if (typeof value !== 'number') {
-				return badPrimitive('an Int', value);
-			}
-
-			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
-				return ok(value);
-			}
-
-			if (isFinite(value) && !(value % 1)) {
-				return ok(value);
-			}
-
-			return badPrimitive('an Int', value);
-
-		case 'float':
-			return (typeof value === 'number')
-				? ok(value)
-				: badPrimitive('a Float', value);
-
-		case 'string':
-			return (typeof value === 'string')
-				? ok(value)
-				: (value instanceof String)
-					? ok(value + '')
-					: badPrimitive('a String', value);
-
-		case 'null':
-			return (value === null)
-				? ok(decoder.value)
-				: badPrimitive('null', value);
-
-		case 'value':
-			return ok(value);
-
-		case 'list':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('a List', value);
-			}
-
-			var list = _elm_lang$core$Native_List.Nil;
-			for (var i = value.length; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result)
-				}
-				list = _elm_lang$core$Native_List.Cons(result.value, list);
-			}
-			return ok(list);
-
-		case 'array':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an Array', value);
-			}
-
-			var len = value.length;
-			var array = new Array(len);
-			for (var i = len; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				array[i] = result.value;
-			}
-			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
-
-		case 'maybe':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag === 'ok')
-				? ok(_elm_lang$core$Maybe$Just(result.value))
-				: ok(_elm_lang$core$Maybe$Nothing);
-
-		case 'field':
-			var field = decoder.field;
-			if (typeof value !== 'object' || value === null || !(field in value))
-			{
-				return badPrimitive('an object with a field named `' + field + '`', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[field]);
-			return (result.tag === 'ok') ? result : badField(field, result);
-
-		case 'index':
-			var index = decoder.index;
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an array', value);
-			}
-			if (index >= value.length)
-			{
-				return badPrimitive('a longer array. Need index ' + index + ' but there are only ' + value.length + ' entries', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[index]);
-			return (result.tag === 'ok') ? result : badIndex(index, result);
-
-		case 'key-value':
-			if (typeof value !== 'object' || value === null || value instanceof Array)
-			{
-				return badPrimitive('an object', value);
-			}
-
-			var keyValuePairs = _elm_lang$core$Native_List.Nil;
-			for (var key in value)
-			{
-				var result = runHelp(decoder.decoder, value[key]);
-				if (result.tag !== 'ok')
-				{
-					return badField(key, result);
-				}
-				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
-				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
-			}
-			return ok(keyValuePairs);
-
-		case 'map-many':
-			var answer = decoder.func;
-			var decoders = decoder.decoders;
-			for (var i = 0; i < decoders.length; i++)
-			{
-				var result = runHelp(decoders[i], value);
-				if (result.tag !== 'ok')
-				{
-					return result;
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'andThen':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag !== 'ok')
-				? result
-				: runHelp(decoder.callback(result.value), value);
-
-		case 'oneOf':
-			var errors = [];
-			var temp = decoder.decoders;
-			while (temp.ctor !== '[]')
-			{
-				var result = runHelp(temp._0, value);
-
-				if (result.tag === 'ok')
-				{
-					return result;
-				}
-
-				errors.push(result);
-
-				temp = temp._1;
-			}
-			return badOneOf(errors);
-
-		case 'fail':
-			return bad(decoder.msg);
-
-		case 'succeed':
-			return ok(decoder.msg);
-	}
-}
-
-
-// EQUALITY
-
-function equality(a, b)
-{
-	if (a === b)
-	{
-		return true;
-	}
-
-	if (a.tag !== b.tag)
-	{
-		return false;
-	}
-
-	switch (a.tag)
-	{
-		case 'succeed':
-		case 'fail':
-			return a.msg === b.msg;
-
-		case 'bool':
-		case 'int':
-		case 'float':
-		case 'string':
-		case 'value':
-			return true;
-
-		case 'null':
-			return a.value === b.value;
-
-		case 'list':
-		case 'array':
-		case 'maybe':
-		case 'key-value':
-			return equality(a.decoder, b.decoder);
-
-		case 'field':
-			return a.field === b.field && equality(a.decoder, b.decoder);
-
-		case 'index':
-			return a.index === b.index && equality(a.decoder, b.decoder);
-
-		case 'map-many':
-			if (a.func !== b.func)
-			{
-				return false;
-			}
-			return listEquality(a.decoders, b.decoders);
-
-		case 'andThen':
-			return a.callback === b.callback && equality(a.decoder, b.decoder);
-
-		case 'oneOf':
-			return listEquality(a.decoders, b.decoders);
-	}
-}
-
-function listEquality(aDecoders, bDecoders)
-{
-	var len = aDecoders.length;
-	if (len !== bDecoders.length)
-	{
-		return false;
-	}
-	for (var i = 0; i < len; i++)
-	{
-		if (!equality(aDecoders[i], bDecoders[i]))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-
-// ENCODE
-
-function encode(indentLevel, value)
-{
-	return JSON.stringify(value, null, indentLevel);
-}
-
-function identity(value)
-{
-	return value;
-}
-
-function encodeObject(keyValuePairs)
-{
-	var obj = {};
-	while (keyValuePairs.ctor !== '[]')
-	{
-		var pair = keyValuePairs._0;
-		obj[pair._0] = pair._1;
-		keyValuePairs = keyValuePairs._1;
-	}
-	return obj;
-}
-
-return {
-	encode: F2(encode),
-	runOnString: F2(runOnString),
-	run: F2(run),
-
-	decodeNull: decodeNull,
-	decodePrimitive: decodePrimitive,
-	decodeContainer: F2(decodeContainer),
-
-	decodeField: F2(decodeField),
-	decodeIndex: F2(decodeIndex),
-
-	map1: F2(map1),
-	map2: F3(map2),
-	map3: F4(map3),
-	map4: F5(map4),
-	map5: F6(map5),
-	map6: F7(map6),
-	map7: F8(map7),
-	map8: F9(map8),
-	decodeKeyValuePairs: decodeKeyValuePairs,
-
-	andThen: F2(andThen),
-	fail: fail,
-	succeed: succeed,
-	oneOf: oneOf,
-
-	identity: identity,
-	encodeNull: null,
-	encodeArray: _elm_lang$core$Native_Array.toJSArray,
-	encodeList: _elm_lang$core$Native_List.toArray,
-	encodeObject: encodeObject,
-
-	equality: equality
+var _elm_lang$core$Set$foldr = F3(
+	function (f, b, _p0) {
+		var _p1 = _p0;
+		return A3(
+			_elm_lang$core$Dict$foldr,
+			F3(
+				function (k, _p2, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p1._0);
+	});
+var _elm_lang$core$Set$foldl = F3(
+	function (f, b, _p3) {
+		var _p4 = _p3;
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, _p5, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p4._0);
+	});
+var _elm_lang$core$Set$toList = function (_p6) {
+	var _p7 = _p6;
+	return _elm_lang$core$Dict$keys(_p7._0);
 };
-
-}();
-
-var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
-var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
-var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
-var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
-var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
-var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
-
-var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
-var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
-var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
-var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
-var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
-var _elm_lang$core$Json_Decode$lazy = function (thunk) {
-	return A2(
-		_elm_lang$core$Json_Decode$andThen,
-		thunk,
-		_elm_lang$core$Json_Decode$succeed(
+var _elm_lang$core$Set$size = function (_p8) {
+	var _p9 = _p8;
+	return _elm_lang$core$Dict$size(_p9._0);
+};
+var _elm_lang$core$Set$member = F2(
+	function (k, _p10) {
+		var _p11 = _p10;
+		return A2(_elm_lang$core$Dict$member, k, _p11._0);
+	});
+var _elm_lang$core$Set$isEmpty = function (_p12) {
+	var _p13 = _p12;
+	return _elm_lang$core$Dict$isEmpty(_p13._0);
+};
+var _elm_lang$core$Set$Set_elm_builtin = function (a) {
+	return {ctor: 'Set_elm_builtin', _0: a};
+};
+var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
+var _elm_lang$core$Set$singleton = function (k) {
+	return _elm_lang$core$Set$Set_elm_builtin(
+		A2(
+			_elm_lang$core$Dict$singleton,
+			k,
 			{ctor: '_Tuple0'}));
 };
-var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
-var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
-var _elm_lang$core$Json_Decode$map8 = _elm_lang$core$Native_Json.map8;
-var _elm_lang$core$Json_Decode$map7 = _elm_lang$core$Native_Json.map7;
-var _elm_lang$core$Json_Decode$map6 = _elm_lang$core$Native_Json.map6;
-var _elm_lang$core$Json_Decode$map5 = _elm_lang$core$Native_Json.map5;
-var _elm_lang$core$Json_Decode$map4 = _elm_lang$core$Native_Json.map4;
-var _elm_lang$core$Json_Decode$map3 = _elm_lang$core$Native_Json.map3;
-var _elm_lang$core$Json_Decode$map2 = _elm_lang$core$Native_Json.map2;
-var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.map1;
-var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
-var _elm_lang$core$Json_Decode$maybe = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
-};
-var _elm_lang$core$Json_Decode$index = _elm_lang$core$Native_Json.decodeIndex;
-var _elm_lang$core$Json_Decode$field = _elm_lang$core$Native_Json.decodeField;
-var _elm_lang$core$Json_Decode$at = F2(
-	function (fields, decoder) {
-		return A3(_elm_lang$core$List$foldr, _elm_lang$core$Json_Decode$field, decoder, fields);
+var _elm_lang$core$Set$insert = F2(
+	function (k, _p14) {
+		var _p15 = _p14;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A3(
+				_elm_lang$core$Dict$insert,
+				k,
+				{ctor: '_Tuple0'},
+				_p15._0));
 	});
-var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
-var _elm_lang$core$Json_Decode$dict = function (decoder) {
-	return A2(
-		_elm_lang$core$Json_Decode$map,
-		_elm_lang$core$Dict$fromList,
-		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
+var _elm_lang$core$Set$fromList = function (xs) {
+	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
 };
-var _elm_lang$core$Json_Decode$array = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
-};
-var _elm_lang$core$Json_Decode$list = function (decoder) {
-	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
-};
-var _elm_lang$core$Json_Decode$nullable = function (decoder) {
-	return _elm_lang$core$Json_Decode$oneOf(
-		{
-			ctor: '::',
-			_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-			_1: {
-				ctor: '::',
-				_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, decoder),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
-var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
-var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
-var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
-var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
-
-var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
-var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
+var _elm_lang$core$Set$map = F2(
+	function (f, s) {
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				f,
+				_elm_lang$core$Set$toList(s)));
+	});
+var _elm_lang$core$Set$remove = F2(
+	function (k, _p16) {
+		var _p17 = _p16;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$remove, k, _p17._0));
+	});
+var _elm_lang$core$Set$union = F2(
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
+	});
+var _elm_lang$core$Set$intersect = F2(
+	function (_p23, _p22) {
+		var _p24 = _p23;
+		var _p25 = _p22;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
+	});
+var _elm_lang$core$Set$diff = F2(
+	function (_p27, _p26) {
+		var _p28 = _p27;
+		var _p29 = _p26;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
+	});
+var _elm_lang$core$Set$filter = F2(
+	function (p, _p30) {
+		var _p31 = _p30;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(
+				_elm_lang$core$Dict$filter,
+				F2(
+					function (k, _p32) {
+						return p(k);
+					}),
+				_p31._0));
+	});
+var _elm_lang$core$Set$partition = F2(
+	function (p, _p33) {
+		var _p34 = _p33;
+		var _p35 = A2(
+			_elm_lang$core$Dict$partition,
+			F2(
+				function (k, _p36) {
+					return p(k);
+				}),
+			_p34._0);
+		var p1 = _p35._0;
+		var p2 = _p35._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
+			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
+		};
+	});
 
 var _elm_lang$core$Tuple$mapSecond = F2(
 	function (func, _p0) {
@@ -4884,6 +3340,9 @@ var _elm_lang$core$Tuple$first = function (_p6) {
 	var _p7 = _p6;
 	return _p7._0;
 };
+
+var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
+var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
 //import //
 
@@ -5756,137 +4215,6 @@ var _elm_lang$core$Platform$Program = {ctor: 'Program'};
 var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
-
-var _elm_lang$core$Set$foldr = F3(
-	function (f, b, _p0) {
-		var _p1 = _p0;
-		return A3(
-			_elm_lang$core$Dict$foldr,
-			F3(
-				function (k, _p2, b) {
-					return A2(f, k, b);
-				}),
-			b,
-			_p1._0);
-	});
-var _elm_lang$core$Set$foldl = F3(
-	function (f, b, _p3) {
-		var _p4 = _p3;
-		return A3(
-			_elm_lang$core$Dict$foldl,
-			F3(
-				function (k, _p5, b) {
-					return A2(f, k, b);
-				}),
-			b,
-			_p4._0);
-	});
-var _elm_lang$core$Set$toList = function (_p6) {
-	var _p7 = _p6;
-	return _elm_lang$core$Dict$keys(_p7._0);
-};
-var _elm_lang$core$Set$size = function (_p8) {
-	var _p9 = _p8;
-	return _elm_lang$core$Dict$size(_p9._0);
-};
-var _elm_lang$core$Set$member = F2(
-	function (k, _p10) {
-		var _p11 = _p10;
-		return A2(_elm_lang$core$Dict$member, k, _p11._0);
-	});
-var _elm_lang$core$Set$isEmpty = function (_p12) {
-	var _p13 = _p12;
-	return _elm_lang$core$Dict$isEmpty(_p13._0);
-};
-var _elm_lang$core$Set$Set_elm_builtin = function (a) {
-	return {ctor: 'Set_elm_builtin', _0: a};
-};
-var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
-var _elm_lang$core$Set$singleton = function (k) {
-	return _elm_lang$core$Set$Set_elm_builtin(
-		A2(
-			_elm_lang$core$Dict$singleton,
-			k,
-			{ctor: '_Tuple0'}));
-};
-var _elm_lang$core$Set$insert = F2(
-	function (k, _p14) {
-		var _p15 = _p14;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A3(
-				_elm_lang$core$Dict$insert,
-				k,
-				{ctor: '_Tuple0'},
-				_p15._0));
-	});
-var _elm_lang$core$Set$fromList = function (xs) {
-	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
-};
-var _elm_lang$core$Set$map = F2(
-	function (f, s) {
-		return _elm_lang$core$Set$fromList(
-			A2(
-				_elm_lang$core$List$map,
-				f,
-				_elm_lang$core$Set$toList(s)));
-	});
-var _elm_lang$core$Set$remove = F2(
-	function (k, _p16) {
-		var _p17 = _p16;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$remove, k, _p17._0));
-	});
-var _elm_lang$core$Set$union = F2(
-	function (_p19, _p18) {
-		var _p20 = _p19;
-		var _p21 = _p18;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
-	});
-var _elm_lang$core$Set$intersect = F2(
-	function (_p23, _p22) {
-		var _p24 = _p23;
-		var _p25 = _p22;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
-	});
-var _elm_lang$core$Set$diff = F2(
-	function (_p27, _p26) {
-		var _p28 = _p27;
-		var _p29 = _p26;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
-	});
-var _elm_lang$core$Set$filter = F2(
-	function (p, _p30) {
-		var _p31 = _p30;
-		return _elm_lang$core$Set$Set_elm_builtin(
-			A2(
-				_elm_lang$core$Dict$filter,
-				F2(
-					function (k, _p32) {
-						return p(k);
-					}),
-				_p31._0));
-	});
-var _elm_lang$core$Set$partition = F2(
-	function (p, _p33) {
-		var _p34 = _p33;
-		var _p35 = A2(
-			_elm_lang$core$Dict$partition,
-			F2(
-				function (k, _p36) {
-					return p(k);
-				}),
-			_p34._0);
-		var p1 = _p35._0;
-		var p2 = _p35._1;
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
-			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
-		};
-	});
 
 var _elm_community$list_extra$List_Extra$greedyGroupsOfWithStep = F3(
 	function (size, step, xs) {
@@ -7096,171 +5424,1677 @@ var _elm_community$list_extra$List_Extra$init = function () {
 var _elm_community$list_extra$List_Extra$last = _elm_community$list_extra$List_Extra$foldl1(
 	_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always));
 
-var _elm_lang$core$Color$fmod = F2(
-	function (f, n) {
-		var integer = _elm_lang$core$Basics$floor(f);
-		return (_elm_lang$core$Basics$toFloat(
-			A2(_elm_lang$core$Basics_ops['%'], integer, n)) + f) - _elm_lang$core$Basics$toFloat(integer);
-	});
-var _elm_lang$core$Color$rgbToHsl = F3(
-	function (red, green, blue) {
-		var b = _elm_lang$core$Basics$toFloat(blue) / 255;
-		var g = _elm_lang$core$Basics$toFloat(green) / 255;
-		var r = _elm_lang$core$Basics$toFloat(red) / 255;
-		var cMax = A2(
-			_elm_lang$core$Basics$max,
-			A2(_elm_lang$core$Basics$max, r, g),
-			b);
-		var cMin = A2(
-			_elm_lang$core$Basics$min,
-			A2(_elm_lang$core$Basics$min, r, g),
-			b);
-		var c = cMax - cMin;
-		var lightness = (cMax + cMin) / 2;
-		var saturation = _elm_lang$core$Native_Utils.eq(lightness, 0) ? 0 : (c / (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)));
-		var hue = _elm_lang$core$Basics$degrees(60) * (_elm_lang$core$Native_Utils.eq(cMax, r) ? A2(_elm_lang$core$Color$fmod, (g - b) / c, 6) : (_elm_lang$core$Native_Utils.eq(cMax, g) ? (((b - r) / c) + 2) : (((r - g) / c) + 4)));
-		return {ctor: '_Tuple3', _0: hue, _1: saturation, _2: lightness};
-	});
-var _elm_lang$core$Color$hslToRgb = F3(
-	function (hue, saturation, lightness) {
-		var normHue = hue / _elm_lang$core$Basics$degrees(60);
-		var chroma = (1 - _elm_lang$core$Basics$abs((2 * lightness) - 1)) * saturation;
-		var x = chroma * (1 - _elm_lang$core$Basics$abs(
-			A2(_elm_lang$core$Color$fmod, normHue, 2) - 1));
-		var _p0 = (_elm_lang$core$Native_Utils.cmp(normHue, 0) < 0) ? {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 1) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: x, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 2) < 0) ? {ctor: '_Tuple3', _0: x, _1: chroma, _2: 0} : ((_elm_lang$core$Native_Utils.cmp(normHue, 3) < 0) ? {ctor: '_Tuple3', _0: 0, _1: chroma, _2: x} : ((_elm_lang$core$Native_Utils.cmp(normHue, 4) < 0) ? {ctor: '_Tuple3', _0: 0, _1: x, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 5) < 0) ? {ctor: '_Tuple3', _0: x, _1: 0, _2: chroma} : ((_elm_lang$core$Native_Utils.cmp(normHue, 6) < 0) ? {ctor: '_Tuple3', _0: chroma, _1: 0, _2: x} : {ctor: '_Tuple3', _0: 0, _1: 0, _2: 0}))))));
-		var r = _p0._0;
-		var g = _p0._1;
-		var b = _p0._2;
-		var m = lightness - (chroma / 2);
-		return {ctor: '_Tuple3', _0: r + m, _1: g + m, _2: b + m};
-	});
-var _elm_lang$core$Color$toRgb = function (color) {
-	var _p1 = color;
-	if (_p1.ctor === 'RGBA') {
-		return {red: _p1._0, green: _p1._1, blue: _p1._2, alpha: _p1._3};
-	} else {
-		var _p2 = A3(_elm_lang$core$Color$hslToRgb, _p1._0, _p1._1, _p1._2);
-		var r = _p2._0;
-		var g = _p2._1;
-		var b = _p2._2;
+//import Native.List //
+
+var _elm_lang$core$Native_Array = function() {
+
+// A RRB-Tree has two distinct data types.
+// Leaf -> "height"  is always 0
+//         "table"   is an array of elements
+// Node -> "height"  is always greater than 0
+//         "table"   is an array of child nodes
+//         "lengths" is an array of accumulated lengths of the child nodes
+
+// M is the maximal table size. 32 seems fast. E is the allowed increase
+// of search steps when concatting to find an index. Lower values will
+// decrease balancing, but will increase search steps.
+var M = 32;
+var E = 2;
+
+// An empty array.
+var empty = {
+	ctor: '_Array',
+	height: 0,
+	table: []
+};
+
+
+function get(i, array)
+{
+	if (i < 0 || i >= length(array))
+	{
+		throw new Error(
+			'Index ' + i + ' is out of range. Check the length of ' +
+			'your array first or use getMaybe or getWithDefault.');
+	}
+	return unsafeGet(i, array);
+}
+
+
+function unsafeGet(i, array)
+{
+	for (var x = array.height; x > 0; x--)
+	{
+		var slot = i >> (x * 5);
+		while (array.lengths[slot] <= i)
+		{
+			slot++;
+		}
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array = array.table[slot];
+	}
+	return array.table[i];
+}
+
+
+// Sets the value at the index i. Only the nodes leading to i will get
+// copied and updated.
+function set(i, item, array)
+{
+	if (i < 0 || length(array) <= i)
+	{
+		return array;
+	}
+	return unsafeSet(i, item, array);
+}
+
+
+function unsafeSet(i, item, array)
+{
+	array = nodeCopy(array);
+
+	if (array.height === 0)
+	{
+		array.table[i] = item;
+	}
+	else
+	{
+		var slot = getSlot(i, array);
+		if (slot > 0)
+		{
+			i -= array.lengths[slot - 1];
+		}
+		array.table[slot] = unsafeSet(i, item, array.table[slot]);
+	}
+	return array;
+}
+
+
+function initialize(len, f)
+{
+	if (len <= 0)
+	{
+		return empty;
+	}
+	var h = Math.floor( Math.log(len) / Math.log(M) );
+	return initialize_(f, h, 0, len);
+}
+
+function initialize_(f, h, from, to)
+{
+	if (h === 0)
+	{
+		var table = new Array((to - from) % (M + 1));
+		for (var i = 0; i < table.length; i++)
+		{
+		  table[i] = f(from + i);
+		}
 		return {
-			red: _elm_lang$core$Basics$round(255 * r),
-			green: _elm_lang$core$Basics$round(255 * g),
-			blue: _elm_lang$core$Basics$round(255 * b),
-			alpha: _p1._3
+			ctor: '_Array',
+			height: 0,
+			table: table
 		};
 	}
-};
-var _elm_lang$core$Color$toHsl = function (color) {
-	var _p3 = color;
-	if (_p3.ctor === 'HSLA') {
-		return {hue: _p3._0, saturation: _p3._1, lightness: _p3._2, alpha: _p3._3};
-	} else {
-		var _p4 = A3(_elm_lang$core$Color$rgbToHsl, _p3._0, _p3._1, _p3._2);
-		var h = _p4._0;
-		var s = _p4._1;
-		var l = _p4._2;
-		return {hue: h, saturation: s, lightness: l, alpha: _p3._3};
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = initialize_(f, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i-1] : 0);
 	}
-};
-var _elm_lang$core$Color$HSLA = F4(
-	function (a, b, c, d) {
-		return {ctor: 'HSLA', _0: a, _1: b, _2: c, _3: d};
-	});
-var _elm_lang$core$Color$hsla = F4(
-	function (hue, saturation, lightness, alpha) {
-		return A4(
-			_elm_lang$core$Color$HSLA,
-			hue - _elm_lang$core$Basics$turns(
-				_elm_lang$core$Basics$toFloat(
-					_elm_lang$core$Basics$floor(hue / (2 * _elm_lang$core$Basics$pi)))),
-			saturation,
-			lightness,
-			alpha);
-	});
-var _elm_lang$core$Color$hsl = F3(
-	function (hue, saturation, lightness) {
-		return A4(_elm_lang$core$Color$hsla, hue, saturation, lightness, 1);
-	});
-var _elm_lang$core$Color$complement = function (color) {
-	var _p5 = color;
-	if (_p5.ctor === 'HSLA') {
-		return A4(
-			_elm_lang$core$Color$hsla,
-			_p5._0 + _elm_lang$core$Basics$degrees(180),
-			_p5._1,
-			_p5._2,
-			_p5._3);
-	} else {
-		var _p6 = A3(_elm_lang$core$Color$rgbToHsl, _p5._0, _p5._1, _p5._2);
-		var h = _p6._0;
-		var s = _p6._1;
-		var l = _p6._2;
-		return A4(
-			_elm_lang$core$Color$hsla,
-			h + _elm_lang$core$Basics$degrees(180),
-			s,
-			l,
-			_p5._3);
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+function fromList(list)
+{
+	if (list.ctor === '[]')
+	{
+		return empty;
 	}
+
+	// Allocate M sized blocks (table) and write list elements to it.
+	var table = new Array(M);
+	var nodes = [];
+	var i = 0;
+
+	while (list.ctor !== '[]')
+	{
+		table[i] = list._0;
+		list = list._1;
+		i++;
+
+		// table is full, so we can push a leaf containing it into the
+		// next node.
+		if (i === M)
+		{
+			var leaf = {
+				ctor: '_Array',
+				height: 0,
+				table: table
+			};
+			fromListPush(leaf, nodes);
+			table = new Array(M);
+			i = 0;
+		}
+	}
+
+	// Maybe there is something left on the table.
+	if (i > 0)
+	{
+		var leaf = {
+			ctor: '_Array',
+			height: 0,
+			table: table.splice(0, i)
+		};
+		fromListPush(leaf, nodes);
+	}
+
+	// Go through all of the nodes and eventually push them into higher nodes.
+	for (var h = 0; h < nodes.length - 1; h++)
+	{
+		if (nodes[h].table.length > 0)
+		{
+			fromListPush(nodes[h], nodes);
+		}
+	}
+
+	var head = nodes[nodes.length - 1];
+	if (head.height > 0 && head.table.length === 1)
+	{
+		return head.table[0];
+	}
+	else
+	{
+		return head;
+	}
+}
+
+// Push a node into a higher node as a child.
+function fromListPush(toPush, nodes)
+{
+	var h = toPush.height;
+
+	// Maybe the node on this height does not exist.
+	if (nodes.length === h)
+	{
+		var node = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+		nodes.push(node);
+	}
+
+	nodes[h].table.push(toPush);
+	var len = length(toPush);
+	if (nodes[h].lengths.length > 0)
+	{
+		len += nodes[h].lengths[nodes[h].lengths.length - 1];
+	}
+	nodes[h].lengths.push(len);
+
+	if (nodes[h].table.length === M)
+	{
+		fromListPush(nodes[h], nodes);
+		nodes[h] = {
+			ctor: '_Array',
+			height: h + 1,
+			table: [],
+			lengths: []
+		};
+	}
+}
+
+// Pushes an item via push_ to the bottom right of a tree.
+function push(item, a)
+{
+	var pushed = push_(item, a);
+	if (pushed !== null)
+	{
+		return pushed;
+	}
+
+	var newTree = create(item, a.height);
+	return siblise(a, newTree);
+}
+
+// Recursively tries to push an item to the bottom-right most
+// tree possible. If there is no space left for the item,
+// null will be returned.
+function push_(item, a)
+{
+	// Handle resursion stop at leaf level.
+	if (a.height === 0)
+	{
+		if (a.table.length < M)
+		{
+			var newA = {
+				ctor: '_Array',
+				height: 0,
+				table: a.table.slice()
+			};
+			newA.table.push(item);
+			return newA;
+		}
+		else
+		{
+		  return null;
+		}
+	}
+
+	// Recursively push
+	var pushed = push_(item, botRight(a));
+
+	// There was space in the bottom right tree, so the slot will
+	// be updated.
+	if (pushed !== null)
+	{
+		var newA = nodeCopy(a);
+		newA.table[newA.table.length - 1] = pushed;
+		newA.lengths[newA.lengths.length - 1]++;
+		return newA;
+	}
+
+	// When there was no space left, check if there is space left
+	// for a new slot with a tree which contains only the item
+	// at the bottom.
+	if (a.table.length < M)
+	{
+		var newSlot = create(item, a.height - 1);
+		var newA = nodeCopy(a);
+		newA.table.push(newSlot);
+		newA.lengths.push(newA.lengths[newA.lengths.length - 1] + length(newSlot));
+		return newA;
+	}
+	else
+	{
+		return null;
+	}
+}
+
+// Converts an array into a list of elements.
+function toList(a)
+{
+	return toList_(_elm_lang$core$Native_List.Nil, a);
+}
+
+function toList_(list, a)
+{
+	for (var i = a.table.length - 1; i >= 0; i--)
+	{
+		list =
+			a.height === 0
+				? _elm_lang$core$Native_List.Cons(a.table[i], list)
+				: toList_(list, a.table[i]);
+	}
+	return list;
+}
+
+// Maps a function over the elements of an array.
+function map(f, a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? f(a.table[i])
+				: map(f, a.table[i]);
+	}
+	return newA;
+}
+
+// Maps a function over the elements with their index as first argument.
+function indexedMap(f, a)
+{
+	return indexedMap_(f, a, 0);
+}
+
+function indexedMap_(f, a, from)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: new Array(a.table.length)
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths;
+	}
+	for (var i = 0; i < a.table.length; i++)
+	{
+		newA.table[i] =
+			a.height === 0
+				? A2(f, from + i, a.table[i])
+				: indexedMap_(f, a.table[i], i == 0 ? from : from + a.lengths[i - 1]);
+	}
+	return newA;
+}
+
+function foldl(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = 0; i < a.table.length; i++)
+		{
+			b = foldl(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+function foldr(f, b, a)
+{
+	if (a.height === 0)
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = A2(f, a.table[i], b);
+		}
+	}
+	else
+	{
+		for (var i = a.table.length; i--; )
+		{
+			b = foldr(f, b, a.table[i]);
+		}
+	}
+	return b;
+}
+
+// TODO: currently, it slices the right, then the left. This can be
+// optimized.
+function slice(from, to, a)
+{
+	if (from < 0)
+	{
+		from += length(a);
+	}
+	if (to < 0)
+	{
+		to += length(a);
+	}
+	return sliceLeft(from, sliceRight(to, a));
+}
+
+function sliceRight(to, a)
+{
+	if (to === length(a))
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(0, to);
+		return newA;
+	}
+
+	// Slice the right recursively.
+	var right = getSlot(to, a);
+	var sliced = sliceRight(to - (right > 0 ? a.lengths[right - 1] : 0), a.table[right]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (right === 0)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(0, right),
+		lengths: a.lengths.slice(0, right)
+	};
+	if (sliced.table.length > 0)
+	{
+		newA.table[right] = sliced;
+		newA.lengths[right] = length(sliced) + (right > 0 ? newA.lengths[right - 1] : 0);
+	}
+	return newA;
+}
+
+function sliceLeft(from, a)
+{
+	if (from === 0)
+	{
+		return a;
+	}
+
+	// Handle leaf level.
+	if (a.height === 0)
+	{
+		var newA = { ctor:'_Array', height:0 };
+		newA.table = a.table.slice(from, a.table.length + 1);
+		return newA;
+	}
+
+	// Slice the left recursively.
+	var left = getSlot(from, a);
+	var sliced = sliceLeft(from - (left > 0 ? a.lengths[left - 1] : 0), a.table[left]);
+
+	// Maybe the a node is not even needed, as sliced contains the whole slice.
+	if (left === a.table.length - 1)
+	{
+		return sliced;
+	}
+
+	// Create new node.
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice(left, a.table.length + 1),
+		lengths: new Array(a.table.length - left)
+	};
+	newA.table[0] = sliced;
+	var len = 0;
+	for (var i = 0; i < newA.table.length; i++)
+	{
+		len += length(newA.table[i]);
+		newA.lengths[i] = len;
+	}
+
+	return newA;
+}
+
+// Appends two trees.
+function append(a,b)
+{
+	if (a.table.length === 0)
+	{
+		return b;
+	}
+	if (b.table.length === 0)
+	{
+		return a;
+	}
+
+	var c = append_(a, b);
+
+	// Check if both nodes can be crunshed together.
+	if (c[0].table.length + c[1].table.length <= M)
+	{
+		if (c[0].table.length === 0)
+		{
+			return c[1];
+		}
+		if (c[1].table.length === 0)
+		{
+			return c[0];
+		}
+
+		// Adjust .table and .lengths
+		c[0].table = c[0].table.concat(c[1].table);
+		if (c[0].height > 0)
+		{
+			var len = length(c[0]);
+			for (var i = 0; i < c[1].lengths.length; i++)
+			{
+				c[1].lengths[i] += len;
+			}
+			c[0].lengths = c[0].lengths.concat(c[1].lengths);
+		}
+
+		return c[0];
+	}
+
+	if (c[0].height > 0)
+	{
+		var toRemove = calcToRemove(a, b);
+		if (toRemove > E)
+		{
+			c = shuffle(c[0], c[1], toRemove);
+		}
+	}
+
+	return siblise(c[0], c[1]);
+}
+
+// Returns an array of two nodes; right and left. One node _may_ be empty.
+function append_(a, b)
+{
+	if (a.height === 0 && b.height === 0)
+	{
+		return [a, b];
+	}
+
+	if (a.height !== 1 || b.height !== 1)
+	{
+		if (a.height === b.height)
+		{
+			a = nodeCopy(a);
+			b = nodeCopy(b);
+			var appended = append_(botRight(a), botLeft(b));
+
+			insertRight(a, appended[1]);
+			insertLeft(b, appended[0]);
+		}
+		else if (a.height > b.height)
+		{
+			a = nodeCopy(a);
+			var appended = append_(botRight(a), b);
+
+			insertRight(a, appended[0]);
+			b = parentise(appended[1], appended[1].height + 1);
+		}
+		else
+		{
+			b = nodeCopy(b);
+			var appended = append_(a, botLeft(b));
+
+			var left = appended[0].table.length === 0 ? 0 : 1;
+			var right = left === 0 ? 1 : 0;
+			insertLeft(b, appended[left]);
+			a = parentise(appended[right], appended[right].height + 1);
+		}
+	}
+
+	// Check if balancing is needed and return based on that.
+	if (a.table.length === 0 || b.table.length === 0)
+	{
+		return [a, b];
+	}
+
+	var toRemove = calcToRemove(a, b);
+	if (toRemove <= E)
+	{
+		return [a, b];
+	}
+	return shuffle(a, b, toRemove);
+}
+
+// Helperfunctions for append_. Replaces a child node at the side of the parent.
+function insertRight(parent, node)
+{
+	var index = parent.table.length - 1;
+	parent.table[index] = node;
+	parent.lengths[index] = length(node);
+	parent.lengths[index] += index > 0 ? parent.lengths[index - 1] : 0;
+}
+
+function insertLeft(parent, node)
+{
+	if (node.table.length > 0)
+	{
+		parent.table[0] = node;
+		parent.lengths[0] = length(node);
+
+		var len = length(parent.table[0]);
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			len += length(parent.table[i]);
+			parent.lengths[i] = len;
+		}
+	}
+	else
+	{
+		parent.table.shift();
+		for (var i = 1; i < parent.lengths.length; i++)
+		{
+			parent.lengths[i] = parent.lengths[i] - parent.lengths[0];
+		}
+		parent.lengths.shift();
+	}
+}
+
+// Returns the extra search steps for E. Refer to the paper.
+function calcToRemove(a, b)
+{
+	var subLengths = 0;
+	for (var i = 0; i < a.table.length; i++)
+	{
+		subLengths += a.table[i].table.length;
+	}
+	for (var i = 0; i < b.table.length; i++)
+	{
+		subLengths += b.table[i].table.length;
+	}
+
+	var toRemove = a.table.length + b.table.length;
+	return toRemove - (Math.floor((subLengths - 1) / M) + 1);
+}
+
+// get2, set2 and saveSlot are helpers for accessing elements over two arrays.
+function get2(a, b, index)
+{
+	return index < a.length
+		? a[index]
+		: b[index - a.length];
+}
+
+function set2(a, b, index, value)
+{
+	if (index < a.length)
+	{
+		a[index] = value;
+	}
+	else
+	{
+		b[index - a.length] = value;
+	}
+}
+
+function saveSlot(a, b, index, slot)
+{
+	set2(a.table, b.table, index, slot);
+
+	var l = (index === 0 || index === a.lengths.length)
+		? 0
+		: get2(a.lengths, a.lengths, index - 1);
+
+	set2(a.lengths, b.lengths, index, l + length(slot));
+}
+
+// Creates a node or leaf with a given length at their arrays for perfomance.
+// Is only used by shuffle.
+function createNode(h, length)
+{
+	if (length < 0)
+	{
+		length = 0;
+	}
+	var a = {
+		ctor: '_Array',
+		height: h,
+		table: new Array(length)
+	};
+	if (h > 0)
+	{
+		a.lengths = new Array(length);
+	}
+	return a;
+}
+
+// Returns an array of two balanced nodes.
+function shuffle(a, b, toRemove)
+{
+	var newA = createNode(a.height, Math.min(M, a.table.length + b.table.length - toRemove));
+	var newB = createNode(a.height, newA.table.length - (a.table.length + b.table.length - toRemove));
+
+	// Skip the slots with size M. More precise: copy the slot references
+	// to the new node
+	var read = 0;
+	while (get2(a.table, b.table, read).table.length % M === 0)
+	{
+		set2(newA.table, newB.table, read, get2(a.table, b.table, read));
+		set2(newA.lengths, newB.lengths, read, get2(a.lengths, b.lengths, read));
+		read++;
+	}
+
+	// Pulling items from left to right, caching in a slot before writing
+	// it into the new nodes.
+	var write = read;
+	var slot = new createNode(a.height - 1, 0);
+	var from = 0;
+
+	// If the current slot is still containing data, then there will be at
+	// least one more write, so we do not break this loop yet.
+	while (read - write - (slot.table.length > 0 ? 1 : 0) < toRemove)
+	{
+		// Find out the max possible items for copying.
+		var source = get2(a.table, b.table, read);
+		var to = Math.min(M - slot.table.length, source.table.length);
+
+		// Copy and adjust size table.
+		slot.table = slot.table.concat(source.table.slice(from, to));
+		if (slot.height > 0)
+		{
+			var len = slot.lengths.length;
+			for (var i = len; i < len + to - from; i++)
+			{
+				slot.lengths[i] = length(slot.table[i]);
+				slot.lengths[i] += (i > 0 ? slot.lengths[i - 1] : 0);
+			}
+		}
+
+		from += to;
+
+		// Only proceed to next slots[i] if the current one was
+		// fully copied.
+		if (source.table.length <= to)
+		{
+			read++; from = 0;
+		}
+
+		// Only create a new slot if the current one is filled up.
+		if (slot.table.length === M)
+		{
+			saveSlot(newA, newB, write, slot);
+			slot = createNode(a.height - 1, 0);
+			write++;
+		}
+	}
+
+	// Cleanup after the loop. Copy the last slot into the new nodes.
+	if (slot.table.length > 0)
+	{
+		saveSlot(newA, newB, write, slot);
+		write++;
+	}
+
+	// Shift the untouched slots to the left
+	while (read < a.table.length + b.table.length )
+	{
+		saveSlot(newA, newB, write, get2(a.table, b.table, read));
+		read++;
+		write++;
+	}
+
+	return [newA, newB];
+}
+
+// Navigation functions
+function botRight(a)
+{
+	return a.table[a.table.length - 1];
+}
+function botLeft(a)
+{
+	return a.table[0];
+}
+
+// Copies a node for updating. Note that you should not use this if
+// only updating only one of "table" or "lengths" for performance reasons.
+function nodeCopy(a)
+{
+	var newA = {
+		ctor: '_Array',
+		height: a.height,
+		table: a.table.slice()
+	};
+	if (a.height > 0)
+	{
+		newA.lengths = a.lengths.slice();
+	}
+	return newA;
+}
+
+// Returns how many items are in the tree.
+function length(array)
+{
+	if (array.height === 0)
+	{
+		return array.table.length;
+	}
+	else
+	{
+		return array.lengths[array.lengths.length - 1];
+	}
+}
+
+// Calculates in which slot of "table" the item probably is, then
+// find the exact slot via forward searching in  "lengths". Returns the index.
+function getSlot(i, a)
+{
+	var slot = i >> (5 * a.height);
+	while (a.lengths[slot] <= i)
+	{
+		slot++;
+	}
+	return slot;
+}
+
+// Recursively creates a tree with a given height containing
+// only the given item.
+function create(item, h)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: [item]
+		};
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [create(item, h - 1)],
+		lengths: [1]
+	};
+}
+
+// Recursively creates a tree that contains the given tree.
+function parentise(tree, h)
+{
+	if (h === tree.height)
+	{
+		return tree;
+	}
+
+	return {
+		ctor: '_Array',
+		height: h,
+		table: [parentise(tree, h - 1)],
+		lengths: [length(tree)]
+	};
+}
+
+// Emphasizes blood brotherhood beneath two trees.
+function siblise(a, b)
+{
+	return {
+		ctor: '_Array',
+		height: a.height + 1,
+		table: [a, b],
+		lengths: [length(a), length(a) + length(b)]
+	};
+}
+
+function toJSArray(a)
+{
+	var jsArray = new Array(length(a));
+	toJSArray_(jsArray, 0, a);
+	return jsArray;
+}
+
+function toJSArray_(jsArray, i, a)
+{
+	for (var t = 0; t < a.table.length; t++)
+	{
+		if (a.height === 0)
+		{
+			jsArray[i + t] = a.table[t];
+		}
+		else
+		{
+			var inc = t === 0 ? 0 : a.lengths[t - 1];
+			toJSArray_(jsArray, i + inc, a.table[t]);
+		}
+	}
+}
+
+function fromJSArray(jsArray)
+{
+	if (jsArray.length === 0)
+	{
+		return empty;
+	}
+	var h = Math.floor(Math.log(jsArray.length) / Math.log(M));
+	return fromJSArray_(jsArray, h, 0, jsArray.length);
+}
+
+function fromJSArray_(jsArray, h, from, to)
+{
+	if (h === 0)
+	{
+		return {
+			ctor: '_Array',
+			height: 0,
+			table: jsArray.slice(from, to)
+		};
+	}
+
+	var step = Math.pow(M, h);
+	var table = new Array(Math.ceil((to - from) / step));
+	var lengths = new Array(table.length);
+	for (var i = 0; i < table.length; i++)
+	{
+		table[i] = fromJSArray_(jsArray, h - 1, from + (i * step), Math.min(from + ((i + 1) * step), to));
+		lengths[i] = length(table[i]) + (i > 0 ? lengths[i - 1] : 0);
+	}
+	return {
+		ctor: '_Array',
+		height: h,
+		table: table,
+		lengths: lengths
+	};
+}
+
+return {
+	empty: empty,
+	fromList: fromList,
+	toList: toList,
+	initialize: F2(initialize),
+	append: F2(append),
+	push: F2(push),
+	slice: F3(slice),
+	get: F2(get),
+	set: F3(set),
+	map: F2(map),
+	indexedMap: F2(indexedMap),
+	foldl: F3(foldl),
+	foldr: F3(foldr),
+	length: length,
+
+	toJSArray: toJSArray,
+	fromJSArray: fromJSArray
 };
-var _elm_lang$core$Color$grayscale = function (p) {
-	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+
+}();
+var _elm_lang$core$Array$append = _elm_lang$core$Native_Array.append;
+var _elm_lang$core$Array$length = _elm_lang$core$Native_Array.length;
+var _elm_lang$core$Array$isEmpty = function (array) {
+	return _elm_lang$core$Native_Utils.eq(
+		_elm_lang$core$Array$length(array),
+		0);
 };
-var _elm_lang$core$Color$greyscale = function (p) {
-	return A4(_elm_lang$core$Color$HSLA, 0, 0, 1 - p, 1);
+var _elm_lang$core$Array$slice = _elm_lang$core$Native_Array.slice;
+var _elm_lang$core$Array$set = _elm_lang$core$Native_Array.set;
+var _elm_lang$core$Array$get = F2(
+	function (i, array) {
+		return ((_elm_lang$core$Native_Utils.cmp(0, i) < 1) && (_elm_lang$core$Native_Utils.cmp(
+			i,
+			_elm_lang$core$Native_Array.length(array)) < 0)) ? _elm_lang$core$Maybe$Just(
+			A2(_elm_lang$core$Native_Array.get, i, array)) : _elm_lang$core$Maybe$Nothing;
+	});
+var _elm_lang$core$Array$push = _elm_lang$core$Native_Array.push;
+var _elm_lang$core$Array$empty = _elm_lang$core$Native_Array.empty;
+var _elm_lang$core$Array$filter = F2(
+	function (isOkay, arr) {
+		var update = F2(
+			function (x, xs) {
+				return isOkay(x) ? A2(_elm_lang$core$Native_Array.push, x, xs) : xs;
+			});
+		return A3(_elm_lang$core$Native_Array.foldl, update, _elm_lang$core$Native_Array.empty, arr);
+	});
+var _elm_lang$core$Array$foldr = _elm_lang$core$Native_Array.foldr;
+var _elm_lang$core$Array$foldl = _elm_lang$core$Native_Array.foldl;
+var _elm_lang$core$Array$indexedMap = _elm_lang$core$Native_Array.indexedMap;
+var _elm_lang$core$Array$map = _elm_lang$core$Native_Array.map;
+var _elm_lang$core$Array$toIndexedList = function (array) {
+	return A3(
+		_elm_lang$core$List$map2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		A2(
+			_elm_lang$core$List$range,
+			0,
+			_elm_lang$core$Native_Array.length(array) - 1),
+		_elm_lang$core$Native_Array.toList(array));
 };
-var _elm_lang$core$Color$RGBA = F4(
-	function (a, b, c, d) {
-		return {ctor: 'RGBA', _0: a, _1: b, _2: c, _3: d};
+var _elm_lang$core$Array$toList = _elm_lang$core$Native_Array.toList;
+var _elm_lang$core$Array$fromList = _elm_lang$core$Native_Array.fromList;
+var _elm_lang$core$Array$initialize = _elm_lang$core$Native_Array.initialize;
+var _elm_lang$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			_elm_lang$core$Array$initialize,
+			n,
+			_elm_lang$core$Basics$always(e));
 	});
-var _elm_lang$core$Color$rgba = _elm_lang$core$Color$RGBA;
-var _elm_lang$core$Color$rgb = F3(
-	function (r, g, b) {
-		return A4(_elm_lang$core$Color$RGBA, r, g, b, 1);
+var _elm_lang$core$Array$Array = {ctor: 'Array'};
+
+//import Maybe, Native.Array, Native.List, Native.Utils, Result //
+
+var _elm_lang$core$Native_Json = function() {
+
+
+// CORE DECODERS
+
+function succeed(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'succeed',
+		msg: msg
+	};
+}
+
+function fail(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'fail',
+		msg: msg
+	};
+}
+
+function decodePrimitive(tag)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag
+	};
+}
+
+function decodeContainer(tag, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag,
+		decoder: decoder
+	};
+}
+
+function decodeNull(value)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'null',
+		value: value
+	};
+}
+
+function decodeField(field, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'field',
+		field: field,
+		decoder: decoder
+	};
+}
+
+function decodeIndex(index, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'index',
+		index: index,
+		decoder: decoder
+	};
+}
+
+function decodeKeyValuePairs(decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'key-value',
+		decoder: decoder
+	};
+}
+
+function mapMany(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'map-many',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function andThen(callback, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'andThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function oneOf(decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'oneOf',
+		decoders: decoders
+	};
+}
+
+
+// DECODING OBJECTS
+
+function map1(f, d1)
+{
+	return mapMany(f, [d1]);
+}
+
+function map2(f, d1, d2)
+{
+	return mapMany(f, [d1, d2]);
+}
+
+function map3(f, d1, d2, d3)
+{
+	return mapMany(f, [d1, d2, d3]);
+}
+
+function map4(f, d1, d2, d3, d4)
+{
+	return mapMany(f, [d1, d2, d3, d4]);
+}
+
+function map5(f, d1, d2, d3, d4, d5)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5]);
+}
+
+function map6(f, d1, d2, d3, d4, d5, d6)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function map7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function map8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODE HELPERS
+
+function ok(value)
+{
+	return { tag: 'ok', value: value };
+}
+
+function badPrimitive(type, value)
+{
+	return { tag: 'primitive', type: type, value: value };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badField(field, nestedProblems)
+{
+	return { tag: 'field', field: field, rest: nestedProblems };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badOneOf(problems)
+{
+	return { tag: 'oneOf', problems: problems };
+}
+
+function bad(msg)
+{
+	return { tag: 'fail', msg: msg };
+}
+
+function badToString(problem)
+{
+	var context = '_';
+	while (problem)
+	{
+		switch (problem.tag)
+		{
+			case 'primitive':
+				return 'Expecting ' + problem.type
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' but instead got: ' + jsToString(problem.value);
+
+			case 'index':
+				context += '[' + problem.index + ']';
+				problem = problem.rest;
+				break;
+
+			case 'field':
+				context += '.' + problem.field;
+				problem = problem.rest;
+				break;
+
+			case 'oneOf':
+				var problems = problem.problems;
+				for (var i = 0; i < problems.length; i++)
+				{
+					problems[i] = badToString(problems[i]);
+				}
+				return 'I ran into the following problems'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ':\n\n' + problems.join('\n');
+
+			case 'fail':
+				return 'I ran into a `fail` decoder'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ': ' + problem.msg;
+		}
+	}
+}
+
+function jsToString(value)
+{
+	return value === undefined
+		? 'undefined'
+		: JSON.stringify(value);
+}
+
+
+// DECODE
+
+function runOnString(decoder, string)
+{
+	var json;
+	try
+	{
+		json = JSON.parse(string);
+	}
+	catch (e)
+	{
+		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
+	}
+	return run(decoder, json);
+}
+
+function run(decoder, value)
+{
+	var result = runHelp(decoder, value);
+	return (result.tag === 'ok')
+		? _elm_lang$core$Result$Ok(result.value)
+		: _elm_lang$core$Result$Err(badToString(result));
+}
+
+function runHelp(decoder, value)
+{
+	switch (decoder.tag)
+	{
+		case 'bool':
+			return (typeof value === 'boolean')
+				? ok(value)
+				: badPrimitive('a Bool', value);
+
+		case 'int':
+			if (typeof value !== 'number') {
+				return badPrimitive('an Int', value);
+			}
+
+			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
+				return ok(value);
+			}
+
+			if (isFinite(value) && !(value % 1)) {
+				return ok(value);
+			}
+
+			return badPrimitive('an Int', value);
+
+		case 'float':
+			return (typeof value === 'number')
+				? ok(value)
+				: badPrimitive('a Float', value);
+
+		case 'string':
+			return (typeof value === 'string')
+				? ok(value)
+				: (value instanceof String)
+					? ok(value + '')
+					: badPrimitive('a String', value);
+
+		case 'null':
+			return (value === null)
+				? ok(decoder.value)
+				: badPrimitive('null', value);
+
+		case 'value':
+			return ok(value);
+
+		case 'list':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('a List', value);
+			}
+
+			var list = _elm_lang$core$Native_List.Nil;
+			for (var i = value.length; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result)
+				}
+				list = _elm_lang$core$Native_List.Cons(result.value, list);
+			}
+			return ok(list);
+
+		case 'array':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an Array', value);
+			}
+
+			var len = value.length;
+			var array = new Array(len);
+			for (var i = len; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				array[i] = result.value;
+			}
+			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
+
+		case 'maybe':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag === 'ok')
+				? ok(_elm_lang$core$Maybe$Just(result.value))
+				: ok(_elm_lang$core$Maybe$Nothing);
+
+		case 'field':
+			var field = decoder.field;
+			if (typeof value !== 'object' || value === null || !(field in value))
+			{
+				return badPrimitive('an object with a field named `' + field + '`', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[field]);
+			return (result.tag === 'ok') ? result : badField(field, result);
+
+		case 'index':
+			var index = decoder.index;
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an array', value);
+			}
+			if (index >= value.length)
+			{
+				return badPrimitive('a longer array. Need index ' + index + ' but there are only ' + value.length + ' entries', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[index]);
+			return (result.tag === 'ok') ? result : badIndex(index, result);
+
+		case 'key-value':
+			if (typeof value !== 'object' || value === null || value instanceof Array)
+			{
+				return badPrimitive('an object', value);
+			}
+
+			var keyValuePairs = _elm_lang$core$Native_List.Nil;
+			for (var key in value)
+			{
+				var result = runHelp(decoder.decoder, value[key]);
+				if (result.tag !== 'ok')
+				{
+					return badField(key, result);
+				}
+				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
+				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
+			}
+			return ok(keyValuePairs);
+
+		case 'map-many':
+			var answer = decoder.func;
+			var decoders = decoder.decoders;
+			for (var i = 0; i < decoders.length; i++)
+			{
+				var result = runHelp(decoders[i], value);
+				if (result.tag !== 'ok')
+				{
+					return result;
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'andThen':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag !== 'ok')
+				? result
+				: runHelp(decoder.callback(result.value), value);
+
+		case 'oneOf':
+			var errors = [];
+			var temp = decoder.decoders;
+			while (temp.ctor !== '[]')
+			{
+				var result = runHelp(temp._0, value);
+
+				if (result.tag === 'ok')
+				{
+					return result;
+				}
+
+				errors.push(result);
+
+				temp = temp._1;
+			}
+			return badOneOf(errors);
+
+		case 'fail':
+			return bad(decoder.msg);
+
+		case 'succeed':
+			return ok(decoder.msg);
+	}
+}
+
+
+// EQUALITY
+
+function equality(a, b)
+{
+	if (a === b)
+	{
+		return true;
+	}
+
+	if (a.tag !== b.tag)
+	{
+		return false;
+	}
+
+	switch (a.tag)
+	{
+		case 'succeed':
+		case 'fail':
+			return a.msg === b.msg;
+
+		case 'bool':
+		case 'int':
+		case 'float':
+		case 'string':
+		case 'value':
+			return true;
+
+		case 'null':
+			return a.value === b.value;
+
+		case 'list':
+		case 'array':
+		case 'maybe':
+		case 'key-value':
+			return equality(a.decoder, b.decoder);
+
+		case 'field':
+			return a.field === b.field && equality(a.decoder, b.decoder);
+
+		case 'index':
+			return a.index === b.index && equality(a.decoder, b.decoder);
+
+		case 'map-many':
+			if (a.func !== b.func)
+			{
+				return false;
+			}
+			return listEquality(a.decoders, b.decoders);
+
+		case 'andThen':
+			return a.callback === b.callback && equality(a.decoder, b.decoder);
+
+		case 'oneOf':
+			return listEquality(a.decoders, b.decoders);
+	}
+}
+
+function listEquality(aDecoders, bDecoders)
+{
+	var len = aDecoders.length;
+	if (len !== bDecoders.length)
+	{
+		return false;
+	}
+	for (var i = 0; i < len; i++)
+	{
+		if (!equality(aDecoders[i], bDecoders[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ENCODE
+
+function encode(indentLevel, value)
+{
+	return JSON.stringify(value, null, indentLevel);
+}
+
+function identity(value)
+{
+	return value;
+}
+
+function encodeObject(keyValuePairs)
+{
+	var obj = {};
+	while (keyValuePairs.ctor !== '[]')
+	{
+		var pair = keyValuePairs._0;
+		obj[pair._0] = pair._1;
+		keyValuePairs = keyValuePairs._1;
+	}
+	return obj;
+}
+
+return {
+	encode: F2(encode),
+	runOnString: F2(runOnString),
+	run: F2(run),
+
+	decodeNull: decodeNull,
+	decodePrimitive: decodePrimitive,
+	decodeContainer: F2(decodeContainer),
+
+	decodeField: F2(decodeField),
+	decodeIndex: F2(decodeIndex),
+
+	map1: F2(map1),
+	map2: F3(map2),
+	map3: F4(map3),
+	map4: F5(map4),
+	map5: F6(map5),
+	map6: F7(map6),
+	map7: F8(map7),
+	map8: F9(map8),
+	decodeKeyValuePairs: decodeKeyValuePairs,
+
+	andThen: F2(andThen),
+	fail: fail,
+	succeed: succeed,
+	oneOf: oneOf,
+
+	identity: identity,
+	encodeNull: null,
+	encodeArray: _elm_lang$core$Native_Array.toJSArray,
+	encodeList: _elm_lang$core$Native_List.toArray,
+	encodeObject: encodeObject,
+
+	equality: equality
+};
+
+}();
+
+var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
+var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
+var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
+var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
+var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
+var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
+
+var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
+var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
+var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
+var _elm_lang$core$Json_Decode$fail = _elm_lang$core$Native_Json.fail;
+var _elm_lang$core$Json_Decode$succeed = _elm_lang$core$Native_Json.succeed;
+var _elm_lang$core$Json_Decode$lazy = function (thunk) {
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		thunk,
+		_elm_lang$core$Json_Decode$succeed(
+			{ctor: '_Tuple0'}));
+};
+var _elm_lang$core$Json_Decode$decodeValue = _elm_lang$core$Native_Json.run;
+var _elm_lang$core$Json_Decode$decodeString = _elm_lang$core$Native_Json.runOnString;
+var _elm_lang$core$Json_Decode$map8 = _elm_lang$core$Native_Json.map8;
+var _elm_lang$core$Json_Decode$map7 = _elm_lang$core$Native_Json.map7;
+var _elm_lang$core$Json_Decode$map6 = _elm_lang$core$Native_Json.map6;
+var _elm_lang$core$Json_Decode$map5 = _elm_lang$core$Native_Json.map5;
+var _elm_lang$core$Json_Decode$map4 = _elm_lang$core$Native_Json.map4;
+var _elm_lang$core$Json_Decode$map3 = _elm_lang$core$Native_Json.map3;
+var _elm_lang$core$Json_Decode$map2 = _elm_lang$core$Native_Json.map2;
+var _elm_lang$core$Json_Decode$map = _elm_lang$core$Native_Json.map1;
+var _elm_lang$core$Json_Decode$oneOf = _elm_lang$core$Native_Json.oneOf;
+var _elm_lang$core$Json_Decode$maybe = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'maybe', decoder);
+};
+var _elm_lang$core$Json_Decode$index = _elm_lang$core$Native_Json.decodeIndex;
+var _elm_lang$core$Json_Decode$field = _elm_lang$core$Native_Json.decodeField;
+var _elm_lang$core$Json_Decode$at = F2(
+	function (fields, decoder) {
+		return A3(_elm_lang$core$List$foldr, _elm_lang$core$Json_Decode$field, decoder, fields);
 	});
-var _elm_lang$core$Color$lightRed = A4(_elm_lang$core$Color$RGBA, 239, 41, 41, 1);
-var _elm_lang$core$Color$red = A4(_elm_lang$core$Color$RGBA, 204, 0, 0, 1);
-var _elm_lang$core$Color$darkRed = A4(_elm_lang$core$Color$RGBA, 164, 0, 0, 1);
-var _elm_lang$core$Color$lightOrange = A4(_elm_lang$core$Color$RGBA, 252, 175, 62, 1);
-var _elm_lang$core$Color$orange = A4(_elm_lang$core$Color$RGBA, 245, 121, 0, 1);
-var _elm_lang$core$Color$darkOrange = A4(_elm_lang$core$Color$RGBA, 206, 92, 0, 1);
-var _elm_lang$core$Color$lightYellow = A4(_elm_lang$core$Color$RGBA, 255, 233, 79, 1);
-var _elm_lang$core$Color$yellow = A4(_elm_lang$core$Color$RGBA, 237, 212, 0, 1);
-var _elm_lang$core$Color$darkYellow = A4(_elm_lang$core$Color$RGBA, 196, 160, 0, 1);
-var _elm_lang$core$Color$lightGreen = A4(_elm_lang$core$Color$RGBA, 138, 226, 52, 1);
-var _elm_lang$core$Color$green = A4(_elm_lang$core$Color$RGBA, 115, 210, 22, 1);
-var _elm_lang$core$Color$darkGreen = A4(_elm_lang$core$Color$RGBA, 78, 154, 6, 1);
-var _elm_lang$core$Color$lightBlue = A4(_elm_lang$core$Color$RGBA, 114, 159, 207, 1);
-var _elm_lang$core$Color$blue = A4(_elm_lang$core$Color$RGBA, 52, 101, 164, 1);
-var _elm_lang$core$Color$darkBlue = A4(_elm_lang$core$Color$RGBA, 32, 74, 135, 1);
-var _elm_lang$core$Color$lightPurple = A4(_elm_lang$core$Color$RGBA, 173, 127, 168, 1);
-var _elm_lang$core$Color$purple = A4(_elm_lang$core$Color$RGBA, 117, 80, 123, 1);
-var _elm_lang$core$Color$darkPurple = A4(_elm_lang$core$Color$RGBA, 92, 53, 102, 1);
-var _elm_lang$core$Color$lightBrown = A4(_elm_lang$core$Color$RGBA, 233, 185, 110, 1);
-var _elm_lang$core$Color$brown = A4(_elm_lang$core$Color$RGBA, 193, 125, 17, 1);
-var _elm_lang$core$Color$darkBrown = A4(_elm_lang$core$Color$RGBA, 143, 89, 2, 1);
-var _elm_lang$core$Color$black = A4(_elm_lang$core$Color$RGBA, 0, 0, 0, 1);
-var _elm_lang$core$Color$white = A4(_elm_lang$core$Color$RGBA, 255, 255, 255, 1);
-var _elm_lang$core$Color$lightGrey = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
-var _elm_lang$core$Color$grey = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
-var _elm_lang$core$Color$darkGrey = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
-var _elm_lang$core$Color$lightGray = A4(_elm_lang$core$Color$RGBA, 238, 238, 236, 1);
-var _elm_lang$core$Color$gray = A4(_elm_lang$core$Color$RGBA, 211, 215, 207, 1);
-var _elm_lang$core$Color$darkGray = A4(_elm_lang$core$Color$RGBA, 186, 189, 182, 1);
-var _elm_lang$core$Color$lightCharcoal = A4(_elm_lang$core$Color$RGBA, 136, 138, 133, 1);
-var _elm_lang$core$Color$charcoal = A4(_elm_lang$core$Color$RGBA, 85, 87, 83, 1);
-var _elm_lang$core$Color$darkCharcoal = A4(_elm_lang$core$Color$RGBA, 46, 52, 54, 1);
-var _elm_lang$core$Color$Radial = F5(
-	function (a, b, c, d, e) {
-		return {ctor: 'Radial', _0: a, _1: b, _2: c, _3: d, _4: e};
-	});
-var _elm_lang$core$Color$radial = _elm_lang$core$Color$Radial;
-var _elm_lang$core$Color$Linear = F3(
-	function (a, b, c) {
-		return {ctor: 'Linear', _0: a, _1: b, _2: c};
-	});
-var _elm_lang$core$Color$linear = _elm_lang$core$Color$Linear;
+var _elm_lang$core$Json_Decode$keyValuePairs = _elm_lang$core$Native_Json.decodeKeyValuePairs;
+var _elm_lang$core$Json_Decode$dict = function (decoder) {
+	return A2(
+		_elm_lang$core$Json_Decode$map,
+		_elm_lang$core$Dict$fromList,
+		_elm_lang$core$Json_Decode$keyValuePairs(decoder));
+};
+var _elm_lang$core$Json_Decode$array = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'array', decoder);
+};
+var _elm_lang$core$Json_Decode$list = function (decoder) {
+	return A2(_elm_lang$core$Native_Json.decodeContainer, 'list', decoder);
+};
+var _elm_lang$core$Json_Decode$nullable = function (decoder) {
+	return _elm_lang$core$Json_Decode$oneOf(
+		{
+			ctor: '::',
+			_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, decoder),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _elm_lang$core$Json_Decode$float = _elm_lang$core$Native_Json.decodePrimitive('float');
+var _elm_lang$core$Json_Decode$int = _elm_lang$core$Native_Json.decodePrimitive('int');
+var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive('bool');
+var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
+var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
@@ -9765,2232 +9599,7 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
-var _justgage$tachyons_elm$Tachyons$stylesheet = function (url) {
-	return A3(
-		_elm_lang$html$Html$node,
-		'link',
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$rel('stylesheet'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$href(url),
-				_1: {ctor: '[]'}
-			}
-		},
-		{ctor: '[]'});
-};
-var _justgage$tachyons_elm$Tachyons$tachyons = {
-	css: _justgage$tachyons_elm$Tachyons$stylesheet('https://unpkg.com/tachyons@4.6.1/css/tachyons.min.css')
-};
-var _justgage$tachyons_elm$Tachyons$classes = function (stringList) {
-	return _elm_lang$html$Html_Attributes$class(
-		A2(_elm_lang$core$String$join, ' ', stringList));
-};
-
-var _justgage$tachyons_elm$Tachyons_Classes$z_unset = 'z-unset';
-var _justgage$tachyons_elm$Tachyons_Classes$z_max = 'z-max';
-var _justgage$tachyons_elm$Tachyons_Classes$z_initial = 'z-initial';
-var _justgage$tachyons_elm$Tachyons_Classes$z_inherit = 'z-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$z_9999 = 'z-9999';
-var _justgage$tachyons_elm$Tachyons_Classes$z_999 = 'z-999';
-var _justgage$tachyons_elm$Tachyons_Classes$z_5 = 'z-5';
-var _justgage$tachyons_elm$Tachyons_Classes$z_4 = 'z-4';
-var _justgage$tachyons_elm$Tachyons_Classes$z_3 = 'z-3';
-var _justgage$tachyons_elm$Tachyons_Classes$z_2 = 'z-2';
-var _justgage$tachyons_elm$Tachyons_Classes$z_1 = 'z-1';
-var _justgage$tachyons_elm$Tachyons_Classes$z_0 = 'z-0';
-var _justgage$tachyons_elm$Tachyons_Classes$yellow = 'yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$ws_normal_ns = 'ws-normal-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ws_normal_m = 'ws-normal-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ws_normal_l = 'ws-normal-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ws_normal = 'ws-normal';
-var _justgage$tachyons_elm$Tachyons_Classes$white_90 = 'white-90';
-var _justgage$tachyons_elm$Tachyons_Classes$white_80 = 'white-80';
-var _justgage$tachyons_elm$Tachyons_Classes$white_70 = 'white-70';
-var _justgage$tachyons_elm$Tachyons_Classes$white_60 = 'white-60';
-var _justgage$tachyons_elm$Tachyons_Classes$white_50 = 'white-50';
-var _justgage$tachyons_elm$Tachyons_Classes$white_40 = 'white-40';
-var _justgage$tachyons_elm$Tachyons_Classes$white_30 = 'white-30';
-var _justgage$tachyons_elm$Tachyons_Classes$white_20 = 'white-20';
-var _justgage$tachyons_elm$Tachyons_Classes$white_10 = 'white-10';
-var _justgage$tachyons_elm$Tachyons_Classes$white = 'white';
-var _justgage$tachyons_elm$Tachyons_Classes$washed_yellow = 'washed-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$washed_red = 'washed-red';
-var _justgage$tachyons_elm$Tachyons_Classes$washed_green = 'washed-green';
-var _justgage$tachyons_elm$Tachyons_Classes$washed_blue = 'washed-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$w5_ns = 'w5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w5_m = 'w5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w5_l = 'w5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w5 = 'w5';
-var _justgage$tachyons_elm$Tachyons_Classes$w4_ns = 'w4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w4_m = 'w4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w4_l = 'w4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w4 = 'w4';
-var _justgage$tachyons_elm$Tachyons_Classes$w3_ns = 'w3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w3_m = 'w3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w3_l = 'w3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w3 = 'w3';
-var _justgage$tachyons_elm$Tachyons_Classes$w2_ns = 'w2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w2_m = 'w2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w2_l = 'w2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w2 = 'w2';
-var _justgage$tachyons_elm$Tachyons_Classes$w1_ns = 'w1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w1_m = 'w1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w1_l = 'w1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w1 = 'w1';
-var _justgage$tachyons_elm$Tachyons_Classes$w_two_thirds_ns = 'w-two-thirds-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_two_thirds_m = 'w-two-thirds-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_two_thirds_l = 'w-two-thirds-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_two_thirds = 'w-two-thirds';
-var _justgage$tachyons_elm$Tachyons_Classes$w_third_ns = 'w-third-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_third_m = 'w-third-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_third_l = 'w-third-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_third = 'w-third';
-var _justgage$tachyons_elm$Tachyons_Classes$w_auto_ns = 'w-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_auto_m = 'w-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_auto_l = 'w-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_auto = 'w-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$w_90_ns = 'w-90-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_90_m = 'w-90-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_90_l = 'w-90-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_90 = 'w-90';
-var _justgage$tachyons_elm$Tachyons_Classes$w_80_ns = 'w-80-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_80_m = 'w-80-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_80_l = 'w-80-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_80 = 'w-80';
-var _justgage$tachyons_elm$Tachyons_Classes$w_75_ns = 'w-75-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_75_m = 'w-75-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_75_l = 'w-75-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_75 = 'w-75';
-var _justgage$tachyons_elm$Tachyons_Classes$w_70_ns = 'w-70-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_70_m = 'w-70-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_70_l = 'w-70-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_70 = 'w-70';
-var _justgage$tachyons_elm$Tachyons_Classes$w_60_ns = 'w-60-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_60_m = 'w-60-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_60_l = 'w-60-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_60 = 'w-60';
-var _justgage$tachyons_elm$Tachyons_Classes$w_50_ns = 'w-50-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_50_m = 'w-50-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_50_l = 'w-50-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_50 = 'w-50';
-var _justgage$tachyons_elm$Tachyons_Classes$w_40_ns = 'w-40-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_40_m = 'w-40-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_40_l = 'w-40-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_40 = 'w-40';
-var _justgage$tachyons_elm$Tachyons_Classes$w_34_ns = 'w-34-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_34_m = 'w-34-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_34_l = 'w-34-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_34 = 'w-34';
-var _justgage$tachyons_elm$Tachyons_Classes$w_33_ns = 'w-33-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_33_m = 'w-33-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_33_l = 'w-33-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_33 = 'w-33';
-var _justgage$tachyons_elm$Tachyons_Classes$w_30_ns = 'w-30-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_30_m = 'w-30-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_30_l = 'w-30-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_30 = 'w-30';
-var _justgage$tachyons_elm$Tachyons_Classes$w_25_ns = 'w-25-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_25_m = 'w-25-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_25_l = 'w-25-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_25 = 'w-25';
-var _justgage$tachyons_elm$Tachyons_Classes$w_20_ns = 'w-20-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_20_m = 'w-20-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_20_l = 'w-20-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_20 = 'w-20';
-var _justgage$tachyons_elm$Tachyons_Classes$w_100_ns = 'w-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_100_m = 'w-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_100_l = 'w-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_100 = 'w-100';
-var _justgage$tachyons_elm$Tachyons_Classes$w_10_ns = 'w-10-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$w_10_m = 'w-10-m';
-var _justgage$tachyons_elm$Tachyons_Classes$w_10_l = 'w-10-l';
-var _justgage$tachyons_elm$Tachyons_Classes$w_10 = 'w-10';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_75_ns = 'vh-75-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_75_m = 'vh-75-m';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_75_l = 'vh-75-l';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_75 = 'vh-75';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_50_ns = 'vh-50-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_50_m = 'vh-50-m';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_50_l = 'vh-50-l';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_50 = 'vh-50';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_25_ns = 'vh-25-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_25_m = 'vh-25-m';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_25_l = 'vh-25-l';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_25 = 'vh-25';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_100_ns = 'vh-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_100_m = 'vh-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_100_l = 'vh-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$vh_100 = 'vh-100';
-var _justgage$tachyons_elm$Tachyons_Classes$v_top_ns = 'v-top-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$v_top_m = 'v-top-m';
-var _justgage$tachyons_elm$Tachyons_Classes$v_top_l = 'v-top-l';
-var _justgage$tachyons_elm$Tachyons_Classes$v_top = 'v-top';
-var _justgage$tachyons_elm$Tachyons_Classes$v_mid_ns = 'v-mid-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$v_mid_m = 'v-mid-m';
-var _justgage$tachyons_elm$Tachyons_Classes$v_mid_l = 'v-mid-l';
-var _justgage$tachyons_elm$Tachyons_Classes$v_mid = 'v-mid';
-var _justgage$tachyons_elm$Tachyons_Classes$v_btm_ns = 'v-btm-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$v_btm_m = 'v-btm-m';
-var _justgage$tachyons_elm$Tachyons_Classes$v_btm_l = 'v-btm-l';
-var _justgage$tachyons_elm$Tachyons_Classes$v_btm = 'v-btm';
-var _justgage$tachyons_elm$Tachyons_Classes$v_base_ns = 'v-base-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$v_base_m = 'v-base-m';
-var _justgage$tachyons_elm$Tachyons_Classes$v_base_l = 'v-base-l';
-var _justgage$tachyons_elm$Tachyons_Classes$v_base = 'v-base';
-var _justgage$tachyons_elm$Tachyons_Classes$underline_ns = 'underline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$underline_m = 'underline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$underline_l = 'underline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$underline_hover = 'underline-hover';
-var _justgage$tachyons_elm$Tachyons_Classes$underline = 'underline';
-var _justgage$tachyons_elm$Tachyons_Classes$ttu_ns = 'ttu-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ttu_m = 'ttu-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ttu_l = 'ttu-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ttu = 'ttu';
-var _justgage$tachyons_elm$Tachyons_Classes$ttn_ns = 'ttn-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ttn_m = 'ttn-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ttn_l = 'ttn-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ttn = 'ttn';
-var _justgage$tachyons_elm$Tachyons_Classes$ttl_ns = 'ttl-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ttl_m = 'ttl-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ttl_l = 'ttl-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ttl = 'ttl';
-var _justgage$tachyons_elm$Tachyons_Classes$ttc_ns = 'ttc-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ttc_m = 'ttc-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ttc_l = 'ttc-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ttc = 'ttc';
-var _justgage$tachyons_elm$Tachyons_Classes$truncate_ns = 'truncate-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$truncate_m = 'truncate-m';
-var _justgage$tachyons_elm$Tachyons_Classes$truncate_l = 'truncate-l';
-var _justgage$tachyons_elm$Tachyons_Classes$truncate = 'truncate';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_tight_ns = 'tracked-tight-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_tight_m = 'tracked-tight-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_tight_l = 'tracked-tight-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_tight = 'tracked-tight';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_ns = 'tracked-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_mega_ns = 'tracked-mega-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_mega_m = 'tracked-mega-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_mega_l = 'tracked-mega-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_mega = 'tracked-mega';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_m = 'tracked-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked_l = 'tracked-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tracked = 'tracked';
-var _justgage$tachyons_elm$Tachyons_Classes$tr_ns = 'tr-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tr_m = 'tr-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tr_l = 'tr-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tr = 'tr';
-var _justgage$tachyons_elm$Tachyons_Classes$top_2_ns = 'top-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$top_2_m = 'top-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$top_2_l = 'top-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$top_2 = 'top-2';
-var _justgage$tachyons_elm$Tachyons_Classes$top_1_ns = 'top-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$top_1_m = 'top-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$top_1_l = 'top-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$top_1 = 'top-1';
-var _justgage$tachyons_elm$Tachyons_Classes$top_0_ns = 'top-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$top_0_m = 'top-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$top_0_l = 'top-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$top_0 = 'top-0';
-var _justgage$tachyons_elm$Tachyons_Classes$top__2_ns = 'top--2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$top__2_m = 'top--2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$top__2_l = 'top--2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$top__2 = 'top--2';
-var _justgage$tachyons_elm$Tachyons_Classes$top__1_ns = 'top--1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$top__1_m = 'top--1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$top__1_l = 'top--1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$top__1 = 'top--1';
-var _justgage$tachyons_elm$Tachyons_Classes$tl_ns = 'tl-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tl_m = 'tl-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tl_l = 'tl-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tl = 'tl';
-var _justgage$tachyons_elm$Tachyons_Classes$times = 'times';
-var _justgage$tachyons_elm$Tachyons_Classes$tc_ns = 'tc-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$tc_m = 'tc-m';
-var _justgage$tachyons_elm$Tachyons_Classes$tc_l = 'tc-l';
-var _justgage$tachyons_elm$Tachyons_Classes$tc = 'tc';
-var _justgage$tachyons_elm$Tachyons_Classes$system_serif = 'system-serif';
-var _justgage$tachyons_elm$Tachyons_Classes$system_sans_serif = 'system-sans-serif';
-var _justgage$tachyons_elm$Tachyons_Classes$striped__near_white = 'striped--near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$striped__moon_gray = 'striped--moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$striped__light_silver = 'striped--light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$striped__light_gray = 'striped--light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$stripe_light = 'stripe-light';
-var _justgage$tachyons_elm$Tachyons_Classes$stripe_dark = 'stripe-dark';
-var _justgage$tachyons_elm$Tachyons_Classes$strike_ns = 'strike-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$strike_m = 'strike-m';
-var _justgage$tachyons_elm$Tachyons_Classes$strike_l = 'strike-l';
-var _justgage$tachyons_elm$Tachyons_Classes$strike = 'strike';
-var _justgage$tachyons_elm$Tachyons_Classes$static_ns = 'static-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$static_m = 'static-m';
-var _justgage$tachyons_elm$Tachyons_Classes$static_l = 'static-l';
-var _justgage$tachyons_elm$Tachyons_Classes$static = 'static';
-var _justgage$tachyons_elm$Tachyons_Classes$small_caps_ns = 'small-caps-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$small_caps_m = 'small-caps-m';
-var _justgage$tachyons_elm$Tachyons_Classes$small_caps_l = 'small-caps-l';
-var _justgage$tachyons_elm$Tachyons_Classes$small_caps = 'small-caps';
-var _justgage$tachyons_elm$Tachyons_Classes$silver = 'silver';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_hover = 'shadow-hover';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_5_ns = 'shadow-5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_5_m = 'shadow-5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_5_l = 'shadow-5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_5 = 'shadow-5';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_4_ns = 'shadow-4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_4_m = 'shadow-4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_4_l = 'shadow-4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_4 = 'shadow-4';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_3_ns = 'shadow-3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_3_m = 'shadow-3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_3_l = 'shadow-3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_3 = 'shadow-3';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_2_ns = 'shadow-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_2_m = 'shadow-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_2_l = 'shadow-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_2 = 'shadow-2';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_1_ns = 'shadow-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_1_m = 'shadow-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_1_l = 'shadow-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$shadow_1 = 'shadow-1';
-var _justgage$tachyons_elm$Tachyons_Classes$serif = 'serif';
-var _justgage$tachyons_elm$Tachyons_Classes$self_stretch_ns = 'self-stretch-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$self_stretch_m = 'self-stretch-m';
-var _justgage$tachyons_elm$Tachyons_Classes$self_stretch_l = 'self-stretch-l';
-var _justgage$tachyons_elm$Tachyons_Classes$self_stretch = 'self-stretch';
-var _justgage$tachyons_elm$Tachyons_Classes$self_start_ns = 'self-start-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$self_start_m = 'self-start-m';
-var _justgage$tachyons_elm$Tachyons_Classes$self_start_l = 'self-start-l';
-var _justgage$tachyons_elm$Tachyons_Classes$self_start = 'self-start';
-var _justgage$tachyons_elm$Tachyons_Classes$self_end_ns = 'self-end-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$self_end_m = 'self-end-m';
-var _justgage$tachyons_elm$Tachyons_Classes$self_end_l = 'self-end-l';
-var _justgage$tachyons_elm$Tachyons_Classes$self_end = 'self-end';
-var _justgage$tachyons_elm$Tachyons_Classes$self_center_ns = 'self-center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$self_center_m = 'self-center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$self_center_l = 'self-center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$self_center = 'self-center';
-var _justgage$tachyons_elm$Tachyons_Classes$self_baseline_ns = 'self-baseline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$self_baseline_m = 'self-baseline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$self_baseline_l = 'self-baseline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$self_baseline = 'self-baseline';
-var _justgage$tachyons_elm$Tachyons_Classes$sans_serif = 'sans-serif';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_90_ns = 'rotate-90-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_90_m = 'rotate-90-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_90_l = 'rotate-90-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_90 = 'rotate-90';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_45_ns = 'rotate-45-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_45_m = 'rotate-45-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_45_l = 'rotate-45-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_45 = 'rotate-45';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_315_ns = 'rotate-315-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_315_m = 'rotate-315-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_315_l = 'rotate-315-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_315 = 'rotate-315';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_270_ns = 'rotate-270-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_270_m = 'rotate-270-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_270_l = 'rotate-270-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_270 = 'rotate-270';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_225_ns = 'rotate-225-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_225_m = 'rotate-225-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_225_l = 'rotate-225-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_225 = 'rotate-225';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_180_ns = 'rotate-180-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_180_m = 'rotate-180-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_180_l = 'rotate-180-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_180 = 'rotate-180';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_135_ns = 'rotate-135-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_135_m = 'rotate-135-m';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_135_l = 'rotate-135-l';
-var _justgage$tachyons_elm$Tachyons_Classes$rotate_135 = 'rotate-135';
-var _justgage$tachyons_elm$Tachyons_Classes$right_2_ns = 'right-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$right_2_m = 'right-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$right_2_l = 'right-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$right_2 = 'right-2';
-var _justgage$tachyons_elm$Tachyons_Classes$right_1_ns = 'right-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$right_1_m = 'right-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$right_1_l = 'right-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$right_1 = 'right-1';
-var _justgage$tachyons_elm$Tachyons_Classes$right_0_ns = 'right-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$right_0_m = 'right-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$right_0_l = 'right-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$right_0 = 'right-0';
-var _justgage$tachyons_elm$Tachyons_Classes$right__2_ns = 'right--2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$right__2_m = 'right--2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$right__2_l = 'right--2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$right__2 = 'right--2';
-var _justgage$tachyons_elm$Tachyons_Classes$right__1_ns = 'right--1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$right__1_m = 'right--1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$right__1_l = 'right--1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$right__1 = 'right--1';
-var _justgage$tachyons_elm$Tachyons_Classes$relative_ns = 'relative-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$relative_m = 'relative-m';
-var _justgage$tachyons_elm$Tachyons_Classes$relative_l = 'relative-l';
-var _justgage$tachyons_elm$Tachyons_Classes$relative = 'relative';
-var _justgage$tachyons_elm$Tachyons_Classes$red = 'red';
-var _justgage$tachyons_elm$Tachyons_Classes$pv7_ns = 'pv7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv7_m = 'pv7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv7_l = 'pv7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv7 = 'pv7';
-var _justgage$tachyons_elm$Tachyons_Classes$pv6_ns = 'pv6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv6_m = 'pv6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv6_l = 'pv6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv6 = 'pv6';
-var _justgage$tachyons_elm$Tachyons_Classes$pv5_ns = 'pv5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv5_m = 'pv5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv5_l = 'pv5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv5 = 'pv5';
-var _justgage$tachyons_elm$Tachyons_Classes$pv4_ns = 'pv4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv4_m = 'pv4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv4_l = 'pv4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv4 = 'pv4';
-var _justgage$tachyons_elm$Tachyons_Classes$pv3_ns = 'pv3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv3_m = 'pv3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv3_l = 'pv3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv3 = 'pv3';
-var _justgage$tachyons_elm$Tachyons_Classes$pv2_ns = 'pv2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv2_m = 'pv2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv2_l = 'pv2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv2 = 'pv2';
-var _justgage$tachyons_elm$Tachyons_Classes$pv1_ns = 'pv1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv1_m = 'pv1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv1_l = 'pv1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv1 = 'pv1';
-var _justgage$tachyons_elm$Tachyons_Classes$pv0_ns = 'pv0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pv0_m = 'pv0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pv0_l = 'pv0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pv0 = 'pv0';
-var _justgage$tachyons_elm$Tachyons_Classes$purple = 'purple';
-var _justgage$tachyons_elm$Tachyons_Classes$pt7_ns = 'pt7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt7_m = 'pt7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt7_l = 'pt7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt7 = 'pt7';
-var _justgage$tachyons_elm$Tachyons_Classes$pt6_ns = 'pt6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt6_m = 'pt6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt6_l = 'pt6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt6 = 'pt6';
-var _justgage$tachyons_elm$Tachyons_Classes$pt5_ns = 'pt5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt5_m = 'pt5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt5_l = 'pt5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt5 = 'pt5';
-var _justgage$tachyons_elm$Tachyons_Classes$pt4_ns = 'pt4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt4_m = 'pt4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt4_l = 'pt4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt4 = 'pt4';
-var _justgage$tachyons_elm$Tachyons_Classes$pt3_ns = 'pt3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt3_m = 'pt3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt3_l = 'pt3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt3 = 'pt3';
-var _justgage$tachyons_elm$Tachyons_Classes$pt2_ns = 'pt2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt2_m = 'pt2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt2_l = 'pt2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt2 = 'pt2';
-var _justgage$tachyons_elm$Tachyons_Classes$pt1_ns = 'pt1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt1_m = 'pt1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt1_l = 'pt1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt1 = 'pt1';
-var _justgage$tachyons_elm$Tachyons_Classes$pt0_ns = 'pt0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pt0_m = 'pt0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pt0_l = 'pt0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pt0 = 'pt0';
-var _justgage$tachyons_elm$Tachyons_Classes$pre_ns = 'pre-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pre_m = 'pre-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pre_l = 'pre-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pre = 'pre';
-var _justgage$tachyons_elm$Tachyons_Classes$pr7_ns = 'pr7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr7_m = 'pr7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr7_l = 'pr7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr7 = 'pr7';
-var _justgage$tachyons_elm$Tachyons_Classes$pr6_ns = 'pr6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr6_m = 'pr6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr6_l = 'pr6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr6 = 'pr6';
-var _justgage$tachyons_elm$Tachyons_Classes$pr5_ns = 'pr5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr5_m = 'pr5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr5_l = 'pr5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr5 = 'pr5';
-var _justgage$tachyons_elm$Tachyons_Classes$pr4_ns = 'pr4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr4_m = 'pr4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr4_l = 'pr4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr4 = 'pr4';
-var _justgage$tachyons_elm$Tachyons_Classes$pr3_ns = 'pr3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr3_m = 'pr3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr3_l = 'pr3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr3 = 'pr3';
-var _justgage$tachyons_elm$Tachyons_Classes$pr2_ns = 'pr2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr2_m = 'pr2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr2_l = 'pr2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr2 = 'pr2';
-var _justgage$tachyons_elm$Tachyons_Classes$pr1_ns = 'pr1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr1_m = 'pr1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr1_l = 'pr1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr1 = 'pr1';
-var _justgage$tachyons_elm$Tachyons_Classes$pr0_ns = 'pr0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pr0_m = 'pr0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pr0_l = 'pr0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pr0 = 'pr0';
-var _justgage$tachyons_elm$Tachyons_Classes$pointer = 'pointer';
-var _justgage$tachyons_elm$Tachyons_Classes$pl7_ns = 'pl7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl7_m = 'pl7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl7_l = 'pl7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl7 = 'pl7';
-var _justgage$tachyons_elm$Tachyons_Classes$pl6_ns = 'pl6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl6_m = 'pl6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl6_l = 'pl6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl6 = 'pl6';
-var _justgage$tachyons_elm$Tachyons_Classes$pl5_ns = 'pl5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl5_m = 'pl5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl5_l = 'pl5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl5 = 'pl5';
-var _justgage$tachyons_elm$Tachyons_Classes$pl4_ns = 'pl4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl4_m = 'pl4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl4_l = 'pl4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl4 = 'pl4';
-var _justgage$tachyons_elm$Tachyons_Classes$pl3_ns = 'pl3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl3_m = 'pl3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl3_l = 'pl3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl3 = 'pl3';
-var _justgage$tachyons_elm$Tachyons_Classes$pl2_ns = 'pl2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl2_m = 'pl2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl2_l = 'pl2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl2 = 'pl2';
-var _justgage$tachyons_elm$Tachyons_Classes$pl1_ns = 'pl1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl1_m = 'pl1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl1_l = 'pl1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl1 = 'pl1';
-var _justgage$tachyons_elm$Tachyons_Classes$pl0_ns = 'pl0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pl0_m = 'pl0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pl0_l = 'pl0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pl0 = 'pl0';
-var _justgage$tachyons_elm$Tachyons_Classes$pink = 'pink';
-var _justgage$tachyons_elm$Tachyons_Classes$ph7_ns = 'ph7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph7_m = 'ph7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph7_l = 'ph7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph7 = 'ph7';
-var _justgage$tachyons_elm$Tachyons_Classes$ph6_ns = 'ph6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph6_m = 'ph6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph6_l = 'ph6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph6 = 'ph6';
-var _justgage$tachyons_elm$Tachyons_Classes$ph5_ns = 'ph5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph5_m = 'ph5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph5_l = 'ph5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph5 = 'ph5';
-var _justgage$tachyons_elm$Tachyons_Classes$ph4_ns = 'ph4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph4_m = 'ph4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph4_l = 'ph4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph4 = 'ph4';
-var _justgage$tachyons_elm$Tachyons_Classes$ph3_ns = 'ph3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph3_m = 'ph3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph3_l = 'ph3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph3 = 'ph3';
-var _justgage$tachyons_elm$Tachyons_Classes$ph2_ns = 'ph2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph2_m = 'ph2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph2_l = 'ph2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph2 = 'ph2';
-var _justgage$tachyons_elm$Tachyons_Classes$ph1_ns = 'ph1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph1_m = 'ph1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph1_l = 'ph1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph1 = 'ph1';
-var _justgage$tachyons_elm$Tachyons_Classes$ph0_ns = 'ph0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ph0_m = 'ph0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ph0_l = 'ph0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ph0 = 'ph0';
-var _justgage$tachyons_elm$Tachyons_Classes$pb7_ns = 'pb7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb7_m = 'pb7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb7_l = 'pb7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb7 = 'pb7';
-var _justgage$tachyons_elm$Tachyons_Classes$pb6_ns = 'pb6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb6_m = 'pb6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb6_l = 'pb6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb6 = 'pb6';
-var _justgage$tachyons_elm$Tachyons_Classes$pb5_ns = 'pb5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb5_m = 'pb5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb5_l = 'pb5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb5 = 'pb5';
-var _justgage$tachyons_elm$Tachyons_Classes$pb4_ns = 'pb4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb4_m = 'pb4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb4_l = 'pb4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb4 = 'pb4';
-var _justgage$tachyons_elm$Tachyons_Classes$pb3_ns = 'pb3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb3_m = 'pb3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb3_l = 'pb3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb3 = 'pb3';
-var _justgage$tachyons_elm$Tachyons_Classes$pb2_ns = 'pb2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb2_m = 'pb2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb2_l = 'pb2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb2 = 'pb2';
-var _justgage$tachyons_elm$Tachyons_Classes$pb1_ns = 'pb1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb1_m = 'pb1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb1_l = 'pb1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb1 = 'pb1';
-var _justgage$tachyons_elm$Tachyons_Classes$pb0_ns = 'pb0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pb0_m = 'pb0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pb0_l = 'pb0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pb0 = 'pb0';
-var _justgage$tachyons_elm$Tachyons_Classes$pa7_ns = 'pa7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa7_m = 'pa7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa7_l = 'pa7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa7 = 'pa7';
-var _justgage$tachyons_elm$Tachyons_Classes$pa6_ns = 'pa6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa6_m = 'pa6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa6_l = 'pa6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa6 = 'pa6';
-var _justgage$tachyons_elm$Tachyons_Classes$pa5_ns = 'pa5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa5_m = 'pa5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa5_l = 'pa5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa5 = 'pa5';
-var _justgage$tachyons_elm$Tachyons_Classes$pa4_ns = 'pa4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa4_m = 'pa4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa4_l = 'pa4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa4 = 'pa4';
-var _justgage$tachyons_elm$Tachyons_Classes$pa3_ns = 'pa3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa3_m = 'pa3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa3_l = 'pa3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa3 = 'pa3';
-var _justgage$tachyons_elm$Tachyons_Classes$pa2_ns = 'pa2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa2_m = 'pa2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa2_l = 'pa2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa2 = 'pa2';
-var _justgage$tachyons_elm$Tachyons_Classes$pa1_ns = 'pa1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa1_m = 'pa1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa1_l = 'pa1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa1 = 'pa1';
-var _justgage$tachyons_elm$Tachyons_Classes$pa0_ns = 'pa0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$pa0_m = 'pa0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$pa0_l = 'pa0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$pa0 = 'pa0';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_visible_ns = 'overflow-y-visible-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_visible_m = 'overflow-y-visible-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_visible_l = 'overflow-y-visible-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_visible = 'overflow-y-visible';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_scroll_ns = 'overflow-y-scroll-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_scroll_m = 'overflow-y-scroll-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_scroll_l = 'overflow-y-scroll-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_scroll = 'overflow-y-scroll';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_hidden_ns = 'overflow-y-hidden-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_hidden_m = 'overflow-y-hidden-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_hidden_l = 'overflow-y-hidden-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_hidden = 'overflow-y-hidden';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_auto_ns = 'overflow-y-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_auto_m = 'overflow-y-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_auto_l = 'overflow-y-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_y_auto = 'overflow-y-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_visible_ns = 'overflow-x-visible-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_visible_m = 'overflow-x-visible-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_visible_l = 'overflow-x-visible-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_visible = 'overflow-x-visible';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_scroll_ns = 'overflow-x-scroll-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_scroll_m = 'overflow-x-scroll-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_scroll_l = 'overflow-x-scroll-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_scroll = 'overflow-x-scroll';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_hidden_ns = 'overflow-x-hidden-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_hidden_m = 'overflow-x-hidden-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_hidden_l = 'overflow-x-hidden-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_hidden = 'overflow-x-hidden';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_auto_ns = 'overflow-x-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_auto_m = 'overflow-x-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_auto_l = 'overflow-x-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_x_auto = 'overflow-x-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_visible_ns = 'overflow-visible-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_visible_m = 'overflow-visible-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_visible_l = 'overflow-visible-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_visible = 'overflow-visible';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_scroll_ns = 'overflow-scroll-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_scroll_m = 'overflow-scroll-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_scroll_l = 'overflow-scroll-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_scroll = 'overflow-scroll';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_hidden_ns = 'overflow-hidden-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_hidden_m = 'overflow-hidden-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_hidden_l = 'overflow-hidden-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_hidden = 'overflow-hidden';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_container = 'overflow-container';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_auto_ns = 'overflow-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_auto_m = 'overflow-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_auto_l = 'overflow-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$overflow_auto = 'overflow-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_transparent_ns = 'outline-transparent-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_transparent_m = 'outline-transparent-m';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_transparent_l = 'outline-transparent-l';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_transparent = 'outline-transparent';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_ns = 'outline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_m = 'outline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_l = 'outline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_0_ns = 'outline-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_0_m = 'outline-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_0_l = 'outline-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$outline_0 = 'outline-0';
-var _justgage$tachyons_elm$Tachyons_Classes$outline = 'outline';
-var _justgage$tachyons_elm$Tachyons_Classes$order_last_ns = 'order-last-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_last_m = 'order-last-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_last_l = 'order-last-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_last = 'order-last';
-var _justgage$tachyons_elm$Tachyons_Classes$order_8_ns = 'order-8-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_8_m = 'order-8-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_8_l = 'order-8-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_8 = 'order-8';
-var _justgage$tachyons_elm$Tachyons_Classes$order_7_ns = 'order-7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_7_m = 'order-7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_7_l = 'order-7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_7 = 'order-7';
-var _justgage$tachyons_elm$Tachyons_Classes$order_6_ns = 'order-6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_6_m = 'order-6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_6_l = 'order-6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_6 = 'order-6';
-var _justgage$tachyons_elm$Tachyons_Classes$order_5_ns = 'order-5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_5_m = 'order-5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_5_l = 'order-5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_5 = 'order-5';
-var _justgage$tachyons_elm$Tachyons_Classes$order_4_ns = 'order-4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_4_m = 'order-4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_4_l = 'order-4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_4 = 'order-4';
-var _justgage$tachyons_elm$Tachyons_Classes$order_3_ns = 'order-3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_3_m = 'order-3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_3_l = 'order-3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_3 = 'order-3';
-var _justgage$tachyons_elm$Tachyons_Classes$order_2_ns = 'order-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_2_m = 'order-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_2_l = 'order-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_2 = 'order-2';
-var _justgage$tachyons_elm$Tachyons_Classes$order_1_ns = 'order-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_1_m = 'order-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_1_l = 'order-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_1 = 'order-1';
-var _justgage$tachyons_elm$Tachyons_Classes$order_0_ns = 'order-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$order_0_m = 'order-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$order_0_l = 'order-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$order_0 = 'order-0';
-var _justgage$tachyons_elm$Tachyons_Classes$orange = 'orange';
-var _justgage$tachyons_elm$Tachyons_Classes$o_90 = 'o-90';
-var _justgage$tachyons_elm$Tachyons_Classes$o_80 = 'o-80';
-var _justgage$tachyons_elm$Tachyons_Classes$o_70 = 'o-70';
-var _justgage$tachyons_elm$Tachyons_Classes$o_60 = 'o-60';
-var _justgage$tachyons_elm$Tachyons_Classes$o_50 = 'o-50';
-var _justgage$tachyons_elm$Tachyons_Classes$o_40 = 'o-40';
-var _justgage$tachyons_elm$Tachyons_Classes$o_30 = 'o-30';
-var _justgage$tachyons_elm$Tachyons_Classes$o_20 = 'o-20';
-var _justgage$tachyons_elm$Tachyons_Classes$o_100 = 'o-100';
-var _justgage$tachyons_elm$Tachyons_Classes$o_10 = 'o-10';
-var _justgage$tachyons_elm$Tachyons_Classes$o_05 = 'o-05';
-var _justgage$tachyons_elm$Tachyons_Classes$o_025 = 'o-025';
-var _justgage$tachyons_elm$Tachyons_Classes$o_0 = 'o-0';
-var _justgage$tachyons_elm$Tachyons_Classes$nt7_ns = 'nt7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt7_m = 'nt7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt7_l = 'nt7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt7 = 'nt7';
-var _justgage$tachyons_elm$Tachyons_Classes$nt6_ns = 'nt6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt6_m = 'nt6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt6_l = 'nt6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt6 = 'nt6';
-var _justgage$tachyons_elm$Tachyons_Classes$nt5_ns = 'nt5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt5_m = 'nt5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt5_l = 'nt5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt5 = 'nt5';
-var _justgage$tachyons_elm$Tachyons_Classes$nt4_ns = 'nt4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt4_m = 'nt4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt4_l = 'nt4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt4 = 'nt4';
-var _justgage$tachyons_elm$Tachyons_Classes$nt3_ns = 'nt3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt3_m = 'nt3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt3_l = 'nt3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt3 = 'nt3';
-var _justgage$tachyons_elm$Tachyons_Classes$nt2_ns = 'nt2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt2_m = 'nt2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt2_l = 'nt2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt2 = 'nt2';
-var _justgage$tachyons_elm$Tachyons_Classes$nt1_ns = 'nt1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nt1_m = 'nt1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nt1_l = 'nt1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nt1 = 'nt1';
-var _justgage$tachyons_elm$Tachyons_Classes$nr7_ns = 'nr7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr7_m = 'nr7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr7_l = 'nr7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr7 = 'nr7';
-var _justgage$tachyons_elm$Tachyons_Classes$nr6_ns = 'nr6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr6_m = 'nr6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr6_l = 'nr6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr6 = 'nr6';
-var _justgage$tachyons_elm$Tachyons_Classes$nr5_ns = 'nr5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr5_m = 'nr5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr5_l = 'nr5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr5 = 'nr5';
-var _justgage$tachyons_elm$Tachyons_Classes$nr4_ns = 'nr4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr4_m = 'nr4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr4_l = 'nr4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr4 = 'nr4';
-var _justgage$tachyons_elm$Tachyons_Classes$nr3_ns = 'nr3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr3_m = 'nr3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr3_l = 'nr3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr3 = 'nr3';
-var _justgage$tachyons_elm$Tachyons_Classes$nr2_ns = 'nr2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr2_m = 'nr2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr2_l = 'nr2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr2 = 'nr2';
-var _justgage$tachyons_elm$Tachyons_Classes$nr1_ns = 'nr1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nr1_m = 'nr1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nr1_l = 'nr1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nr1 = 'nr1';
-var _justgage$tachyons_elm$Tachyons_Classes$nowrap_ns = 'nowrap-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nowrap_m = 'nowrap-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nowrap_l = 'nowrap-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nowrap = 'nowrap';
-var _justgage$tachyons_elm$Tachyons_Classes$normal_ns = 'normal-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$normal_m = 'normal-m';
-var _justgage$tachyons_elm$Tachyons_Classes$normal_l = 'normal-l';
-var _justgage$tachyons_elm$Tachyons_Classes$normal = 'normal';
-var _justgage$tachyons_elm$Tachyons_Classes$no_underline_ns = 'no-underline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$no_underline_m = 'no-underline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$no_underline_l = 'no-underline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$no_underline = 'no-underline';
-var _justgage$tachyons_elm$Tachyons_Classes$nl7_ns = 'nl7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl7_m = 'nl7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl7_l = 'nl7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl7 = 'nl7';
-var _justgage$tachyons_elm$Tachyons_Classes$nl6_ns = 'nl6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl6_m = 'nl6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl6_l = 'nl6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl6 = 'nl6';
-var _justgage$tachyons_elm$Tachyons_Classes$nl5_ns = 'nl5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl5_m = 'nl5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl5_l = 'nl5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl5 = 'nl5';
-var _justgage$tachyons_elm$Tachyons_Classes$nl4_ns = 'nl4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl4_m = 'nl4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl4_l = 'nl4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl4 = 'nl4';
-var _justgage$tachyons_elm$Tachyons_Classes$nl3_ns = 'nl3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl3_m = 'nl3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl3_l = 'nl3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl3 = 'nl3';
-var _justgage$tachyons_elm$Tachyons_Classes$nl2_ns = 'nl2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl2_m = 'nl2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl2_l = 'nl2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl2 = 'nl2';
-var _justgage$tachyons_elm$Tachyons_Classes$nl1_ns = 'nl1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nl1_m = 'nl1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nl1_l = 'nl1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nl1 = 'nl1';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_list_reset = 'nested-list-reset';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_links = 'nested-links';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_img = 'nested-img';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_headline_line_height = 'nested-headline-line-height';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_copy_seperator = 'nested-copy-seperator';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_copy_line_height = 'nested-copy-line-height';
-var _justgage$tachyons_elm$Tachyons_Classes$nested_copy_indent = 'nested-copy-indent';
-var _justgage$tachyons_elm$Tachyons_Classes$near_white = 'near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$near_black = 'near-black';
-var _justgage$tachyons_elm$Tachyons_Classes$nb7_ns = 'nb7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb7_m = 'nb7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb7_l = 'nb7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb7 = 'nb7';
-var _justgage$tachyons_elm$Tachyons_Classes$nb6_ns = 'nb6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb6_m = 'nb6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb6_l = 'nb6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb6 = 'nb6';
-var _justgage$tachyons_elm$Tachyons_Classes$nb5_ns = 'nb5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb5_m = 'nb5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb5_l = 'nb5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb5 = 'nb5';
-var _justgage$tachyons_elm$Tachyons_Classes$nb4_ns = 'nb4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb4_m = 'nb4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb4_l = 'nb4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb4 = 'nb4';
-var _justgage$tachyons_elm$Tachyons_Classes$nb3_ns = 'nb3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb3_m = 'nb3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb3_l = 'nb3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb3 = 'nb3';
-var _justgage$tachyons_elm$Tachyons_Classes$nb2_ns = 'nb2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb2_m = 'nb2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb2_l = 'nb2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb2 = 'nb2';
-var _justgage$tachyons_elm$Tachyons_Classes$nb1_ns = 'nb1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$nb1_m = 'nb1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$nb1_l = 'nb1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$nb1 = 'nb1';
-var _justgage$tachyons_elm$Tachyons_Classes$navy = 'navy';
-var _justgage$tachyons_elm$Tachyons_Classes$na7_ns = 'na7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na7_m = 'na7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na7_l = 'na7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na7 = 'na7';
-var _justgage$tachyons_elm$Tachyons_Classes$na6_ns = 'na6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na6_m = 'na6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na6_l = 'na6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na6 = 'na6';
-var _justgage$tachyons_elm$Tachyons_Classes$na5_ns = 'na5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na5_m = 'na5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na5_l = 'na5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na5 = 'na5';
-var _justgage$tachyons_elm$Tachyons_Classes$na4_ns = 'na4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na4_m = 'na4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na4_l = 'na4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na4 = 'na4';
-var _justgage$tachyons_elm$Tachyons_Classes$na3_ns = 'na3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na3_m = 'na3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na3_l = 'na3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na3 = 'na3';
-var _justgage$tachyons_elm$Tachyons_Classes$na2_ns = 'na2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na2_m = 'na2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na2_l = 'na2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na2 = 'na2';
-var _justgage$tachyons_elm$Tachyons_Classes$na1_ns = 'na1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$na1_m = 'na1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$na1_l = 'na1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$na1 = 'na1';
-var _justgage$tachyons_elm$Tachyons_Classes$mw9_ns = 'mw9-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw9_m = 'mw9-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw9_l = 'mw9-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw9 = 'mw9';
-var _justgage$tachyons_elm$Tachyons_Classes$mw8_ns = 'mw8-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw8_m = 'mw8-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw8_l = 'mw8-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw8 = 'mw8';
-var _justgage$tachyons_elm$Tachyons_Classes$mw7_ns = 'mw7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw7_m = 'mw7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw7_l = 'mw7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw7 = 'mw7';
-var _justgage$tachyons_elm$Tachyons_Classes$mw6_ns = 'mw6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw6_m = 'mw6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw6_l = 'mw6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw6 = 'mw6';
-var _justgage$tachyons_elm$Tachyons_Classes$mw5_ns = 'mw5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw5_m = 'mw5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw5_l = 'mw5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw5 = 'mw5';
-var _justgage$tachyons_elm$Tachyons_Classes$mw4_ns = 'mw4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw4_m = 'mw4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw4_l = 'mw4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw4 = 'mw4';
-var _justgage$tachyons_elm$Tachyons_Classes$mw3_ns = 'mw3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw3_m = 'mw3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw3_l = 'mw3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw3 = 'mw3';
-var _justgage$tachyons_elm$Tachyons_Classes$mw2_ns = 'mw2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw2_m = 'mw2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw2_l = 'mw2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw2 = 'mw2';
-var _justgage$tachyons_elm$Tachyons_Classes$mw1_ns = 'mw1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw1_m = 'mw1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw1_l = 'mw1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw1 = 'mw1';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_none_ns = 'mw-none-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_none_m = 'mw-none-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_none_l = 'mw-none-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_none = 'mw-none';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_100_ns = 'mw-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_100_m = 'mw-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_100_l = 'mw-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mw_100 = 'mw-100';
-var _justgage$tachyons_elm$Tachyons_Classes$mv7_ns = 'mv7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv7_m = 'mv7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv7_l = 'mv7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv7 = 'mv7';
-var _justgage$tachyons_elm$Tachyons_Classes$mv6_ns = 'mv6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv6_m = 'mv6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv6_l = 'mv6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv6 = 'mv6';
-var _justgage$tachyons_elm$Tachyons_Classes$mv5_ns = 'mv5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv5_m = 'mv5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv5_l = 'mv5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv5 = 'mv5';
-var _justgage$tachyons_elm$Tachyons_Classes$mv4_ns = 'mv4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv4_m = 'mv4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv4_l = 'mv4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv4 = 'mv4';
-var _justgage$tachyons_elm$Tachyons_Classes$mv3_ns = 'mv3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv3_m = 'mv3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv3_l = 'mv3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv3 = 'mv3';
-var _justgage$tachyons_elm$Tachyons_Classes$mv2_ns = 'mv2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv2_m = 'mv2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv2_l = 'mv2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv2 = 'mv2';
-var _justgage$tachyons_elm$Tachyons_Classes$mv1_ns = 'mv1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv1_m = 'mv1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv1_l = 'mv1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv1 = 'mv1';
-var _justgage$tachyons_elm$Tachyons_Classes$mv0_ns = 'mv0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mv0_m = 'mv0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mv0_l = 'mv0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mv0 = 'mv0';
-var _justgage$tachyons_elm$Tachyons_Classes$mt7_ns = 'mt7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt7_m = 'mt7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt7_l = 'mt7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt7 = 'mt7';
-var _justgage$tachyons_elm$Tachyons_Classes$mt6_ns = 'mt6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt6_m = 'mt6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt6_l = 'mt6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt6 = 'mt6';
-var _justgage$tachyons_elm$Tachyons_Classes$mt5_ns = 'mt5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt5_m = 'mt5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt5_l = 'mt5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt5 = 'mt5';
-var _justgage$tachyons_elm$Tachyons_Classes$mt4_ns = 'mt4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt4_m = 'mt4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt4_l = 'mt4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt4 = 'mt4';
-var _justgage$tachyons_elm$Tachyons_Classes$mt3_ns = 'mt3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt3_m = 'mt3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt3_l = 'mt3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt3 = 'mt3';
-var _justgage$tachyons_elm$Tachyons_Classes$mt2_ns = 'mt2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt2_m = 'mt2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt2_l = 'mt2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt2 = 'mt2';
-var _justgage$tachyons_elm$Tachyons_Classes$mt1_ns = 'mt1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt1_m = 'mt1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt1_l = 'mt1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt1 = 'mt1';
-var _justgage$tachyons_elm$Tachyons_Classes$mt0_ns = 'mt0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mt0_m = 'mt0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mt0_l = 'mt0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mt0 = 'mt0';
-var _justgage$tachyons_elm$Tachyons_Classes$mr7_ns = 'mr7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr7_m = 'mr7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr7_l = 'mr7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr7 = 'mr7';
-var _justgage$tachyons_elm$Tachyons_Classes$mr6_ns = 'mr6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr6_m = 'mr6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr6_l = 'mr6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr6 = 'mr6';
-var _justgage$tachyons_elm$Tachyons_Classes$mr5_ns = 'mr5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr5_m = 'mr5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr5_l = 'mr5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr5 = 'mr5';
-var _justgage$tachyons_elm$Tachyons_Classes$mr4_ns = 'mr4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr4_m = 'mr4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr4_l = 'mr4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr4 = 'mr4';
-var _justgage$tachyons_elm$Tachyons_Classes$mr3_ns = 'mr3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr3_m = 'mr3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr3_l = 'mr3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr3 = 'mr3';
-var _justgage$tachyons_elm$Tachyons_Classes$mr2_ns = 'mr2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr2_m = 'mr2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr2_l = 'mr2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr2 = 'mr2';
-var _justgage$tachyons_elm$Tachyons_Classes$mr1_ns = 'mr1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr1_m = 'mr1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr1_l = 'mr1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr1 = 'mr1';
-var _justgage$tachyons_elm$Tachyons_Classes$mr0_ns = 'mr0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mr0_m = 'mr0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mr0_l = 'mr0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mr0 = 'mr0';
-var _justgage$tachyons_elm$Tachyons_Classes$moon_gray = 'moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$ml7_ns = 'ml7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml7_m = 'ml7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml7_l = 'ml7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml7 = 'ml7';
-var _justgage$tachyons_elm$Tachyons_Classes$ml6_ns = 'ml6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml6_m = 'ml6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml6_l = 'ml6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml6 = 'ml6';
-var _justgage$tachyons_elm$Tachyons_Classes$ml5_ns = 'ml5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml5_m = 'ml5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml5_l = 'ml5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml5 = 'ml5';
-var _justgage$tachyons_elm$Tachyons_Classes$ml4_ns = 'ml4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml4_m = 'ml4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml4_l = 'ml4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml4 = 'ml4';
-var _justgage$tachyons_elm$Tachyons_Classes$ml3_ns = 'ml3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml3_m = 'ml3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml3_l = 'ml3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml3 = 'ml3';
-var _justgage$tachyons_elm$Tachyons_Classes$ml2_ns = 'ml2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml2_m = 'ml2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml2_l = 'ml2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml2 = 'ml2';
-var _justgage$tachyons_elm$Tachyons_Classes$ml1_ns = 'ml1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml1_m = 'ml1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml1_l = 'ml1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml1 = 'ml1';
-var _justgage$tachyons_elm$Tachyons_Classes$ml0_ns = 'ml0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ml0_m = 'ml0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ml0_l = 'ml0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ml0 = 'ml0';
-var _justgage$tachyons_elm$Tachyons_Classes$min_vh_100_ns = 'min-vh-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$min_vh_100_m = 'min-vh-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$min_vh_100_l = 'min-vh-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$min_vh_100 = 'min-vh-100';
-var _justgage$tachyons_elm$Tachyons_Classes$min_h_100_ns = 'min-h-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$min_h_100_m = 'min-h-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$min_h_100_l = 'min-h-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$min_h_100 = 'min-h-100';
-var _justgage$tachyons_elm$Tachyons_Classes$mid_gray = 'mid-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$mh7_ns = 'mh7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh7_m = 'mh7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh7_l = 'mh7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh7 = 'mh7';
-var _justgage$tachyons_elm$Tachyons_Classes$mh6_ns = 'mh6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh6_m = 'mh6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh6_l = 'mh6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh6 = 'mh6';
-var _justgage$tachyons_elm$Tachyons_Classes$mh5_ns = 'mh5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh5_m = 'mh5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh5_l = 'mh5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh5 = 'mh5';
-var _justgage$tachyons_elm$Tachyons_Classes$mh4_ns = 'mh4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh4_m = 'mh4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh4_l = 'mh4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh4 = 'mh4';
-var _justgage$tachyons_elm$Tachyons_Classes$mh3_ns = 'mh3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh3_m = 'mh3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh3_l = 'mh3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh3 = 'mh3';
-var _justgage$tachyons_elm$Tachyons_Classes$mh2_ns = 'mh2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh2_m = 'mh2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh2_l = 'mh2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh2 = 'mh2';
-var _justgage$tachyons_elm$Tachyons_Classes$mh1_ns = 'mh1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh1_m = 'mh1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh1_l = 'mh1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh1 = 'mh1';
-var _justgage$tachyons_elm$Tachyons_Classes$mh0_ns = 'mh0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mh0_m = 'mh0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mh0_l = 'mh0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mh0 = 'mh0';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_wide_ns = 'measure-wide-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_wide_m = 'measure-wide-m';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_wide_l = 'measure-wide-l';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_wide = 'measure-wide';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_ns = 'measure-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_narrow_ns = 'measure-narrow-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_narrow_m = 'measure-narrow-m';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_narrow_l = 'measure-narrow-l';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_narrow = 'measure-narrow';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_m = 'measure-m';
-var _justgage$tachyons_elm$Tachyons_Classes$measure_l = 'measure-l';
-var _justgage$tachyons_elm$Tachyons_Classes$measure = 'measure';
-var _justgage$tachyons_elm$Tachyons_Classes$mb7_ns = 'mb7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb7_m = 'mb7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb7_l = 'mb7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb7 = 'mb7';
-var _justgage$tachyons_elm$Tachyons_Classes$mb6_ns = 'mb6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb6_m = 'mb6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb6_l = 'mb6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb6 = 'mb6';
-var _justgage$tachyons_elm$Tachyons_Classes$mb5_ns = 'mb5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb5_m = 'mb5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb5_l = 'mb5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb5 = 'mb5';
-var _justgage$tachyons_elm$Tachyons_Classes$mb4_ns = 'mb4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb4_m = 'mb4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb4_l = 'mb4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb4 = 'mb4';
-var _justgage$tachyons_elm$Tachyons_Classes$mb3_ns = 'mb3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb3_m = 'mb3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb3_l = 'mb3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb3 = 'mb3';
-var _justgage$tachyons_elm$Tachyons_Classes$mb2_ns = 'mb2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb2_m = 'mb2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb2_l = 'mb2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb2 = 'mb2';
-var _justgage$tachyons_elm$Tachyons_Classes$mb1_ns = 'mb1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb1_m = 'mb1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb1_l = 'mb1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb1 = 'mb1';
-var _justgage$tachyons_elm$Tachyons_Classes$mb0_ns = 'mb0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$mb0_m = 'mb0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$mb0_l = 'mb0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$mb0 = 'mb0';
-var _justgage$tachyons_elm$Tachyons_Classes$ma7_ns = 'ma7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma7_m = 'ma7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma7_l = 'ma7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma7 = 'ma7';
-var _justgage$tachyons_elm$Tachyons_Classes$ma6_ns = 'ma6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma6_m = 'ma6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma6_l = 'ma6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma6 = 'ma6';
-var _justgage$tachyons_elm$Tachyons_Classes$ma5_ns = 'ma5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma5_m = 'ma5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma5_l = 'ma5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma5 = 'ma5';
-var _justgage$tachyons_elm$Tachyons_Classes$ma4_ns = 'ma4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma4_m = 'ma4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma4_l = 'ma4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma4 = 'ma4';
-var _justgage$tachyons_elm$Tachyons_Classes$ma3_ns = 'ma3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma3_m = 'ma3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma3_l = 'ma3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma3 = 'ma3';
-var _justgage$tachyons_elm$Tachyons_Classes$ma2_ns = 'ma2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma2_m = 'ma2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma2_l = 'ma2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma2 = 'ma2';
-var _justgage$tachyons_elm$Tachyons_Classes$ma1_ns = 'ma1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma1_m = 'ma1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma1_l = 'ma1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma1 = 'ma1';
-var _justgage$tachyons_elm$Tachyons_Classes$ma0_ns = 'ma0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ma0_m = 'ma0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ma0_l = 'ma0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ma0 = 'ma0';
-var _justgage$tachyons_elm$Tachyons_Classes$list = 'list';
-var _justgage$tachyons_elm$Tachyons_Classes$link = 'link';
-var _justgage$tachyons_elm$Tachyons_Classes$lightest_blue = 'lightest-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$light_yellow = 'light-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$light_silver = 'light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$light_red = 'light-red';
-var _justgage$tachyons_elm$Tachyons_Classes$light_purple = 'light-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$light_pink = 'light-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$light_green = 'light-green';
-var _justgage$tachyons_elm$Tachyons_Classes$light_gray = 'light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$light_blue = 'light-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_title_ns = 'lh-title-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_title_m = 'lh-title-m';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_title_l = 'lh-title-l';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_title = 'lh-title';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_solid_ns = 'lh-solid-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_solid_m = 'lh-solid-m';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_solid_l = 'lh-solid-l';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_solid = 'lh-solid';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_copy_ns = 'lh-copy-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_copy_m = 'lh-copy-m';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_copy_l = 'lh-copy-l';
-var _justgage$tachyons_elm$Tachyons_Classes$lh_copy = 'lh-copy';
-var _justgage$tachyons_elm$Tachyons_Classes$left_2_ns = 'left-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$left_2_m = 'left-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$left_2_l = 'left-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$left_2 = 'left-2';
-var _justgage$tachyons_elm$Tachyons_Classes$left_1_ns = 'left-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$left_1_m = 'left-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$left_1_l = 'left-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$left_1 = 'left-1';
-var _justgage$tachyons_elm$Tachyons_Classes$left_0_ns = 'left-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$left_0_m = 'left-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$left_0_l = 'left-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$left_0 = 'left-0';
-var _justgage$tachyons_elm$Tachyons_Classes$left__2_ns = 'left--2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$left__2_m = 'left--2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$left__2_l = 'left--2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$left__2 = 'left--2';
-var _justgage$tachyons_elm$Tachyons_Classes$left__1_ns = 'left--1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$left__1_m = 'left--1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$left__1_l = 'left--1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$left__1 = 'left--1';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_start_ns = 'justify-start-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_start_m = 'justify-start-m';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_start_l = 'justify-start-l';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_start = 'justify-start';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_end_ns = 'justify-end-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_end_m = 'justify-end-m';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_end_l = 'justify-end-l';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_end = 'justify-end';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_center_ns = 'justify-center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_center_m = 'justify-center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_center_l = 'justify-center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_center = 'justify-center';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_between_ns = 'justify-between-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_between_m = 'justify-between-m';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_between_l = 'justify-between-l';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_between = 'justify-between';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_around_ns = 'justify-around-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_around_m = 'justify-around-m';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_around_l = 'justify-around-l';
-var _justgage$tachyons_elm$Tachyons_Classes$justify_around = 'justify-around';
-var _justgage$tachyons_elm$Tachyons_Classes$items_stretch_ns = 'items-stretch-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$items_stretch_m = 'items-stretch-m';
-var _justgage$tachyons_elm$Tachyons_Classes$items_stretch_l = 'items-stretch-l';
-var _justgage$tachyons_elm$Tachyons_Classes$items_stretch = 'items-stretch';
-var _justgage$tachyons_elm$Tachyons_Classes$items_start_ns = 'items-start-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$items_start_m = 'items-start-m';
-var _justgage$tachyons_elm$Tachyons_Classes$items_start_l = 'items-start-l';
-var _justgage$tachyons_elm$Tachyons_Classes$items_start = 'items-start';
-var _justgage$tachyons_elm$Tachyons_Classes$items_end_ns = 'items-end-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$items_end_m = 'items-end-m';
-var _justgage$tachyons_elm$Tachyons_Classes$items_end_l = 'items-end-l';
-var _justgage$tachyons_elm$Tachyons_Classes$items_end = 'items-end';
-var _justgage$tachyons_elm$Tachyons_Classes$items_center_ns = 'items-center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$items_center_m = 'items-center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$items_center_l = 'items-center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$items_center = 'items-center';
-var _justgage$tachyons_elm$Tachyons_Classes$items_baseline_ns = 'items-baseline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$items_baseline_m = 'items-baseline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$items_baseline_l = 'items-baseline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$items_baseline = 'items-baseline';
-var _justgage$tachyons_elm$Tachyons_Classes$input_reset = 'input-reset';
-var _justgage$tachyons_elm$Tachyons_Classes$inline_flex_ns = 'inline-flex-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$inline_flex_m = 'inline-flex-m';
-var _justgage$tachyons_elm$Tachyons_Classes$inline_flex_l = 'inline-flex-l';
-var _justgage$tachyons_elm$Tachyons_Classes$inline_flex = 'inline-flex';
-var _justgage$tachyons_elm$Tachyons_Classes$indent_ns = 'indent-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$indent_m = 'indent-m';
-var _justgage$tachyons_elm$Tachyons_Classes$indent_l = 'indent-l';
-var _justgage$tachyons_elm$Tachyons_Classes$indent = 'indent';
-var _justgage$tachyons_elm$Tachyons_Classes$i_ns = 'i-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$i_m = 'i-m';
-var _justgage$tachyons_elm$Tachyons_Classes$i_l = 'i-l';
-var _justgage$tachyons_elm$Tachyons_Classes$i = 'i';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_yellow = 'hover-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_90 = 'hover-white-90';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_80 = 'hover-white-80';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_70 = 'hover-white-70';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_60 = 'hover-white-60';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_50 = 'hover-white-50';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_40 = 'hover-white-40';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_30 = 'hover-white-30';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_20 = 'hover-white-20';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white_10 = 'hover-white-10';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_white = 'hover-white';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_washed_yellow = 'hover-washed-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_washed_red = 'hover-washed-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_washed_green = 'hover-washed-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_washed_blue = 'hover-washed-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_silver = 'hover-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_red = 'hover-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_purple = 'hover-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_pink = 'hover-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_orange = 'hover-orange';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_near_white = 'hover-near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_near_black = 'hover-near-black';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_navy = 'hover-navy';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_moon_gray = 'hover-moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_mid_gray = 'hover-mid-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_lightest_blue = 'hover-lightest-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_yellow = 'hover-light-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_silver = 'hover-light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_red = 'hover-light-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_purple = 'hover-light-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_pink = 'hover-light-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_green = 'hover-light-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_gray = 'hover-light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_light_blue = 'hover-light-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_inherit = 'hover-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_hot_pink = 'hover-hot-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_green = 'hover-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_gray = 'hover-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_gold = 'hover-gold';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_dark_red = 'hover-dark-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_dark_pink = 'hover-dark-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_dark_green = 'hover-dark-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_dark_gray = 'hover-dark-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_dark_blue = 'hover-dark-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_blue = 'hover-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_90 = 'hover-black-90';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_80 = 'hover-black-80';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_70 = 'hover-black-70';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_60 = 'hover-black-60';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_50 = 'hover-black-50';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_40 = 'hover-black-40';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_30 = 'hover-black-30';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_20 = 'hover-black-20';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black_10 = 'hover-black-10';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_black = 'hover-black';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_yellow = 'hover-bg-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_90 = 'hover-bg-white-90';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_80 = 'hover-bg-white-80';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_70 = 'hover-bg-white-70';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_60 = 'hover-bg-white-60';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_50 = 'hover-bg-white-50';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_40 = 'hover-bg-white-40';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_30 = 'hover-bg-white-30';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_20 = 'hover-bg-white-20';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white_10 = 'hover-bg-white-10';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_white = 'hover-bg-white';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_washed_yellow = 'hover-bg-washed-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_washed_red = 'hover-bg-washed-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_washed_green = 'hover-bg-washed-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_washed_blue = 'hover-bg-washed-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_transparent = 'hover-bg-transparent';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_silver = 'hover-bg-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_red = 'hover-bg-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_purple = 'hover-bg-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_pink = 'hover-bg-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_orange = 'hover-bg-orange';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_near_white = 'hover-bg-near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_near_black = 'hover-bg-near-black';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_navy = 'hover-bg-navy';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_moon_gray = 'hover-bg-moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_mid_gray = 'hover-bg-mid-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_lightest_blue = 'hover-bg-lightest-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_yellow = 'hover-bg-light-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_silver = 'hover-bg-light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_red = 'hover-bg-light-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_purple = 'hover-bg-light-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_pink = 'hover-bg-light-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_green = 'hover-bg-light-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_gray = 'hover-bg-light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_light_blue = 'hover-bg-light-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_inherit = 'hover-bg-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_hot_pink = 'hover-bg-hot-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_green = 'hover-bg-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_gray = 'hover-bg-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_gold = 'hover-bg-gold';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_dark_red = 'hover-bg-dark-red';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_dark_pink = 'hover-bg-dark-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_dark_green = 'hover-bg-dark-green';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_dark_gray = 'hover-bg-dark-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_dark_blue = 'hover-bg-dark-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_blue = 'hover-bg-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_90 = 'hover-bg-black-90';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_80 = 'hover-bg-black-80';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_70 = 'hover-bg-black-70';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_60 = 'hover-bg-black-60';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_50 = 'hover-bg-black-50';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_40 = 'hover-bg-black-40';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_30 = 'hover-bg-black-30';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_20 = 'hover-bg-black-20';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black_10 = 'hover-bg-black-10';
-var _justgage$tachyons_elm$Tachyons_Classes$hover_bg_black = 'hover-bg-black';
-var _justgage$tachyons_elm$Tachyons_Classes$hot_pink = 'hot-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$hide_child = 'hide-child';
-var _justgage$tachyons_elm$Tachyons_Classes$helvetica = 'helvetica';
-var _justgage$tachyons_elm$Tachyons_Classes$h5_ns = 'h5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h5_m = 'h5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h5_l = 'h5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h5 = 'h5';
-var _justgage$tachyons_elm$Tachyons_Classes$h4_ns = 'h4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h4_m = 'h4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h4_l = 'h4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h4 = 'h4';
-var _justgage$tachyons_elm$Tachyons_Classes$h3_ns = 'h3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h3_m = 'h3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h3_l = 'h3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h3 = 'h3';
-var _justgage$tachyons_elm$Tachyons_Classes$h2_ns = 'h2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h2_m = 'h2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h2_l = 'h2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h2 = 'h2';
-var _justgage$tachyons_elm$Tachyons_Classes$h1_ns = 'h1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h1_m = 'h1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h1_l = 'h1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h1 = 'h1';
-var _justgage$tachyons_elm$Tachyons_Classes$h_inherit_ns = 'h-inherit-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_inherit_m = 'h-inherit-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_inherit_l = 'h-inherit-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_inherit = 'h-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$h_auto_ns = 'h-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_auto_m = 'h-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_auto_l = 'h-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_auto = 'h-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$h_75_ns = 'h-75-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_75_m = 'h-75-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_75_l = 'h-75-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_75 = 'h-75';
-var _justgage$tachyons_elm$Tachyons_Classes$h_50_ns = 'h-50-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_50_m = 'h-50-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_50_l = 'h-50-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_50 = 'h-50';
-var _justgage$tachyons_elm$Tachyons_Classes$h_25_ns = 'h-25-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_25_m = 'h-25-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_25_l = 'h-25-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_25 = 'h-25';
-var _justgage$tachyons_elm$Tachyons_Classes$h_100_ns = 'h-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$h_100_m = 'h-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$h_100_l = 'h-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$h_100 = 'h-100';
-var _justgage$tachyons_elm$Tachyons_Classes$grow_large = 'grow-large';
-var _justgage$tachyons_elm$Tachyons_Classes$grow = 'grow';
-var _justgage$tachyons_elm$Tachyons_Classes$green = 'green';
-var _justgage$tachyons_elm$Tachyons_Classes$gray = 'gray';
-var _justgage$tachyons_elm$Tachyons_Classes$gold = 'gold';
-var _justgage$tachyons_elm$Tachyons_Classes$glow = 'glow';
-var _justgage$tachyons_elm$Tachyons_Classes$georgia = 'georgia';
-var _justgage$tachyons_elm$Tachyons_Classes$garamond = 'garamond';
-var _justgage$tachyons_elm$Tachyons_Classes$fw9_ns = 'fw9-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw9_m = 'fw9-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw9_l = 'fw9-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw9 = 'fw9';
-var _justgage$tachyons_elm$Tachyons_Classes$fw8_ns = 'fw8-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw8_m = 'fw8-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw8_l = 'fw8-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw8 = 'fw8';
-var _justgage$tachyons_elm$Tachyons_Classes$fw7_ns = 'fw7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw7_m = 'fw7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw7_l = 'fw7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw7 = 'fw7';
-var _justgage$tachyons_elm$Tachyons_Classes$fw6_ns = 'fw6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw6_m = 'fw6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw6_l = 'fw6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw6 = 'fw6';
-var _justgage$tachyons_elm$Tachyons_Classes$fw5_ns = 'fw5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw5_m = 'fw5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw5_l = 'fw5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw5 = 'fw5';
-var _justgage$tachyons_elm$Tachyons_Classes$fw4_ns = 'fw4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw4_m = 'fw4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw4_l = 'fw4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw4 = 'fw4';
-var _justgage$tachyons_elm$Tachyons_Classes$fw3_ns = 'fw3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw3_m = 'fw3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw3_l = 'fw3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw3 = 'fw3';
-var _justgage$tachyons_elm$Tachyons_Classes$fw2_ns = 'fw2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw2_m = 'fw2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw2_l = 'fw2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw2 = 'fw2';
-var _justgage$tachyons_elm$Tachyons_Classes$fw1_ns = 'fw1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fw1_m = 'fw1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fw1_l = 'fw1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fw1 = 'fw1';
-var _justgage$tachyons_elm$Tachyons_Classes$fs_normal_ns = 'fs-normal-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fs_normal_m = 'fs-normal-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fs_normal_l = 'fs-normal-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fs_normal = 'fs-normal';
-var _justgage$tachyons_elm$Tachyons_Classes$fr_ns = 'fr-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fr_m = 'fr-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fr_l = 'fr-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fr = 'fr';
-var _justgage$tachyons_elm$Tachyons_Classes$fn_ns = 'fn-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fn_m = 'fn-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fn_l = 'fn-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fn = 'fn';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_reverse_ns = 'flex-wrap-reverse-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_reverse_m = 'flex-wrap-reverse-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_reverse_l = 'flex-wrap-reverse-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_reverse = 'flex-wrap-reverse';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_ns = 'flex-wrap-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_m = 'flex-wrap-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap_l = 'flex-wrap-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_wrap = 'flex-wrap';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_reverse_ns = 'flex-row-reverse-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_reverse_m = 'flex-row-reverse-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_reverse_l = 'flex-row-reverse-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_reverse = 'flex-row-reverse';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_ns = 'flex-row-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_m = 'flex-row-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row_l = 'flex-row-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_row = 'flex-row';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_ns = 'flex-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_none_ns = 'flex-none-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_none_m = 'flex-none-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_none_l = 'flex-none-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_none = 'flex-none';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_m = 'flex-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_l = 'flex-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_reverse_ns = 'flex-column-reverse-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_reverse_m = 'flex-column-reverse-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_reverse_l = 'flex-column-reverse-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_reverse = 'flex-column-reverse';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_ns = 'flex-column-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_m = 'flex-column-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column_l = 'flex-column-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_column = 'flex-column';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_auto_ns = 'flex-auto-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_auto_m = 'flex-auto-m';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_auto_l = 'flex-auto-l';
-var _justgage$tachyons_elm$Tachyons_Classes$flex_auto = 'flex-auto';
-var _justgage$tachyons_elm$Tachyons_Classes$flex = 'flex';
-var _justgage$tachyons_elm$Tachyons_Classes$fl_ns = 'fl-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fl_m = 'fl-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fl_l = 'fl-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fl = 'fl';
-var _justgage$tachyons_elm$Tachyons_Classes$fixed_ns = 'fixed-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$fixed_m = 'fixed-m';
-var _justgage$tachyons_elm$Tachyons_Classes$fixed_l = 'fixed-l';
-var _justgage$tachyons_elm$Tachyons_Classes$fixed = 'fixed';
-var _justgage$tachyons_elm$Tachyons_Classes$f7_ns = 'f7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f7_m = 'f7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f7_l = 'f7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f7 = 'f7';
-var _justgage$tachyons_elm$Tachyons_Classes$f6_ns = 'f6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f6_m = 'f6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f6_l = 'f6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f6 = 'f6';
-var _justgage$tachyons_elm$Tachyons_Classes$f5_ns = 'f5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f5_m = 'f5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f5_l = 'f5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f5 = 'f5';
-var _justgage$tachyons_elm$Tachyons_Classes$f4_ns = 'f4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f4_m = 'f4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f4_l = 'f4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f4 = 'f4';
-var _justgage$tachyons_elm$Tachyons_Classes$f3_ns = 'f3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f3_m = 'f3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f3_l = 'f3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f3 = 'f3';
-var _justgage$tachyons_elm$Tachyons_Classes$f2_ns = 'f2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f2_m = 'f2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f2_l = 'f2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f2 = 'f2';
-var _justgage$tachyons_elm$Tachyons_Classes$f1_ns = 'f1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f1_m = 'f1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f1_l = 'f1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f1 = 'f1';
-var _justgage$tachyons_elm$Tachyons_Classes$f_subheadline_ns = 'f-subheadline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f_subheadline_m = 'f-subheadline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f_subheadline_l = 'f-subheadline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f_subheadline = 'f-subheadline';
-var _justgage$tachyons_elm$Tachyons_Classes$f_headline_ns = 'f-headline-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f_headline_m = 'f-headline-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f_headline_l = 'f-headline-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f_headline = 'f-headline';
-var _justgage$tachyons_elm$Tachyons_Classes$f_6_ns = 'f-6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f_6_m = 'f-6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f_6_l = 'f-6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f_6 = 'f-6';
-var _justgage$tachyons_elm$Tachyons_Classes$f_5_ns = 'f-5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$f_5_m = 'f-5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$f_5_l = 'f-5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$f_5 = 'f-5';
-var _justgage$tachyons_elm$Tachyons_Classes$dtc_ns = 'dtc-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dtc_m = 'dtc-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dtc_l = 'dtc-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dtc = 'dtc';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_ns = 'dt-row-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_m = 'dt-row-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_l = 'dt-row-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_group_ns = 'dt-row-group-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_group_m = 'dt-row-group-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_group_l = 'dt-row-group-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row_group = 'dt-row-group';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_row = 'dt-row';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_ns = 'dt-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_m = 'dt-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_l = 'dt-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_ns = 'dt-column-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_m = 'dt-column-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_l = 'dt-column-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_group_ns = 'dt-column-group-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_group_m = 'dt-column-group-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_group_l = 'dt-column-group-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column_group = 'dt-column-group';
-var _justgage$tachyons_elm$Tachyons_Classes$dt_column = 'dt-column';
-var _justgage$tachyons_elm$Tachyons_Classes$dt__fixed_ns = 'dt--fixed-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dt__fixed_m = 'dt--fixed-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dt__fixed_l = 'dt--fixed-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dt__fixed = 'dt--fixed';
-var _justgage$tachyons_elm$Tachyons_Classes$dt = 'dt';
-var _justgage$tachyons_elm$Tachyons_Classes$dn_ns = 'dn-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dn_m = 'dn-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dn_l = 'dn-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dn = 'dn';
-var _justgage$tachyons_elm$Tachyons_Classes$dit_ns = 'dit-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dit_m = 'dit-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dit_l = 'dit-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dit = 'dit';
-var _justgage$tachyons_elm$Tachyons_Classes$dim = 'dim';
-var _justgage$tachyons_elm$Tachyons_Classes$dib_ns = 'dib-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$dib_m = 'dib-m';
-var _justgage$tachyons_elm$Tachyons_Classes$dib_l = 'dib-l';
-var _justgage$tachyons_elm$Tachyons_Classes$dib = 'dib';
-var _justgage$tachyons_elm$Tachyons_Classes$di_ns = 'di-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$di_m = 'di-m';
-var _justgage$tachyons_elm$Tachyons_Classes$di_l = 'di-l';
-var _justgage$tachyons_elm$Tachyons_Classes$di = 'di';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_white = 'debug-white';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_grid_8_solid = 'debug-grid-8-solid';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_grid_16_solid = 'debug-grid-16-solid';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_grid_16 = 'debug-grid-16';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_grid = 'debug-grid';
-var _justgage$tachyons_elm$Tachyons_Classes$debug_black = 'debug-black';
-var _justgage$tachyons_elm$Tachyons_Classes$debug = 'debug';
-var _justgage$tachyons_elm$Tachyons_Classes$db_ns = 'db-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$db_m = 'db-m';
-var _justgage$tachyons_elm$Tachyons_Classes$db_l = 'db-l';
-var _justgage$tachyons_elm$Tachyons_Classes$db = 'db';
-var _justgage$tachyons_elm$Tachyons_Classes$dark_red = 'dark-red';
-var _justgage$tachyons_elm$Tachyons_Classes$dark_pink = 'dark-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$dark_green = 'dark-green';
-var _justgage$tachyons_elm$Tachyons_Classes$dark_gray = 'dark-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$dark_blue = 'dark-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$cr_ns = 'cr-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$cr_m = 'cr-m';
-var _justgage$tachyons_elm$Tachyons_Classes$cr_l = 'cr-l';
-var _justgage$tachyons_elm$Tachyons_Classes$cr = 'cr';
-var _justgage$tachyons_elm$Tachyons_Classes$cover_ns = 'cover-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$cover_m = 'cover-m';
-var _justgage$tachyons_elm$Tachyons_Classes$cover_l = 'cover-l';
-var _justgage$tachyons_elm$Tachyons_Classes$cover = 'cover';
-var _justgage$tachyons_elm$Tachyons_Classes$courier = 'courier';
-var _justgage$tachyons_elm$Tachyons_Classes$content_stretch_ns = 'content-stretch-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_stretch_m = 'content-stretch-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_stretch_l = 'content-stretch-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_stretch = 'content-stretch';
-var _justgage$tachyons_elm$Tachyons_Classes$content_start_ns = 'content-start-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_start_m = 'content-start-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_start_l = 'content-start-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_start = 'content-start';
-var _justgage$tachyons_elm$Tachyons_Classes$content_end_ns = 'content-end-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_end_m = 'content-end-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_end_l = 'content-end-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_end = 'content-end';
-var _justgage$tachyons_elm$Tachyons_Classes$content_center_ns = 'content-center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_center_m = 'content-center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_center_l = 'content-center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_center = 'content-center';
-var _justgage$tachyons_elm$Tachyons_Classes$content_between_ns = 'content-between-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_between_m = 'content-between-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_between_l = 'content-between-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_between = 'content-between';
-var _justgage$tachyons_elm$Tachyons_Classes$content_around_ns = 'content-around-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$content_around_m = 'content-around-m';
-var _justgage$tachyons_elm$Tachyons_Classes$content_around_l = 'content-around-l';
-var _justgage$tachyons_elm$Tachyons_Classes$content_around = 'content-around';
-var _justgage$tachyons_elm$Tachyons_Classes$contain_ns = 'contain-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$contain_m = 'contain-m';
-var _justgage$tachyons_elm$Tachyons_Classes$contain_l = 'contain-l';
-var _justgage$tachyons_elm$Tachyons_Classes$contain = 'contain';
-var _justgage$tachyons_elm$Tachyons_Classes$color_inherit = 'color-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$code = 'code';
-var _justgage$tachyons_elm$Tachyons_Classes$collapse = 'collapse';
-var _justgage$tachyons_elm$Tachyons_Classes$cn_ns = 'cn-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$cn_m = 'cn-m';
-var _justgage$tachyons_elm$Tachyons_Classes$cn_l = 'cn-l';
-var _justgage$tachyons_elm$Tachyons_Classes$cn = 'cn';
-var _justgage$tachyons_elm$Tachyons_Classes$clip_ns = 'clip-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$clip_m = 'clip-m';
-var _justgage$tachyons_elm$Tachyons_Classes$clip_l = 'clip-l';
-var _justgage$tachyons_elm$Tachyons_Classes$clip = 'clip';
-var _justgage$tachyons_elm$Tachyons_Classes$cl_ns = 'cl-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$cl_m = 'cl-m';
-var _justgage$tachyons_elm$Tachyons_Classes$cl_l = 'cl-l';
-var _justgage$tachyons_elm$Tachyons_Classes$cl = 'cl';
-var _justgage$tachyons_elm$Tachyons_Classes$child = 'child';
-var _justgage$tachyons_elm$Tachyons_Classes$cf = 'cf';
-var _justgage$tachyons_elm$Tachyons_Classes$center_ns = 'center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$center_m = 'center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$center_l = 'center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$center = 'center';
-var _justgage$tachyons_elm$Tachyons_Classes$cb_ns = 'cb-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$cb_m = 'cb-m';
-var _justgage$tachyons_elm$Tachyons_Classes$cb_l = 'cb-l';
-var _justgage$tachyons_elm$Tachyons_Classes$cb = 'cb';
-var _justgage$tachyons_elm$Tachyons_Classes$calisto = 'calisto';
-var _justgage$tachyons_elm$Tachyons_Classes$bw5_ns = 'bw5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw5_m = 'bw5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw5_l = 'bw5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw5 = 'bw5';
-var _justgage$tachyons_elm$Tachyons_Classes$bw4_ns = 'bw4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw4_m = 'bw4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw4_l = 'bw4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw4 = 'bw4';
-var _justgage$tachyons_elm$Tachyons_Classes$bw3_ns = 'bw3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw3_m = 'bw3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw3_l = 'bw3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw3 = 'bw3';
-var _justgage$tachyons_elm$Tachyons_Classes$bw2_ns = 'bw2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw2_m = 'bw2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw2_l = 'bw2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw2 = 'bw2';
-var _justgage$tachyons_elm$Tachyons_Classes$bw1_ns = 'bw1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw1_m = 'bw1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw1_l = 'bw1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw1 = 'bw1';
-var _justgage$tachyons_elm$Tachyons_Classes$bw0_ns = 'bw0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bw0_m = 'bw0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bw0_l = 'bw0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bw0 = 'bw0';
-var _justgage$tachyons_elm$Tachyons_Classes$button_reset = 'button-reset';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_ns = 'bt-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_m = 'bt-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_l = 'bt-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_0_ns = 'bt-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_0_m = 'bt-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_0_l = 'bt-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bt_0 = 'bt-0';
-var _justgage$tachyons_elm$Tachyons_Classes$bt = 'bt';
-var _justgage$tachyons_elm$Tachyons_Classes$br4_ns = 'br4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br4_m = 'br4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br4_l = 'br4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br4 = 'br4';
-var _justgage$tachyons_elm$Tachyons_Classes$br3_ns = 'br3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br3_m = 'br3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br3_l = 'br3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br3 = 'br3';
-var _justgage$tachyons_elm$Tachyons_Classes$br2_ns = 'br2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br2_m = 'br2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br2_l = 'br2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br2 = 'br2';
-var _justgage$tachyons_elm$Tachyons_Classes$br1_ns = 'br1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br1_m = 'br1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br1_l = 'br1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br1 = 'br1';
-var _justgage$tachyons_elm$Tachyons_Classes$br0_ns = 'br0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br0_m = 'br0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br0_l = 'br0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br0 = 'br0';
-var _justgage$tachyons_elm$Tachyons_Classes$br_pill_ns = 'br-pill-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br_pill_m = 'br-pill-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br_pill_l = 'br-pill-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br_pill = 'br-pill';
-var _justgage$tachyons_elm$Tachyons_Classes$br_ns = 'br-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br_m = 'br-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br_l = 'br-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br_100_ns = 'br-100-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br_100_m = 'br-100-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br_100_l = 'br-100-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br_100 = 'br-100';
-var _justgage$tachyons_elm$Tachyons_Classes$br_0_ns = 'br-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br_0_m = 'br-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br_0_l = 'br-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br_0 = 'br-0';
-var _justgage$tachyons_elm$Tachyons_Classes$br__top_ns = 'br--top-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br__top_m = 'br--top-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br__top_l = 'br--top-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br__top = 'br--top';
-var _justgage$tachyons_elm$Tachyons_Classes$br__right_ns = 'br--right-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br__right_m = 'br--right-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br__right_l = 'br--right-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br__right = 'br--right';
-var _justgage$tachyons_elm$Tachyons_Classes$br__left_ns = 'br--left-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br__left_m = 'br--left-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br__left_l = 'br--left-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br__left = 'br--left';
-var _justgage$tachyons_elm$Tachyons_Classes$br__bottom_ns = 'br--bottom-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$br__bottom_m = 'br--bottom-m';
-var _justgage$tachyons_elm$Tachyons_Classes$br__bottom_l = 'br--bottom-l';
-var _justgage$tachyons_elm$Tachyons_Classes$br__bottom = 'br--bottom';
-var _justgage$tachyons_elm$Tachyons_Classes$br = 'br';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_2_ns = 'bottom-2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_2_m = 'bottom-2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_2_l = 'bottom-2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_2 = 'bottom-2';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_1_ns = 'bottom-1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_1_m = 'bottom-1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_1_l = 'bottom-1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_1 = 'bottom-1';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_0_ns = 'bottom-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_0_m = 'bottom-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_0_l = 'bottom-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom_0 = 'bottom-0';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__2_ns = 'bottom--2-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__2_m = 'bottom--2-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__2_l = 'bottom--2-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__2 = 'bottom--2';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__1_ns = 'bottom--1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__1_m = 'bottom--1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__1_l = 'bottom--1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bottom__1 = 'bottom--1';
-var _justgage$tachyons_elm$Tachyons_Classes$bodoni = 'bodoni';
-var _justgage$tachyons_elm$Tachyons_Classes$border_box = 'border-box';
-var _justgage$tachyons_elm$Tachyons_Classes$bn_ns = 'bn-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bn_m = 'bn-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bn_l = 'bn-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bn = 'bn';
-var _justgage$tachyons_elm$Tachyons_Classes$blue = 'blue';
-var _justgage$tachyons_elm$Tachyons_Classes$black_90 = 'black-90';
-var _justgage$tachyons_elm$Tachyons_Classes$black_80 = 'black-80';
-var _justgage$tachyons_elm$Tachyons_Classes$black_70 = 'black-70';
-var _justgage$tachyons_elm$Tachyons_Classes$black_60 = 'black-60';
-var _justgage$tachyons_elm$Tachyons_Classes$black_50 = 'black-50';
-var _justgage$tachyons_elm$Tachyons_Classes$black_40 = 'black-40';
-var _justgage$tachyons_elm$Tachyons_Classes$black_30 = 'black-30';
-var _justgage$tachyons_elm$Tachyons_Classes$black_20 = 'black-20';
-var _justgage$tachyons_elm$Tachyons_Classes$black_10 = 'black-10';
-var _justgage$tachyons_elm$Tachyons_Classes$black_05 = 'black-05';
-var _justgage$tachyons_elm$Tachyons_Classes$black = 'black';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_ns = 'bl-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_m = 'bl-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_l = 'bl-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_0_ns = 'bl-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_0_m = 'bl-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_0_l = 'bl-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bl_0 = 'bl-0';
-var _justgage$tachyons_elm$Tachyons_Classes$bl = 'bl';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_yellow = 'bg-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_90 = 'bg-white-90';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_80 = 'bg-white-80';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_70 = 'bg-white-70';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_60 = 'bg-white-60';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_50 = 'bg-white-50';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_40 = 'bg-white-40';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_30 = 'bg-white-30';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_20 = 'bg-white-20';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white_10 = 'bg-white-10';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_white = 'bg-white';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_washed_yellow = 'bg-washed-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_washed_red = 'bg-washed-red';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_washed_green = 'bg-washed-green';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_washed_blue = 'bg-washed-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_transparent = 'bg-transparent';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_top_ns = 'bg-top-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_top_m = 'bg-top-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_top_l = 'bg-top-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_top = 'bg-top';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_silver = 'bg-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_right_ns = 'bg-right-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_right_m = 'bg-right-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_right_l = 'bg-right-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_right = 'bg-right';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_red = 'bg-red';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_purple = 'bg-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_pink = 'bg-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_orange = 'bg-orange';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_near_white = 'bg-near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_near_black = 'bg-near-black';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_navy = 'bg-navy';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_moon_gray = 'bg-moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_mid_gray = 'bg-mid-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_lightest_blue = 'bg-lightest-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_yellow = 'bg-light-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_silver = 'bg-light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_red = 'bg-light-red';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_purple = 'bg-light-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_pink = 'bg-light-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_green = 'bg-light-green';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_gray = 'bg-light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_light_blue = 'bg-light-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_left_ns = 'bg-left-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_left_m = 'bg-left-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_left_l = 'bg-left-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_left = 'bg-left';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_inherit = 'bg-inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_hot_pink = 'bg-hot-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_green = 'bg-green';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_gray = 'bg-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_gold = 'bg-gold';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_dark_red = 'bg-dark-red';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_dark_pink = 'bg-dark-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_dark_green = 'bg-dark-green';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_dark_gray = 'bg-dark-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_dark_blue = 'bg-dark-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_center_ns = 'bg-center-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_center_m = 'bg-center-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_center_l = 'bg-center-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_center = 'bg-center';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_bottom_ns = 'bg-bottom-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_bottom_m = 'bg-bottom-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_bottom_l = 'bg-bottom-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_bottom = 'bg-bottom';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_blue = 'bg-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_90 = 'bg-black-90';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_80 = 'bg-black-80';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_70 = 'bg-black-70';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_60 = 'bg-black-60';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_50 = 'bg-black-50';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_40 = 'bg-black-40';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_30 = 'bg-black-30';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_20 = 'bg-black-20';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_10 = 'bg-black-10';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black_05 = 'bg-black-05';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_black = 'bg-black';
-var _justgage$tachyons_elm$Tachyons_Classes$bg_animate = 'bg-animate';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_ns = 'bb-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_m = 'bb-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_l = 'bb-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_0_ns = 'bb-0-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_0_m = 'bb-0-m';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_0_l = 'bb-0-l';
-var _justgage$tachyons_elm$Tachyons_Classes$bb_0 = 'bb-0';
-var _justgage$tachyons_elm$Tachyons_Classes$bb = 'bb';
-var _justgage$tachyons_elm$Tachyons_Classes$baskerville = 'baskerville';
-var _justgage$tachyons_elm$Tachyons_Classes$ba_ns = 'ba-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$ba_m = 'ba-m';
-var _justgage$tachyons_elm$Tachyons_Classes$ba_l = 'ba-l';
-var _justgage$tachyons_elm$Tachyons_Classes$ba = 'ba';
-var _justgage$tachyons_elm$Tachyons_Classes$b_ns = 'b-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$b_m = 'b-m';
-var _justgage$tachyons_elm$Tachyons_Classes$b_l = 'b-l';
-var _justgage$tachyons_elm$Tachyons_Classes$b__yellow = 'b--yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_90 = 'b--white-90';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_80 = 'b--white-80';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_70 = 'b--white-70';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_60 = 'b--white-60';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_50 = 'b--white-50';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_40 = 'b--white-40';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_30 = 'b--white-30';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_20 = 'b--white-20';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_10 = 'b--white-10';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_05 = 'b--white-05';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_025 = 'b--white-025';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white_0125 = 'b--white-0125';
-var _justgage$tachyons_elm$Tachyons_Classes$b__white = 'b--white';
-var _justgage$tachyons_elm$Tachyons_Classes$b__washed_yellow = 'b--washed-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$b__washed_red = 'b--washed-red';
-var _justgage$tachyons_elm$Tachyons_Classes$b__washed_green = 'b--washed-green';
-var _justgage$tachyons_elm$Tachyons_Classes$b__washed_blue = 'b--washed-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$b__transparent = 'b--transparent';
-var _justgage$tachyons_elm$Tachyons_Classes$b__solid_ns = 'b--solid-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$b__solid_m = 'b--solid-m';
-var _justgage$tachyons_elm$Tachyons_Classes$b__solid_l = 'b--solid-l';
-var _justgage$tachyons_elm$Tachyons_Classes$b__solid = 'b--solid';
-var _justgage$tachyons_elm$Tachyons_Classes$b__silver = 'b--silver';
-var _justgage$tachyons_elm$Tachyons_Classes$b__red = 'b--red';
-var _justgage$tachyons_elm$Tachyons_Classes$b__purple = 'b--purple';
-var _justgage$tachyons_elm$Tachyons_Classes$b__pink = 'b--pink';
-var _justgage$tachyons_elm$Tachyons_Classes$b__orange = 'b--orange';
-var _justgage$tachyons_elm$Tachyons_Classes$b__none_ns = 'b--none-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$b__none_m = 'b--none-m';
-var _justgage$tachyons_elm$Tachyons_Classes$b__none_l = 'b--none-l';
-var _justgage$tachyons_elm$Tachyons_Classes$b__none = 'b--none';
-var _justgage$tachyons_elm$Tachyons_Classes$b__near_white = 'b--near-white';
-var _justgage$tachyons_elm$Tachyons_Classes$b__near_black = 'b--near-black';
-var _justgage$tachyons_elm$Tachyons_Classes$b__navy = 'b--navy';
-var _justgage$tachyons_elm$Tachyons_Classes$b__moon_gray = 'b--moon-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$b__mid_gray = 'b--mid-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$b__lightest_blue = 'b--lightest-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_yellow = 'b--light-yellow';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_silver = 'b--light-silver';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_red = 'b--light-red';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_purple = 'b--light-purple';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_pink = 'b--light-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_green = 'b--light-green';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_gray = 'b--light-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$b__light_blue = 'b--light-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$b__inherit = 'b--inherit';
-var _justgage$tachyons_elm$Tachyons_Classes$b__hot_pink = 'b--hot-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$b__green = 'b--green';
-var _justgage$tachyons_elm$Tachyons_Classes$b__gray = 'b--gray';
-var _justgage$tachyons_elm$Tachyons_Classes$b__gold = 'b--gold';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dotted_ns = 'b--dotted-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dotted_m = 'b--dotted-m';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dotted_l = 'b--dotted-l';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dotted = 'b--dotted';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dashed_ns = 'b--dashed-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dashed_m = 'b--dashed-m';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dashed_l = 'b--dashed-l';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dashed = 'b--dashed';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dark_red = 'b--dark-red';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dark_pink = 'b--dark-pink';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dark_green = 'b--dark-green';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dark_gray = 'b--dark-gray';
-var _justgage$tachyons_elm$Tachyons_Classes$b__dark_blue = 'b--dark-blue';
-var _justgage$tachyons_elm$Tachyons_Classes$b__blue = 'b--blue';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_90 = 'b--black-90';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_80 = 'b--black-80';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_70 = 'b--black-70';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_60 = 'b--black-60';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_50 = 'b--black-50';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_40 = 'b--black-40';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_30 = 'b--black-30';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_20 = 'b--black-20';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_10 = 'b--black-10';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_05 = 'b--black-05';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_025 = 'b--black-025';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black_0125 = 'b--black-0125';
-var _justgage$tachyons_elm$Tachyons_Classes$b__black = 'b--black';
-var _justgage$tachyons_elm$Tachyons_Classes$b = 'b';
-var _justgage$tachyons_elm$Tachyons_Classes$avenir = 'avenir';
-var _justgage$tachyons_elm$Tachyons_Classes$athelas = 'athelas';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio_ns = 'aspect-ratio-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio_m = 'aspect-ratio-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio_l = 'aspect-ratio-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__object_ns = 'aspect-ratio--object-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__object_m = 'aspect-ratio--object-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__object_l = 'aspect-ratio--object-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__object = 'aspect-ratio--object';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__9x16_ns = 'aspect-ratio--9x16-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__9x16_m = 'aspect-ratio--9x16-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__9x16_l = 'aspect-ratio--9x16-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__9x16 = 'aspect-ratio--9x16';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__8x5_ns = 'aspect-ratio--8x5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__8x5_m = 'aspect-ratio--8x5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__8x5_l = 'aspect-ratio--8x5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__8x5 = 'aspect-ratio--8x5';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__7x5_ns = 'aspect-ratio--7x5-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__7x5_m = 'aspect-ratio--7x5-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__7x5_l = 'aspect-ratio--7x5-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__7x5 = 'aspect-ratio--7x5';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__6x4_ns = 'aspect-ratio--6x4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__6x4_m = 'aspect-ratio--6x4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__6x4_l = 'aspect-ratio--6x4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__6x4 = 'aspect-ratio--6x4';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x8_ns = 'aspect-ratio--5x8-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x8_m = 'aspect-ratio--5x8-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x8_l = 'aspect-ratio--5x8-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x8 = 'aspect-ratio--5x8';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x7_ns = 'aspect-ratio--5x7-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x7_m = 'aspect-ratio--5x7-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x7_l = 'aspect-ratio--5x7-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__5x7 = 'aspect-ratio--5x7';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x6_ns = 'aspect-ratio--4x6-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x6_m = 'aspect-ratio--4x6-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x6_l = 'aspect-ratio--4x6-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x6 = 'aspect-ratio--4x6';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x3_ns = 'aspect-ratio--4x3-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x3_m = 'aspect-ratio--4x3-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x3_l = 'aspect-ratio--4x3-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__4x3 = 'aspect-ratio--4x3';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__3x4_ns = 'aspect-ratio--3x4-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__3x4_m = 'aspect-ratio--3x4-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__3x4_l = 'aspect-ratio--3x4-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__3x4 = 'aspect-ratio--3x4';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__1x1_ns = 'aspect-ratio--1x1-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__1x1_m = 'aspect-ratio--1x1-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__1x1_l = 'aspect-ratio--1x1-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__1x1 = 'aspect-ratio--1x1';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__16x9_ns = 'aspect-ratio--16x9-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__16x9_m = 'aspect-ratio--16x9-m';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__16x9_l = 'aspect-ratio--16x9-l';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio__16x9 = 'aspect-ratio--16x9';
-var _justgage$tachyons_elm$Tachyons_Classes$aspect_ratio = 'aspect-ratio';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute_ns = 'absolute-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute_m = 'absolute-m';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute_l = 'absolute-l';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_ns = 'absolute--fill-ns';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_m = 'absolute--fill-m';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill_l = 'absolute--fill-l';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute__fill = 'absolute--fill';
-var _justgage$tachyons_elm$Tachyons_Classes$absolute = 'absolute';
-
-var _minond$brainloller$Util$mapBoth = F2(
-	function (fn, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: fn(_p1._0),
-			_1: fn(_p1._1)
-		};
-	});
-var _minond$brainloller$Util$ternary = F3(
-	function (cond, pass, fail) {
-		return cond ? pass : fail;
-	});
-var _minond$brainloller$Util$asList = function (list) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		{ctor: '[]'},
-		list);
-};
-
-var _minond$brainloller$Lang$programDimensions = function (program) {
-	var width = A2(
-		_elm_lang$core$Maybe$withDefault,
-		0,
-		A2(
-			_elm_lang$core$Maybe$andThen,
-			function (row) {
-				return _elm_lang$core$Maybe$Just(
-					_elm_lang$core$List$length(row));
-			},
-			_elm_lang$core$List$head(program)));
-	var height = _elm_lang$core$List$length(program);
-	return {ctor: '_Tuple2', _0: width, _1: height};
-};
-var _minond$brainloller$Lang$setCellAt = F4(
-	function (program, x, y, p) {
-		var row = _minond$brainloller$Util$asList(
-			A2(_elm_community$list_extra$List_Extra$getAt, y, program));
-		var updatedRow = _minond$brainloller$Util$asList(
-			A3(_elm_community$list_extra$List_Extra$setAt, x, p, row));
-		var updatedProgram = _minond$brainloller$Util$asList(
-			A3(_elm_community$list_extra$List_Extra$setAt, y, updatedRow, program));
-		return updatedProgram;
-	});
-var _minond$brainloller$Lang$getCellMaybe = F3(
-	function (program, x, y) {
-		return A2(
-			_elm_community$list_extra$List_Extra$getAt,
-			x,
-			_minond$brainloller$Util$asList(
-				A2(_elm_community$list_extra$List_Extra$getAt, y, program)));
-	});
-var _minond$brainloller$Lang$getCellAt = F3(
-	function (program, x, y) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			{r: 255, g: 255, b: 255},
-			A3(_minond$brainloller$Lang$getCellMaybe, program, x, y));
-	});
-var _minond$brainloller$Lang$resizeProgram = F3(
-	function (program, x, y) {
-		var dims = _minond$brainloller$Lang$programDimensions(program);
-		var width = A2(
-			_elm_lang$core$Basics$max,
-			x + 1,
-			_elm_lang$core$Tuple$first(dims));
-		var height = A2(
-			_elm_lang$core$Basics$max,
-			y + 1,
-			_elm_lang$core$Tuple$second(dims));
-		return A2(
-			_elm_lang$core$List$indexedMap,
-			F2(
-				function (y, _p0) {
-					return A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (x, _p1) {
-								return A3(_minond$brainloller$Lang$getCellAt, program, x, y);
-							}),
-						A2(_elm_lang$core$List$repeat, width, _elm_lang$core$Maybe$Nothing));
-				}),
-			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
-	});
-var _minond$brainloller$Lang$createRuntime = function (input) {
-	return {
-		activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
-		activeCell: 0,
-		jumps: {ctor: '[]'},
-		pointerDeg: 0,
-		output: _elm_lang$core$Maybe$Nothing,
-		input: input,
-		memory: {ctor: '[]'}
-	};
-};
-var _minond$brainloller$Lang$getBlCmd = F2(
-	function (key, dict) {
-		var _p2 = key;
-		switch (_p2) {
-			case 'shiftRight':
-				return dict.shiftRight;
-			case 'shiftLeft':
-				return dict.shiftLeft;
-			case 'increment':
-				return dict.increment;
-			case 'decrement':
-				return dict.decrement;
-			case 'ioWrite':
-				return dict.ioWrite;
-			case 'ioRead':
-				return dict.ioRead;
-			case 'loopOpen':
-				return dict.loopOpen;
-			case 'loopClose':
-				return dict.loopClose;
-			case 'rotateClockwise':
-				return dict.rotateClockwise;
-			case 'rotateCounterClockwise':
-				return dict.rotateCounterClockwise;
-			default:
-				return dict.noop;
-		}
-	});
-var _minond$brainloller$Lang$blCmd = {shiftRight: 'shiftRight', shiftLeft: 'shiftLeft', increment: 'increment', decrement: 'decrement', ioWrite: 'ioWrite', ioRead: 'ioRead', loopOpen: 'loopOpen', loopClose: 'loopClose', rotateClockwise: 'rotateClockwise', rotateCounterClockwise: 'rotateCounterClockwise', noop: 'noop'};
-var _minond$brainloller$Lang$pixel = F3(
-	function (r, g, b) {
-		return {r: r, g: g, b: b};
-	});
-var _minond$brainloller$Lang$blCmdPixel = {
-	shiftRight: A3(_minond$brainloller$Lang$pixel, 255, 0, 0),
-	shiftLeft: A3(_minond$brainloller$Lang$pixel, 128, 0, 0),
-	increment: A3(_minond$brainloller$Lang$pixel, 0, 255, 0),
-	decrement: A3(_minond$brainloller$Lang$pixel, 0, 128, 0),
-	ioWrite: A3(_minond$brainloller$Lang$pixel, 0, 0, 255),
-	ioRead: A3(_minond$brainloller$Lang$pixel, 0, 0, 128),
-	loopOpen: A3(_minond$brainloller$Lang$pixel, 255, 255, 0),
-	loopClose: A3(_minond$brainloller$Lang$pixel, 128, 128, 0),
-	rotateClockwise: A3(_minond$brainloller$Lang$pixel, 0, 255, 255),
-	rotateCounterClockwise: A3(_minond$brainloller$Lang$pixel, 0, 128, 128),
-	noop: A3(_minond$brainloller$Lang$pixel, 0, 0, 0)
-};
-var _minond$brainloller$Lang$BLEnvironment = F2(
-	function (a, b) {
-		return {runtime: a, program: b};
-	});
-var _minond$brainloller$Lang$BLRuntime = F7(
-	function (a, b, c, d, e, f, g) {
-		return {activeCoor: a, activeCell: b, jumps: c, pointerDeg: d, output: e, input: f, memory: g};
-	});
-var _minond$brainloller$Lang$BLCmd = function (a) {
-	return function (b) {
-		return function (c) {
-			return function (d) {
-				return function (e) {
-					return function (f) {
-						return function (g) {
-							return function (h) {
-								return function (i) {
-									return function (j) {
-										return function (k) {
-											return {shiftRight: a, shiftLeft: b, increment: c, decrement: d, ioWrite: e, ioRead: f, loopOpen: g, loopClose: h, rotateClockwise: i, rotateCounterClockwise: j, noop: k};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var _minond$brainloller$Lang$Pixel = F3(
-	function (a, b, c) {
-		return {r: a, g: b, b: c};
-	});
-
-var _minond$brainloller$Editor$memoryTape = function (runtime) {
+var _minond$brainloller$Brainloller$memoryTape = function (runtime) {
 	var len = _elm_lang$core$List$length(runtime.memory);
 	var padding = A2(
 		_elm_lang$core$List$drop,
@@ -12039,7 +9648,222 @@ var _minond$brainloller$Editor$memoryTape = function (runtime) {
 		});
 	return A2(_elm_lang$core$List$indexedMap, cell, cells);
 };
-var _minond$brainloller$Editor$commandsForm = F2(
+var _minond$brainloller$Brainloller$pixelStyle = function (p) {
+	return {
+		ctor: '_Tuple2',
+		_0: 'backgroundColor',
+		_1: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'rgb(',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(p.r),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					', ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(p.g),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							', ',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(p.b),
+								')'))))))
+	};
+};
+var _minond$brainloller$Brainloller$dimensions = function (program) {
+	var width = A2(
+		_elm_lang$core$Maybe$withDefault,
+		0,
+		A2(
+			_elm_lang$core$Maybe$andThen,
+			function (row) {
+				return _elm_lang$core$Maybe$Just(
+					_elm_lang$core$List$length(row));
+			},
+			_elm_lang$core$List$head(program)));
+	var height = _elm_lang$core$List$length(program);
+	return {ctor: '_Tuple2', _0: width, _1: height};
+};
+var _minond$brainloller$Brainloller$asList = function (list) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		{ctor: '[]'},
+		list);
+};
+var _minond$brainloller$Brainloller$getCellMaybe = F3(
+	function (program, x, y) {
+		return A2(
+			_elm_community$list_extra$List_Extra$getAt,
+			x,
+			_minond$brainloller$Brainloller$asList(
+				A2(_elm_community$list_extra$List_Extra$getAt, y, program)));
+	});
+var _minond$brainloller$Brainloller$getCellAt = F3(
+	function (program, x, y) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			{r: 255, g: 255, b: 255},
+			A3(_minond$brainloller$Brainloller$getCellMaybe, program, x, y));
+	});
+var _minond$brainloller$Brainloller$resize = F3(
+	function (program, x, y) {
+		var dims = _minond$brainloller$Brainloller$dimensions(program);
+		var width = A2(
+			_elm_lang$core$Basics$max,
+			x + 1,
+			_elm_lang$core$Tuple$first(dims));
+		var height = A2(
+			_elm_lang$core$Basics$max,
+			y + 1,
+			_elm_lang$core$Tuple$second(dims));
+		return A2(
+			_elm_lang$core$List$indexedMap,
+			F2(
+				function (y, _p0) {
+					return A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (x, _p1) {
+								return A3(_minond$brainloller$Brainloller$getCellAt, program, x, y);
+							}),
+						A2(_elm_lang$core$List$repeat, width, _elm_lang$core$Maybe$Nothing));
+				}),
+			A2(_elm_lang$core$List$repeat, height, _elm_lang$core$Maybe$Nothing));
+	});
+var _minond$brainloller$Brainloller$programCells = F7(
+	function (width, height, program, runtime, writeHandler, enableHandler, disableHandler) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
+					_1: {ctor: '[]'}
+				}
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (rowIndex, row) {
+						return row(
+							A2(
+								_elm_lang$core$List$indexedMap,
+								F2(
+									function (cellIndex, cell) {
+										var isActive = _elm_lang$core$Native_Utils.eq(
+											runtime.activeCoor,
+											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
+										var pixel = A3(_minond$brainloller$Brainloller$getCellAt, program, cellIndex, rowIndex);
+										return A2(
+											cell,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													A3(writeHandler, cellIndex, rowIndex, true)),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onMouseDown(
+														A3(writeHandler, cellIndex, rowIndex, true)),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onMouseOver(
+															A3(writeHandler, cellIndex, rowIndex, false)),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$style(
+																{
+																	ctor: '::',
+																	_0: _minond$brainloller$Brainloller$pixelStyle(pixel),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$classList(
+																	{
+																		ctor: '::',
+																		_0: {ctor: '_Tuple2', _0: 'program-cell', _1: true},
+																		_1: {
+																			ctor: '::',
+																			_0: {ctor: '_Tuple2', _0: 'program-cell--active', _1: isActive},
+																			_1: {ctor: '[]'}
+																		}
+																	}),
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											},
+											{ctor: '[]'});
+									}),
+								A2(_elm_lang$core$List$repeat, width, _elm_lang$html$Html$div)));
+					}),
+				A2(
+					_elm_lang$core$List$repeat,
+					height,
+					_elm_lang$html$Html$div(
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('program-row'),
+							_1: {ctor: '[]'}
+						}))));
+	});
+var _minond$brainloller$Brainloller$setCellAt = F4(
+	function (program, x, y, p) {
+		var row = _minond$brainloller$Brainloller$asList(
+			A2(_elm_community$list_extra$List_Extra$getAt, y, program));
+		var updatedRow = _minond$brainloller$Brainloller$asList(
+			A3(_elm_community$list_extra$List_Extra$setAt, x, p, row));
+		var updatedProgram = _minond$brainloller$Brainloller$asList(
+			A3(_elm_community$list_extra$List_Extra$setAt, y, updatedRow, program));
+		return updatedProgram;
+	});
+var _minond$brainloller$Brainloller$create = function (input) {
+	return {
+		activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
+		activeCell: 0,
+		jumps: {ctor: '[]'},
+		pointerDeg: 0,
+		output: _elm_lang$core$Maybe$Nothing,
+		input: input,
+		memory: {ctor: '[]'}
+	};
+};
+var _minond$brainloller$Brainloller$getCmd = F2(
+	function (key, dict) {
+		var _p2 = key;
+		switch (_p2) {
+			case 'shiftRight':
+				return dict.shiftRight;
+			case 'shiftLeft':
+				return dict.shiftLeft;
+			case 'increment':
+				return dict.increment;
+			case 'decrement':
+				return dict.decrement;
+			case 'ioWrite':
+				return dict.ioWrite;
+			case 'ioRead':
+				return dict.ioRead;
+			case 'loopOpen':
+				return dict.loopOpen;
+			case 'loopClose':
+				return dict.loopClose;
+			case 'rotateClockwise':
+				return dict.rotateClockwise;
+			case 'rotateCounterClockwise':
+				return dict.rotateCounterClockwise;
+			default:
+				return dict.noop;
+		}
+	});
+var _minond$brainloller$Brainloller$cmds = {shiftRight: 'shiftRight', shiftLeft: 'shiftLeft', increment: 'increment', decrement: 'decrement', ioWrite: 'ioWrite', ioRead: 'ioRead', loopOpen: 'loopOpen', loopClose: 'loopClose', rotateClockwise: 'rotateClockwise', rotateCounterClockwise: 'rotateCounterClockwise', noop: 'noop'};
+var _minond$brainloller$Brainloller$commands = F2(
 	function (cmdSetter, activeCmd) {
 		var picker = F2(
 			function (label, cmd) {
@@ -12088,34 +9912,34 @@ var _minond$brainloller$Editor$commandsForm = F2(
 			});
 		return {
 			ctor: '::',
-			_0: A2(picker, '>', _minond$brainloller$Lang$blCmd.shiftRight),
+			_0: A2(picker, '>', _minond$brainloller$Brainloller$cmds.shiftRight),
 			_1: {
 				ctor: '::',
-				_0: A2(picker, '<', _minond$brainloller$Lang$blCmd.shiftLeft),
+				_0: A2(picker, '<', _minond$brainloller$Brainloller$cmds.shiftLeft),
 				_1: {
 					ctor: '::',
-					_0: A2(picker, '+', _minond$brainloller$Lang$blCmd.increment),
+					_0: A2(picker, '+', _minond$brainloller$Brainloller$cmds.increment),
 					_1: {
 						ctor: '::',
-						_0: A2(picker, '-', _minond$brainloller$Lang$blCmd.decrement),
+						_0: A2(picker, '-', _minond$brainloller$Brainloller$cmds.decrement),
 						_1: {
 							ctor: '::',
-							_0: A2(picker, '.', _minond$brainloller$Lang$blCmd.ioWrite),
+							_0: A2(picker, '.', _minond$brainloller$Brainloller$cmds.ioWrite),
 							_1: {
 								ctor: '::',
-								_0: A2(picker, ',', _minond$brainloller$Lang$blCmd.ioRead),
+								_0: A2(picker, ',', _minond$brainloller$Brainloller$cmds.ioRead),
 								_1: {
 									ctor: '::',
-									_0: A2(picker, '[', _minond$brainloller$Lang$blCmd.loopOpen),
+									_0: A2(picker, '[', _minond$brainloller$Brainloller$cmds.loopOpen),
 									_1: {
 										ctor: '::',
-										_0: A2(picker, ']', _minond$brainloller$Lang$blCmd.loopClose),
+										_0: A2(picker, ']', _minond$brainloller$Brainloller$cmds.loopClose),
 										_1: {
 											ctor: '::',
-											_0: A2(picker, '+90', _minond$brainloller$Lang$blCmd.rotateClockwise),
+											_0: A2(picker, '+90', _minond$brainloller$Brainloller$cmds.rotateClockwise),
 											_1: {
 												ctor: '::',
-												_0: A2(picker, '-90', _minond$brainloller$Lang$blCmd.rotateCounterClockwise),
+												_0: A2(picker, '-90', _minond$brainloller$Brainloller$cmds.rotateCounterClockwise),
 												_1: {ctor: '[]'}
 											}
 										}
@@ -12128,623 +9952,58 @@ var _minond$brainloller$Editor$commandsForm = F2(
 			}
 		};
 	});
-var _minond$brainloller$Editor$pixelStyle = function (p) {
-	return {
-		ctor: '_Tuple2',
-		_0: 'backgroundColor',
-		_1: A2(
-			_elm_lang$core$Basics_ops['++'],
-			'rgb(',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(p.r),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					', ',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(p.g),
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							', ',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(p.b),
-								')'))))))
-	};
+var _minond$brainloller$Brainloller$pixel = F3(
+	function (r, g, b) {
+		return {r: r, g: g, b: b};
+	});
+var _minond$brainloller$Brainloller$cmdToPixel = {
+	shiftRight: A3(_minond$brainloller$Brainloller$pixel, 255, 0, 0),
+	shiftLeft: A3(_minond$brainloller$Brainloller$pixel, 128, 0, 0),
+	increment: A3(_minond$brainloller$Brainloller$pixel, 0, 255, 0),
+	decrement: A3(_minond$brainloller$Brainloller$pixel, 0, 128, 0),
+	ioWrite: A3(_minond$brainloller$Brainloller$pixel, 0, 0, 255),
+	ioRead: A3(_minond$brainloller$Brainloller$pixel, 0, 0, 128),
+	loopOpen: A3(_minond$brainloller$Brainloller$pixel, 255, 255, 0),
+	loopClose: A3(_minond$brainloller$Brainloller$pixel, 128, 128, 0),
+	rotateClockwise: A3(_minond$brainloller$Brainloller$pixel, 0, 255, 255),
+	rotateCounterClockwise: A3(_minond$brainloller$Brainloller$pixel, 0, 128, 128),
+	noop: A3(_minond$brainloller$Brainloller$pixel, 0, 0, 0)
 };
-var _minond$brainloller$Editor$programCells = F7(
-	function (width, height, program, runtime, writeHandler, enableHandler, disableHandler) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onMouseDown(enableHandler),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onMouseUp(disableHandler),
-					_1: {ctor: '[]'}
-				}
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				F2(
-					function (rowIndex, row) {
-						return row(
-							A2(
-								_elm_lang$core$List$indexedMap,
-								F2(
-									function (cellIndex, cell) {
-										var isActive = _elm_lang$core$Native_Utils.eq(
-											runtime.activeCoor,
-											{ctor: '_Tuple2', _0: cellIndex, _1: rowIndex});
-										var pixel = A3(_minond$brainloller$Lang$getCellAt, program, cellIndex, rowIndex);
-										return A2(
-											cell,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(
-													A3(writeHandler, cellIndex, rowIndex, true)),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onMouseDown(
-														A3(writeHandler, cellIndex, rowIndex, true)),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onMouseOver(
-															A3(writeHandler, cellIndex, rowIndex, false)),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$style(
-																{
-																	ctor: '::',
-																	_0: _minond$brainloller$Editor$pixelStyle(pixel),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$classList(
-																	{
-																		ctor: '::',
-																		_0: {ctor: '_Tuple2', _0: 'program-cell', _1: true},
-																		_1: {
-																			ctor: '::',
-																			_0: {ctor: '_Tuple2', _0: 'program-cell--active', _1: isActive},
-																			_1: {ctor: '[]'}
-																		}
-																	}),
-																_1: {ctor: '[]'}
-															}
-														}
-													}
-												}
-											},
-											{ctor: '[]'});
-									}),
-								A2(_elm_lang$core$List$repeat, width, _elm_lang$html$Html$div)));
-					}),
-				A2(
-					_elm_lang$core$List$repeat,
-					height,
-					_elm_lang$html$Html$div(
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('program-row'),
-							_1: {ctor: '[]'}
-						}))));
+var _minond$brainloller$Brainloller$Environment = F2(
+	function (a, b) {
+		return {runtime: a, program: b};
 	});
-var _minond$brainloller$Editor$pixelColor = function (_p0) {
-	var _p1 = _p0;
-	return A3(_elm_lang$core$Color$rgb, _p1.r, _p1.g, _p1.b);
-};
-var _minond$brainloller$Editor$textLabel = F2(
-	function (name, children) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons$classes(
-					{
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$f7,
-							_1: {
-								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
-								_1: {
-									ctor: '::',
-									_0: 'label',
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$span,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(name),
-						_1: {ctor: '[]'}
-					}),
-				_1: children
-			});
+var _minond$brainloller$Brainloller$Runtime = F7(
+	function (a, b, c, d, e, f, g) {
+		return {activeCoor: a, activeCell: b, jumps: c, pointerDeg: d, output: e, input: f, memory: g};
 	});
-var _minond$brainloller$Editor$textCopy = function (copy) {
-	var pClasses = {
-		ctor: '::',
-		_0: _justgage$tachyons_elm$Tachyons_Classes$lh_copy,
-		_1: {
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$helvetica,
-			_1: {ctor: '[]'}
-		}
-	};
-	return A2(
-		_elm_lang$html$Html$p,
-		{
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(pClasses),
-			_1: {ctor: '[]'}
-		},
-		copy);
-};
-var _minond$brainloller$Editor$mainTitle = function (title) {
-	var h1Classes = {
-		ctor: '::',
-		_0: _justgage$tachyons_elm$Tachyons_Classes$mt0,
-		_1: {
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons_Classes$f3,
-			_1: {
-				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons_Classes$f2_m,
-				_1: {
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$f1_l,
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$fw1,
-						_1: {
-							ctor: '::',
-							_0: _justgage$tachyons_elm$Tachyons_Classes$baskerville,
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}
-		}
-	};
-	return A2(
-		_elm_lang$html$Html$h1,
-		{
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(h1Classes),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text(title),
-			_1: {ctor: '[]'}
-		});
-};
-var _minond$brainloller$Editor$cmdTextBtn = F2(
-	function (name, attrs) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$title(name),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$tabindex(1),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
-						_1: attrs
-					}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$label,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('cmd-btn-content'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(name),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			});
-	});
-var _minond$brainloller$Editor$cmdContentBtn = F3(
-	function (name, attrs, content) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$title(name),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$tabindex(1),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('cmd-btn'),
-						_1: attrs
-					}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$label,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('cmd-btn-content'),
-						_1: {ctor: '[]'}
-					},
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(name),
-							_1: {ctor: '[]'}
-						},
-						content)),
-				_1: {ctor: '[]'}
-			});
-	});
-var _minond$brainloller$Editor$link = F3(
-	function (label, to, external) {
-		return A2(
-			_elm_lang$html$Html$a,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$href(to),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$target(
-						A3(_minond$brainloller$Util$ternary, external, '_blank', '_self')),
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons$classes(
-							{
-								ctor: '::',
-								_0: _justgage$tachyons_elm$Tachyons_Classes$link,
-								_1: {
-									ctor: '::',
-									_0: _justgage$tachyons_elm$Tachyons_Classes$dim,
-									_1: {
-										ctor: '::',
-										_0: _justgage$tachyons_elm$Tachyons_Classes$blue,
-										_1: {ctor: '[]'}
-									}
-								}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}
-			},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(label),
-				_1: {ctor: '[]'}
-			});
-	});
-var _minond$brainloller$Editor$BoardConfig = F4(
-	function (a, b, c, d) {
-		return {cellSize: a, width: b, startX: c, startY: d};
-	});
-
-var _minond$brainloller$Ports$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
-	'downloadProgram',
-	function (v) {
-		return _elm_lang$core$Native_List.toArray(v).map(
-			function (v) {
-				return _elm_lang$core$Native_List.toArray(v).map(
-					function (v) {
-						return {r: v.r, g: v.g, b: v.b};
-					});
-			});
-	});
-var _minond$brainloller$Ports$uploadProgram = _elm_lang$core$Native_Platform.outgoingPort(
-	'uploadProgram',
-	function (v) {
-		return v;
-	});
-var _minond$brainloller$Ports$startExecution = _elm_lang$core$Native_Platform.outgoingPort(
-	'startExecution',
-	function (v) {
-		return {
-			runtime: {
-				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
-				activeCell: v.runtime.activeCell,
-				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
-					function (v) {
-						return [v._0, v._1, v._2];
-					}),
-				pointerDeg: v.runtime.pointerDeg,
-				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
-				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
-					function (v) {
-						return v;
-					})
-			},
-			program: _elm_lang$core$Native_List.toArray(v.program).map(
-				function (v) {
-					return _elm_lang$core$Native_List.toArray(v).map(
-						function (v) {
-							return {r: v.r, g: v.g, b: v.b};
-						});
-				})
+var _minond$brainloller$Brainloller$BLCmd = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return {shiftRight: a, shiftLeft: b, increment: c, decrement: d, ioWrite: e, ioRead: f, loopOpen: g, loopClose: h, rotateClockwise: i, rotateCounterClockwise: j, noop: k};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
 		};
+	};
+};
+var _minond$brainloller$Brainloller$Pixel = F3(
+	function (a, b, c) {
+		return {r: a, g: b, b: c};
 	});
-var _minond$brainloller$Ports$setInterpreterSpeed = _elm_lang$core$Native_Platform.outgoingPort(
-	'setInterpreterSpeed',
-	function (v) {
-		return v;
-	});
-var _minond$brainloller$Ports$pauseExecution = _elm_lang$core$Native_Platform.outgoingPort(
-	'pauseExecution',
-	function (v) {
-		return {
-			runtime: {
-				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
-				activeCell: v.runtime.activeCell,
-				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
-					function (v) {
-						return [v._0, v._1, v._2];
-					}),
-				pointerDeg: v.runtime.pointerDeg,
-				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
-				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
-				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
-					function (v) {
-						return v;
-					})
-			},
-			program: _elm_lang$core$Native_List.toArray(v.program).map(
-				function (v) {
-					return _elm_lang$core$Native_List.toArray(v).map(
-						function (v) {
-							return {r: v.r, g: v.g, b: v.b};
-						});
-				})
-		};
-	});
-var _minond$brainloller$Ports$imageProcessed = _elm_lang$core$Native_Platform.incomingPort(
-	'imageProcessed',
-	_elm_lang$core$Json_Decode$list(
-		_elm_lang$core$Json_Decode$list(
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (r) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (g) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (b) {
-									return _elm_lang$core$Json_Decode$succeed(
-										{r: r, g: g, b: b});
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'b', _elm_lang$core$Json_Decode$int));
-						},
-						A2(_elm_lang$core$Json_Decode$field, 'g', _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'r', _elm_lang$core$Json_Decode$int)))));
-var _minond$brainloller$Ports$interpreterTick = _elm_lang$core$Native_Platform.incomingPort(
-	'interpreterTick',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (activeCoor) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (activeCell) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (jumps) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (pointerDeg) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (output) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (input) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (memory) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'memory',
-															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'input',
-													_elm_lang$core$Json_Decode$oneOf(
-														{
-															ctor: '::',
-															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-															_1: {
-																ctor: '::',
-																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-																_1: {ctor: '[]'}
-															}
-														})));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'output',
-											_elm_lang$core$Json_Decode$oneOf(
-												{
-													ctor: '::',
-													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-													_1: {
-														ctor: '::',
-														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-														_1: {ctor: '[]'}
-													}
-												})));
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'jumps',
-							_elm_lang$core$Json_Decode$list(
-								A2(
-									_elm_lang$core$Json_Decode$andThen,
-									function (x0) {
-										return A2(
-											_elm_lang$core$Json_Decode$andThen,
-											function (x1) {
-												return A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (x2) {
-														return _elm_lang$core$Json_Decode$succeed(
-															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
-													},
-													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
-											},
-											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-									},
-									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
-		},
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'activeCoor',
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (x0) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (x1) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple2', _0: x0, _1: x1});
-						},
-						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-var _minond$brainloller$Ports$interpreterHalt = _elm_lang$core$Native_Platform.incomingPort(
-	'interpreterHalt',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		function (activeCoor) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (activeCell) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (jumps) {
-							return A2(
-								_elm_lang$core$Json_Decode$andThen,
-								function (pointerDeg) {
-									return A2(
-										_elm_lang$core$Json_Decode$andThen,
-										function (output) {
-											return A2(
-												_elm_lang$core$Json_Decode$andThen,
-												function (input) {
-													return A2(
-														_elm_lang$core$Json_Decode$andThen,
-														function (memory) {
-															return _elm_lang$core$Json_Decode$succeed(
-																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
-														},
-														A2(
-															_elm_lang$core$Json_Decode$field,
-															'memory',
-															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
-												},
-												A2(
-													_elm_lang$core$Json_Decode$field,
-													'input',
-													_elm_lang$core$Json_Decode$oneOf(
-														{
-															ctor: '::',
-															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-															_1: {
-																ctor: '::',
-																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-																_1: {ctor: '[]'}
-															}
-														})));
-										},
-										A2(
-											_elm_lang$core$Json_Decode$field,
-											'output',
-											_elm_lang$core$Json_Decode$oneOf(
-												{
-													ctor: '::',
-													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-													_1: {
-														ctor: '::',
-														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
-														_1: {ctor: '[]'}
-													}
-												})));
-								},
-								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'jumps',
-							_elm_lang$core$Json_Decode$list(
-								A2(
-									_elm_lang$core$Json_Decode$andThen,
-									function (x0) {
-										return A2(
-											_elm_lang$core$Json_Decode$andThen,
-											function (x1) {
-												return A2(
-													_elm_lang$core$Json_Decode$andThen,
-													function (x2) {
-														return _elm_lang$core$Json_Decode$succeed(
-															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
-													},
-													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
-											},
-											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-									},
-									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
-				},
-				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
-		},
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'activeCoor',
-			A2(
-				_elm_lang$core$Json_Decode$andThen,
-				function (x0) {
-					return A2(
-						_elm_lang$core$Json_Decode$andThen,
-						function (x1) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{ctor: '_Tuple2', _0: x0, _1: x1});
-						},
-						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-				},
-				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
 
 var _minond$brainloller$Program$progCat = {
 	ctor: '::',
@@ -14824,7 +12083,7 @@ var _minond$brainloller$Program$progFib = {
 		}
 	}
 };
-var _minond$brainloller$Program$progHelloWorld = {
+var _minond$brainloller$Program$programHelloWorld = {
 	ctor: '::',
 	_0: {
 		ctor: '::',
@@ -15545,37 +12804,24 @@ var _minond$brainloller$Program$progHelloWorld = {
 		}
 	}
 };
-
-var _minond$brainloller$Main$introText1 = {
-	ctor: '::',
-	_0: _minond$brainloller$Editor$textCopy(
-		{
-			ctor: '::',
-			_0: A3(_minond$brainloller$Editor$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
-			_1: {
+var _minond$brainloller$Program$load = function (prog) {
+	var _p0 = prog;
+	switch (_p0) {
+		case 'helloworld.png':
+			return _minond$brainloller$Program$programHelloWorld;
+		case 'cat.png':
+			return _minond$brainloller$Program$progCat;
+		case 'fib.png':
+			return _minond$brainloller$Program$progFib;
+		default:
+			return {
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(' is '),
-				_1: {
-					ctor: '::',
-					_0: A3(_minond$brainloller$Editor$link, 'Brainfuck', 'https://esolangs.org/wiki/Brainfuck', false),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(' but represented as an image. If you\'re not familiar with\n            Brainfuck already, go checkout\n            '),
-						_1: {
-							ctor: '::',
-							_0: A3(_minond$brainloller$Editor$link, ' this debugger', 'http://minond.xyz/brainfuck', true),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n            Brainfuck with two additional commands for rotating the direction\n            in which the program is evaluated. Below is an editor and\n            interpreter. Automatically loaded is a \"Hello, World\" program. Run\n            it by clicking on the \"Play\" button below.\n            '),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}
-			}
-		}),
-	_1: {ctor: '[]'}
+				_0: {ctor: '[]'},
+				_1: {ctor: '[]'}
+			};
+	}
 };
+
 var _minond$brainloller$Main$historyBack = function (hist) {
 	var _p0 = hist;
 	switch (_p0.ctor) {
@@ -15598,6 +12844,559 @@ var _minond$brainloller$Main$historyCurr = function (hist) {
 			return _p1._1;
 	}
 };
+var _minond$brainloller$Main$link = F3(
+	function (label, to, external) {
+		return A2(
+			_elm_lang$html$Html$a,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href(to),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$target(
+						external ? '_blank' : '_self'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('link dim blue'),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(label),
+				_1: {ctor: '[]'}
+			});
+	});
+var _minond$brainloller$Main$editorIntroduction = function (_p2) {
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$p,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('mt0 lh-copy'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A3(_minond$brainloller$Main$link, 'Brainloller', 'https://esolangs.org/wiki/Brainloller', true),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(' is '),
+					_1: {
+						ctor: '::',
+						_0: A3(_minond$brainloller$Main$link, 'Brainfuck', 'https://esolangs.org/wiki/Brainfuck', false),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(' but represented as an image. If you\'re not familiar with\n            Brainfuck already, go checkout\n            '),
+							_1: {
+								ctor: '::',
+								_0: A3(_minond$brainloller$Main$link, ' this debugger', 'http://minond.xyz/brainfuck', true),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('. Brainloller gives you the eight commands that you have in\n            Brainfuck with two additional commands for rotating the direction\n            in which the program is evaluated. Below is an editor and\n            interpreter. Automatically loaded is a \"Hello, World\" program. Run\n            it by clicking on the \"Play\" button below.\n            '),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	};
+};
+var _minond$brainloller$Main$mono = function (str) {
+	return A2(
+		_elm_lang$html$Html$code,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('f6 ph1 tc bg-light-gray word-wrap'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(str),
+			_1: {ctor: '[]'}
+		});
+};
+var _minond$brainloller$Main$editorInformation = function (_p3) {
+	var _p4 = _p3;
+	var _p6 = _p4.runtime;
+	var outputMessage = function () {
+		var _p5 = _p6.output;
+		if (_p5.ctor === 'Nothing') {
+			return _elm_lang$html$Html$text('The program has had no output yet.');
+		} else {
+			return A2(
+				_elm_lang$html$Html$span,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Output length is '),
+					_1: {
+						ctor: '::',
+						_0: _minond$brainloller$Main$mono(
+							_elm_lang$core$Basics$toString(
+								_elm_lang$core$String$length(_p5._0))),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(' characters long.'),
+							_1: {ctor: '[]'}
+						}
+					}
+				});
+		}
+	}();
+	var y = _elm_lang$core$Tuple$second(_p6.activeCoor);
+	var x = _elm_lang$core$Tuple$first(_p6.activeCoor);
+	var program = _minond$brainloller$Main$historyCurr(_p4.work);
+	var dims = _minond$brainloller$Brainloller$dimensions(program);
+	var width = _elm_lang$core$Tuple$first(dims);
+	var height = _elm_lang$core$Tuple$second(dims);
+	var opt = A3(_minond$brainloller$Brainloller$getCellAt, program, x, y);
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$p,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('mt0 lh-copy'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Here\'s some information about your program: it is '),
+				_1: {
+					ctor: '::',
+					_0: _minond$brainloller$Main$mono(
+						_elm_lang$core$Basics$toString(width)),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(' pixels wide by '),
+						_1: {
+							ctor: '::',
+							_0: _minond$brainloller$Main$mono(
+								_elm_lang$core$Basics$toString(height)),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(' pixels tall.'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(' of which are valid commands. The interpreter is going to interpret the character at coordinates '),
+									_1: {
+										ctor: '::',
+										_0: _minond$brainloller$Main$mono(
+											_elm_lang$core$Basics$toString(_p6.activeCoor)),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(', which is '),
+											_1: {
+												ctor: '::',
+												_0: _minond$brainloller$Main$mono(
+													_elm_lang$core$Basics$toString(opt)),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(', and is rotated '),
+													_1: {
+														ctor: '::',
+														_0: _minond$brainloller$Main$mono(
+															_elm_lang$core$Basics$toString(_p6.pointerDeg)),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html$text(' degrees. '),
+															_1: {
+																ctor: '::',
+																_0: outputMessage,
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	};
+};
+var _minond$brainloller$Main$lbl = function (txt) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('f6 mb2 gray i'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(txt),
+			_1: {ctor: '[]'}
+		});
+};
+var _minond$brainloller$Main$editorOutput = function (model) {
+	var output = A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output);
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('mb3'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _minond$brainloller$Main$lbl('Output'),
+				_1: {
+					ctor: '::',
+					_0: _minond$brainloller$Main$mono(output),
+					_1: {ctor: '[]'}
+				}
+			}),
+		_1: {ctor: '[]'}
+	};
+};
+var _minond$brainloller$Main$editorMemory = function (_p7) {
+	var _p8 = _p7;
+	return {
+		ctor: '::',
+		_0: _minond$brainloller$Main$lbl('Program memory'),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('program-memory'),
+					_1: {ctor: '[]'}
+				},
+				_minond$brainloller$Brainloller$memoryTape(_p8.runtime)),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _minond$brainloller$Main$btn = F2(
+	function (val, attrs) {
+		return A2(
+			_elm_lang$html$Html$button,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('mr2 mb2 pointer'),
+					_1: {ctor: '[]'}
+				},
+				attrs),
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(val),
+				_1: {ctor: '[]'}
+			});
+	});
+var _minond$brainloller$Main$downloadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'downloadProgram',
+	function (v) {
+		return _elm_lang$core$Native_List.toArray(v).map(
+			function (v) {
+				return _elm_lang$core$Native_List.toArray(v).map(
+					function (v) {
+						return {r: v.r, g: v.g, b: v.b};
+					});
+			});
+	});
+var _minond$brainloller$Main$uploadProgram = _elm_lang$core$Native_Platform.outgoingPort(
+	'uploadProgram',
+	function (v) {
+		return v;
+	});
+var _minond$brainloller$Main$startExecution = _elm_lang$core$Native_Platform.outgoingPort(
+	'startExecution',
+	function (v) {
+		return {
+			runtime: {
+				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
+				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
+					function (v) {
+						return [v._0, v._1, v._2];
+					}),
+				pointerDeg: v.runtime.pointerDeg,
+				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
+			},
+			program: _elm_lang$core$Native_List.toArray(v.program).map(
+				function (v) {
+					return _elm_lang$core$Native_List.toArray(v).map(
+						function (v) {
+							return {r: v.r, g: v.g, b: v.b};
+						});
+				})
+		};
+	});
+var _minond$brainloller$Main$setInterpreterSpeed = _elm_lang$core$Native_Platform.outgoingPort(
+	'setInterpreterSpeed',
+	function (v) {
+		return v;
+	});
+var _minond$brainloller$Main$pauseExecution = _elm_lang$core$Native_Platform.outgoingPort(
+	'pauseExecution',
+	function (v) {
+		return {
+			runtime: {
+				activeCoor: [v.runtime.activeCoor._0, v.runtime.activeCoor._1],
+				activeCell: v.runtime.activeCell,
+				jumps: _elm_lang$core$Native_List.toArray(v.runtime.jumps).map(
+					function (v) {
+						return [v._0, v._1, v._2];
+					}),
+				pointerDeg: v.runtime.pointerDeg,
+				output: (v.runtime.output.ctor === 'Nothing') ? null : v.runtime.output._0,
+				input: (v.runtime.input.ctor === 'Nothing') ? null : v.runtime.input._0,
+				memory: _elm_lang$core$Native_List.toArray(v.runtime.memory).map(
+					function (v) {
+						return v;
+					})
+			},
+			program: _elm_lang$core$Native_List.toArray(v.program).map(
+				function (v) {
+					return _elm_lang$core$Native_List.toArray(v).map(
+						function (v) {
+							return {r: v.r, g: v.g, b: v.b};
+						});
+				})
+		};
+	});
+var _minond$brainloller$Main$imageProcessed = _elm_lang$core$Native_Platform.incomingPort(
+	'imageProcessed',
+	_elm_lang$core$Json_Decode$list(
+		_elm_lang$core$Json_Decode$list(
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (r) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (g) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (b) {
+									return _elm_lang$core$Json_Decode$succeed(
+										{r: r, g: g, b: b});
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'b', _elm_lang$core$Json_Decode$int));
+						},
+						A2(_elm_lang$core$Json_Decode$field, 'g', _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'r', _elm_lang$core$Json_Decode$int)))));
+var _minond$brainloller$Main$interpreterTick = _elm_lang$core$Native_Platform.incomingPort(
+	'interpreterTick',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (activeCoor) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (activeCell) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (jumps) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (pointerDeg) {
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (output) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (input) {
+													return A2(
+														_elm_lang$core$Json_Decode$andThen,
+														function (memory) {
+															return _elm_lang$core$Json_Decode$succeed(
+																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+														},
+														A2(
+															_elm_lang$core$Json_Decode$field,
+															'memory',
+															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'input',
+													_elm_lang$core$Json_Decode$oneOf(
+														{
+															ctor: '::',
+															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+															_1: {
+																ctor: '::',
+																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+																_1: {ctor: '[]'}
+															}
+														})));
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'output',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+						},
+						A2(
+							_elm_lang$core$Json_Decode$field,
+							'jumps',
+							_elm_lang$core$Json_Decode$list(
+								A2(
+									_elm_lang$core$Json_Decode$andThen,
+									function (x0) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											function (x1) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													function (x2) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
+													},
+													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
+											},
+											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+									},
+									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
+		},
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'activeCoor',
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (x0) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (x1) {
+							return _elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple2', _0: x0, _1: x1});
+						},
+						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+var _minond$brainloller$Main$interpreterHalt = _elm_lang$core$Native_Platform.incomingPort(
+	'interpreterHalt',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (activeCoor) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (activeCell) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (jumps) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (pointerDeg) {
+									return A2(
+										_elm_lang$core$Json_Decode$andThen,
+										function (output) {
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												function (input) {
+													return A2(
+														_elm_lang$core$Json_Decode$andThen,
+														function (memory) {
+															return _elm_lang$core$Json_Decode$succeed(
+																{activeCoor: activeCoor, activeCell: activeCell, jumps: jumps, pointerDeg: pointerDeg, output: output, input: input, memory: memory});
+														},
+														A2(
+															_elm_lang$core$Json_Decode$field,
+															'memory',
+															_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+												},
+												A2(
+													_elm_lang$core$Json_Decode$field,
+													'input',
+													_elm_lang$core$Json_Decode$oneOf(
+														{
+															ctor: '::',
+															_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+															_1: {
+																ctor: '::',
+																_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+																_1: {ctor: '[]'}
+															}
+														})));
+										},
+										A2(
+											_elm_lang$core$Json_Decode$field,
+											'output',
+											_elm_lang$core$Json_Decode$oneOf(
+												{
+													ctor: '::',
+													_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+													_1: {
+														ctor: '::',
+														_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+														_1: {ctor: '[]'}
+													}
+												})));
+								},
+								A2(_elm_lang$core$Json_Decode$field, 'pointerDeg', _elm_lang$core$Json_Decode$int));
+						},
+						A2(
+							_elm_lang$core$Json_Decode$field,
+							'jumps',
+							_elm_lang$core$Json_Decode$list(
+								A2(
+									_elm_lang$core$Json_Decode$andThen,
+									function (x0) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											function (x1) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													function (x2) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{ctor: '_Tuple3', _0: x0, _1: x1, _2: x2});
+													},
+													A2(_elm_lang$core$Json_Decode$index, 2, _elm_lang$core$Json_Decode$int));
+											},
+											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+									},
+									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+				},
+				A2(_elm_lang$core$Json_Decode$field, 'activeCell', _elm_lang$core$Json_Decode$int));
+		},
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'activeCoor',
+			A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (x0) {
+					return A2(
+						_elm_lang$core$Json_Decode$andThen,
+						function (x1) {
+							return _elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple2', _0: x0, _1: x1});
+						},
+						A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
+				},
+				A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
 var _minond$brainloller$Main$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {work: a, activeCmd: b, runtime: c, tickCounter: d, boardDimensions: e, zoomLevel: f, interpreterSpeed: g, writeEnabled: h};
@@ -15623,13 +13422,13 @@ var _minond$brainloller$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
-			_0: _minond$brainloller$Ports$imageProcessed(_minond$brainloller$Main$ImageProcessed),
+			_0: _minond$brainloller$Main$imageProcessed(_minond$brainloller$Main$ImageProcessed),
 			_1: {
 				ctor: '::',
-				_0: _minond$brainloller$Ports$interpreterTick(_minond$brainloller$Main$Tick),
+				_0: _minond$brainloller$Main$interpreterTick(_minond$brainloller$Main$Tick),
 				_1: {
 					ctor: '::',
-					_0: _minond$brainloller$Ports$interpreterHalt(_minond$brainloller$Main$Halt),
+					_0: _minond$brainloller$Main$interpreterHalt(_minond$brainloller$Main$Halt),
 					_1: {ctor: '[]'}
 				}
 			}
@@ -15639,112 +13438,9 @@ var _minond$brainloller$Main$UploadProgram = {ctor: 'UploadProgram'};
 var _minond$brainloller$Main$DownloadProgram = {ctor: 'DownloadProgram'};
 var _minond$brainloller$Main$DecreaseSize = {ctor: 'DecreaseSize'};
 var _minond$brainloller$Main$IncreaseSize = {ctor: 'IncreaseSize'};
-var _minond$brainloller$Main$DisableWrite = {ctor: 'DisableWrite'};
-var _minond$brainloller$Main$EnableWrite = {ctor: 'EnableWrite'};
-var _minond$brainloller$Main$WriteCmd = F3(
-	function (a, b, c) {
-		return {ctor: 'WriteCmd', _0: a, _1: b, _2: c};
-	});
-var _minond$brainloller$Main$programCanvas = function (model) {
-	var write = F3(
-		function (x, y, f) {
-			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
-		});
-	var minHeight = 25;
-	var minWidth = 35;
-	var program = _minond$brainloller$Main$historyCurr(model.work);
-	var dim = _minond$brainloller$Lang$programDimensions(program);
-	var width = 2 + A2(
-		_elm_lang$core$Basics$max,
-		minWidth,
-		A2(
-			_elm_lang$core$Basics$max,
-			_elm_lang$core$Tuple$first(dim),
-			_elm_lang$core$Tuple$first(model.boardDimensions)));
-	var height = 2 + A2(
-		_elm_lang$core$Basics$max,
-		minHeight,
-		A2(
-			_elm_lang$core$Basics$max,
-			_elm_lang$core$Tuple$second(dim),
-			_elm_lang$core$Tuple$second(model.boardDimensions)));
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('program-cells'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('program-cells-wrapper'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$style(
-								{
-									ctor: '::',
-									_0: {
-										ctor: '_Tuple2',
-										_0: 'zoom',
-										_1: _elm_lang$core$Basics$toString(model.zoomLevel)
-									},
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: A7(_minond$brainloller$Editor$programCells, width, height, program, model.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		});
-};
-var _minond$brainloller$Main$LoadMemoryProgram = function (a) {
-	return {ctor: 'LoadMemoryProgram', _0: a};
-};
-var _minond$brainloller$Main$SetSpeed = function (a) {
-	return {ctor: 'SetSpeed', _0: a};
-};
-var _minond$brainloller$Main$SetCmd = function (a) {
-	return {ctor: 'SetCmd', _0: a};
-};
-var _minond$brainloller$Main$programCommands = function (model) {
-	var activeCmd = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
-	var setCmd = function (cmd) {
-		return _minond$brainloller$Main$SetCmd(cmd);
-	};
-	return A2(_minond$brainloller$Editor$commandsForm, setCmd, activeCmd);
-};
-var _minond$brainloller$Main$NoOp = {ctor: 'NoOp'};
-var _minond$brainloller$Main$programContainer = function (model) {
-	var output = A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('program-output'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text(
-				A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output)),
-			_1: {ctor: '[]'}
-		});
+var _minond$brainloller$Main$editorControls = function (_p9) {
 	var resetBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Clear',
 		{
 			ctor: '::',
@@ -15752,7 +13448,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var zoomOutBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Zoom out',
 		{
 			ctor: '::',
@@ -15760,7 +13456,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var zoomInBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Zoom in',
 		{
 			ctor: '::',
@@ -15768,7 +13464,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var shrinkBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Contract canvas',
 		{
 			ctor: '::',
@@ -15776,7 +13472,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var growBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Expand canvas',
 		{
 			ctor: '::',
@@ -15784,7 +13480,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var redoBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Redo',
 		{
 			ctor: '::',
@@ -15792,7 +13488,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var undoBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Undo',
 		{
 			ctor: '::',
@@ -15800,7 +13496,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var pauseBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Pause',
 		{
 			ctor: '::',
@@ -15808,7 +13504,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var continueBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Continue',
 		{
 			ctor: '::',
@@ -15816,7 +13512,7 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var playBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Play',
 		{
 			ctor: '::',
@@ -15824,47 +13520,61 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			_1: {ctor: '[]'}
 		});
 	var downloadBtn = A2(
-		_minond$brainloller$Editor$cmdTextBtn,
+		_minond$brainloller$Main$btn,
 		'Download',
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$DownloadProgram),
 			_1: {ctor: '[]'}
 		});
-	var uploadBtn = A3(
-		_minond$brainloller$Editor$cmdContentBtn,
-		'Upload',
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Events$onClick(_minond$brainloller$Main$NoOp),
-			_1: {ctor: '[]'}
-		},
+	var uploadBtn = A2(
+		_elm_lang$html$Html$label,
+		{ctor: '[]'},
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$input,
+				_elm_lang$html$Html$span,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$type_('file'),
+					_0: _elm_lang$html$Html_Attributes$class('btn-like mr2 mb2 pointer'),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id('fileupload'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('dn'),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html_Events$on,
-									'change',
-									_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadProgram)),
-								_1: {ctor: '[]'}
-							}
-						}
+						_0: _elm_lang$html$Html_Attributes$type_('button'),
+						_1: {ctor: '[]'}
 					}
 				},
-				{ctor: '[]'}),
-			_1: {ctor: '[]'}
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Upload'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$input,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$type_('file'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('fileupload'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('dn'),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html_Events$on,
+										'change',
+										_elm_lang$core$Json_Decode$succeed(_minond$brainloller$Main$UploadProgram)),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			}
 		});
 	var commands = {
 		ctor: '::',
@@ -15915,11 +13625,59 @@ var _minond$brainloller$Main$programContainer = function (model) {
 			}
 		}
 	};
+	return {
+		ctor: '::',
+		_0: _minond$brainloller$Main$lbl('Program controls'),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('mb2'),
+					_1: {ctor: '[]'}
+				},
+				commands),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _minond$brainloller$Main$DisableWrite = {ctor: 'DisableWrite'};
+var _minond$brainloller$Main$EnableWrite = {ctor: 'EnableWrite'};
+var _minond$brainloller$Main$WriteCmd = F3(
+	function (a, b, c) {
+		return {ctor: 'WriteCmd', _0: a, _1: b, _2: c};
+	});
+var _minond$brainloller$Main$editorCanvas = function (_p10) {
+	var _p11 = _p10;
+	var _p12 = _p11.boardDimensions;
+	var write = F3(
+		function (x, y, f) {
+			return A3(_minond$brainloller$Main$WriteCmd, x, y, f);
+		});
+	var minHeight = 25;
+	var minWidth = 35;
+	var program = _minond$brainloller$Main$historyCurr(_p11.work);
+	var dim = _minond$brainloller$Brainloller$dimensions(program);
+	var width = 2 + A2(
+		_elm_lang$core$Basics$max,
+		minWidth,
+		A2(
+			_elm_lang$core$Basics$max,
+			_elm_lang$core$Tuple$first(dim),
+			_elm_lang$core$Tuple$first(_p12)));
+	var height = 2 + A2(
+		_elm_lang$core$Basics$max,
+		minHeight,
+		A2(
+			_elm_lang$core$Basics$max,
+			_elm_lang$core$Tuple$second(dim),
+			_elm_lang$core$Tuple$second(_p12)));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('cf'),
+			_0: _elm_lang$html$Html_Attributes$class('program-cells'),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -15928,185 +13686,179 @@ var _minond$brainloller$Main$programContainer = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-m w-40-l pr3-m pr5-l'),
+					_0: _elm_lang$html$Html_Attributes$class('program-cells-wrapper'),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$style(
+								{
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'zoom',
+										_1: _elm_lang$core$Basics$toString(_p11.zoomLevel)
+									},
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A7(_minond$brainloller$Brainloller$programCells, width, height, program, _p11.runtime, write, _minond$brainloller$Main$EnableWrite, _minond$brainloller$Main$DisableWrite),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
+var _minond$brainloller$Main$LoadMemoryProgram = function (a) {
+	return {ctor: 'LoadMemoryProgram', _0: a};
+};
+var _minond$brainloller$Main$SetSpeed = function (a) {
+	return {ctor: 'SetSpeed', _0: a};
+};
+var _minond$brainloller$Main$editorRunControls = function (_p13) {
+	var _p14 = _p13;
+	var _p15 = _p14.interpreterSpeed;
+	return {
+		ctor: '::',
+		_0: _minond$brainloller$Main$lbl('Load a program'),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$select,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('w-50 mb3'),
+						_1: {ctor: '[]'}
+					}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$option,
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: A2(
-								_minond$brainloller$Editor$textLabel,
-								'Load a program',
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$select,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$LoadMemoryProgram),
-											_1: {ctor: '[]'}
-										},
-										{
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$option,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text('helloworld.png'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$option,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('cat.png'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$option,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('fib.png'),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
-												}
-											}
-										}),
-									_1: {ctor: '[]'}
-								}),
+							_0: _elm_lang$html$Html$text('helloworld.png'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$div,
+							_elm_lang$html$Html$option,
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: A2(
-									_minond$brainloller$Editor$textLabel,
-									'Change evaluation speed',
-									{
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$input,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$type_('range'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$value(model.interpreterSpeed),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
-														_1: {ctor: '[]'}
-													}
-												}
-											},
-											{ctor: '[]'}),
-										_1: {ctor: '[]'}
-									}),
+								_0: _elm_lang$html$Html$text('cat.png'),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$div,
+								_elm_lang$html$Html$option,
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: A2(
-										_minond$brainloller$Editor$textLabel,
-										'Editor and program commands',
-										{
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$div,
-												{ctor: '[]'},
-												commands),
-											_1: {ctor: '[]'}
-										}),
+									_0: _elm_lang$html$Html$text('fib.png'),
 									_1: {ctor: '[]'}
 								}),
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			_1: {
+				ctor: '::',
+				_0: _minond$brainloller$Main$lbl(
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'Change evaluation delay (',
+						A2(_elm_lang$core$Basics_ops['++'], _p15, ')'))),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('range'),
 							_1: {
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$div,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: A2(
-											_minond$brainloller$Editor$textLabel,
-											'Brainloller commands',
-											{
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$div,
-													{ctor: '[]'},
-													_minond$brainloller$Main$programCommands(model)),
-												_1: {ctor: '[]'}
-											}),
-										_1: {ctor: '[]'}
-									}),
+								_0: _elm_lang$html$Html_Attributes$class('w-50 mb2'),
 								_1: {
 									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$div,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: A2(
-												_minond$brainloller$Editor$textLabel,
-												'Program output',
-												{
-													ctor: '::',
-													_0: output,
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
-										}),
+									_0: _elm_lang$html$Html_Attributes$value(_p15),
 									_1: {
 										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$div,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: A2(
-													_minond$brainloller$Editor$textLabel,
-													'Program memory',
-													{
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$div,
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$class('program-memory'),
-																_1: {ctor: '[]'}
-															},
-															_minond$brainloller$Editor$memoryTape(model.runtime)),
-														_1: {ctor: '[]'}
-													}),
-												_1: {ctor: '[]'}
-											}),
+										_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$SetSpeed),
 										_1: {ctor: '[]'}
 									}
 								}
 							}
-						}
-					}
+						},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
+};
+var _minond$brainloller$Main$SetCmd = function (a) {
+	return {ctor: 'SetCmd', _0: a};
+};
+var _minond$brainloller$Main$editorOptcodes = function (model) {
+	var activeCmd = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
+	var setCmd = function (cmd) {
+		return _minond$brainloller$Main$SetCmd(cmd);
+	};
+	return {
+		ctor: '::',
+		_0: _minond$brainloller$Main$lbl('Brainloller commands'),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('mb2'),
+					_1: {ctor: '[]'}
+				},
+				A2(_minond$brainloller$Brainloller$commands, setCmd, activeCmd)),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _minond$brainloller$Main$view = function (model) {
+	var cmdClass = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class(
+				A2(_elm_lang$core$Basics_ops['++'], 'cf pa3 pa4-ns container helvetica main-container--', cmdClass)),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h1,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('mt0 f3 f2-m f1-l title fw1 baskerville'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Brainloller'),
+					_1: {ctor: '[]'}
 				}),
 			_1: {
 				ctor: '::',
@@ -16114,13 +13866,44 @@ var _minond$brainloller$Main$programContainer = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('helvetica program-message-status'),
+						_0: _elm_lang$html$Html_Attributes$class('fl w-75 w-50-l editor-section'),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(''),
-						_1: {ctor: '[]'}
+						_0: A2(
+							_elm_lang$html$Html$section,
+							{ctor: '[]'},
+							_minond$brainloller$Main$editorRunControls(model)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$section,
+								{ctor: '[]'},
+								_minond$brainloller$Main$editorControls(model)),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$section,
+									{ctor: '[]'},
+									_minond$brainloller$Main$editorOptcodes(model)),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$section,
+										{ctor: '[]'},
+										_minond$brainloller$Main$editorMemory(model)),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$section,
+											{ctor: '[]'},
+											_minond$brainloller$Main$editorOutput(model)),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
 					}),
 				_1: {
 					ctor: '::',
@@ -16128,94 +13911,42 @@ var _minond$brainloller$Main$programContainer = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('noselect fl w-100 w-50-m w-60-l'),
+							_0: _elm_lang$html$Html_Attributes$class('fl w-100 w-50-l editor-section'),
 							_1: {ctor: '[]'}
 						},
 						{
-							ctor: '::',
-							_0: _minond$brainloller$Main$programCanvas(model),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			}
-		});
-};
-var _minond$brainloller$Main$view = function (model) {
-	var cmdClass = A2(_elm_lang$core$Maybe$withDefault, '', model.activeCmd);
-	var containerClasses = {
-		ctor: '::',
-		_0: 'main-container',
-		_1: {
-			ctor: '::',
-			_0: A2(_elm_lang$core$Basics_ops['++'], 'main-container--', cmdClass),
-			_1: {
-				ctor: '::',
-				_0: _justgage$tachyons_elm$Tachyons_Classes$cf,
-				_1: {
-					ctor: '::',
-					_0: _justgage$tachyons_elm$Tachyons_Classes$pa3,
-					_1: {
-						ctor: '::',
-						_0: _justgage$tachyons_elm$Tachyons_Classes$pa4_ns,
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		}
-	};
-	var title = _minond$brainloller$Editor$mainTitle('Brainloller');
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _justgage$tachyons_elm$Tachyons$classes(containerClasses),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: title,
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('cf'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('w-100 w-40-l mb4'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _minond$brainloller$Editor$textCopy(_minond$brainloller$Main$introText1),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_lang$html$Html$div,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class(''),
+									_0: _elm_lang$html$Html_Attributes$class('noselect'),
 									_1: {ctor: '[]'}
 								},
 								{
 									ctor: '::',
-									_0: _minond$brainloller$Main$programContainer(model),
+									_0: _minond$brainloller$Main$editorCanvas(model),
 									_1: {ctor: '[]'}
 								}),
-							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('helvetica program-message-status'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(''),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
@@ -16230,37 +13961,26 @@ var _minond$brainloller$Main$BackCurr = F2(
 var _minond$brainloller$Main$Curr = function (a) {
 	return {ctor: 'Curr', _0: a};
 };
-var _minond$brainloller$Main$initialModel = {
-	work: _minond$brainloller$Main$Curr(_minond$brainloller$Program$progHelloWorld),
-	activeCmd: _elm_lang$core$Maybe$Nothing,
-	runtime: _minond$brainloller$Lang$createRuntime(_elm_lang$core$Maybe$Nothing),
-	tickCounter: 0,
-	boardDimensions: _minond$brainloller$Lang$programDimensions(_minond$brainloller$Program$progHelloWorld),
-	zoomLevel: 1,
-	interpreterSpeed: '5',
-	writeEnabled: false
-};
+var _minond$brainloller$Main$initialModel = function () {
+	var program = _minond$brainloller$Program$load('helloworld.png');
+	return {
+		work: _minond$brainloller$Main$Curr(program),
+		activeCmd: _elm_lang$core$Maybe$Nothing,
+		runtime: _minond$brainloller$Brainloller$create(_elm_lang$core$Maybe$Nothing),
+		tickCounter: 0,
+		boardDimensions: _minond$brainloller$Brainloller$dimensions(program),
+		zoomLevel: 1,
+		interpreterSpeed: '5',
+		writeEnabled: false
+	};
+}();
 var _minond$brainloller$Main$update = F2(
 	function (message, model) {
-		var _p2 = {ctor: '_Tuple3', _0: message, _1: model, _2: model.activeCmd};
-		switch (_p2._0.ctor) {
-			case 'NoOp':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		var _p16 = {ctor: '_Tuple3', _0: message, _1: model, _2: model.activeCmd};
+		switch (_p16._0.ctor) {
 			case 'LoadMemoryProgram':
-				var program = function () {
-					var _p3 = _p2._0._0;
-					switch (_p3) {
-						case 'helloworld.png':
-							return _minond$brainloller$Program$progHelloWorld;
-						case 'cat.png':
-							return _minond$brainloller$Program$progCat;
-						case 'fib.png':
-							return _minond$brainloller$Program$progFib;
-						default:
-							return {ctor: '[]'};
-					}
-				}();
-				var runtime = _minond$brainloller$Lang$createRuntime(_elm_lang$core$Maybe$Nothing);
+				var program = _minond$brainloller$Program$load(_p16._0._0);
+				var runtime = _minond$brainloller$Brainloller$create(_elm_lang$core$Maybe$Nothing);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16269,36 +13989,36 @@ var _minond$brainloller$Main$update = F2(
 							runtime: runtime,
 							work: _minond$brainloller$Main$Curr(program)
 						}),
-					_1: _minond$brainloller$Ports$pauseExecution(
+					_1: _minond$brainloller$Main$pauseExecution(
 						{program: program, runtime: runtime})
 				};
 			case 'SetSpeed':
-				var _p4 = _p2._0._0;
+				var _p17 = _p16._0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{interpreterSpeed: _p4}),
-					_1: _minond$brainloller$Ports$setInterpreterSpeed(_p4)
+						{interpreterSpeed: _p17}),
+					_1: _minond$brainloller$Main$setInterpreterSpeed(_p17)
 				};
 			case 'Pause':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$pauseExecution(
+					_1: _minond$brainloller$Main$pauseExecution(
 						{
-							program: _minond$brainloller$Main$historyCurr(_p2._1.work),
-							runtime: _p2._1.runtime
+							program: _minond$brainloller$Main$historyCurr(_p16._1.work),
+							runtime: _p16._1.runtime
 						})
 				};
 			case 'Continue':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$startExecution(
+					_1: _minond$brainloller$Main$startExecution(
 						{
-							program: _minond$brainloller$Main$historyCurr(_p2._1.work),
-							runtime: _p2._1.runtime
+							program: _minond$brainloller$Main$historyCurr(_p16._1.work),
+							runtime: _p16._1.runtime
 						})
 				};
 			case 'Start':
@@ -16307,11 +14027,11 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{tickCounter: 0}),
-					_1: _minond$brainloller$Ports$startExecution(
+					_1: _minond$brainloller$Main$startExecution(
 						{
-							program: _minond$brainloller$Main$historyCurr(_p2._1.work),
+							program: _minond$brainloller$Main$historyCurr(_p16._1.work),
 							runtime: _elm_lang$core$Native_Utils.update(
-								_p2._1.runtime,
+								_p16._1.runtime,
 								{
 									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
 									activeCell: 0,
@@ -16327,7 +14047,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{runtime: _p2._0._0, tickCounter: _p2._1.tickCounter + 1}),
+						{runtime: _p16._0._0, tickCounter: _p16._1.tickCounter + 1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Halt':
@@ -16336,44 +14056,48 @@ var _minond$brainloller$Main$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$uploadProgram('#fileupload')
+					_1: _minond$brainloller$Main$uploadProgram('#fileupload')
 				};
 			case 'DownloadProgram':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _minond$brainloller$Ports$downloadProgram(
-						_minond$brainloller$Main$historyCurr(_p2._1.work))
+					_1: _minond$brainloller$Main$downloadProgram(
+						_minond$brainloller$Main$historyCurr(_p16._1.work))
 				};
 			case 'ImageProcessed':
-				var _p5 = _p2._0._0;
+				var _p18 = _p16._0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							work: _minond$brainloller$Main$Curr(_p5),
+							work: _minond$brainloller$Main$Curr(_p18),
 							zoomLevel: 1,
-							boardDimensions: _minond$brainloller$Lang$programDimensions(_p5)
+							boardDimensions: _minond$brainloller$Brainloller$dimensions(_p18)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Undo':
-				var _p6 = _p2._1.work;
-				switch (_p6.ctor) {
+				var _p19 = _p16._1.work;
+				switch (_p19.ctor) {
 					case 'Curr':
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					case 'BackCurr':
-						var _p7 = _p6._0;
+						var _p20 = _p19._0;
 						var newForw = {
 							ctor: '::',
-							_0: _p6._1,
+							_0: _p19._1,
 							_1: {ctor: '[]'}
 						};
-						var newBack = _minond$brainloller$Util$asList(
-							_elm_lang$core$List$tail(_p7));
-						var newCurr = _minond$brainloller$Util$asList(
-							_elm_lang$core$List$head(_p7));
+						var newBack = A2(
+							_elm_lang$core$Maybe$withDefault,
+							{ctor: '[]'},
+							_elm_lang$core$List$tail(_p20));
+						var newCurr = A2(
+							_elm_lang$core$Maybe$withDefault,
+							{ctor: '[]'},
+							_elm_lang$core$List$head(_p20));
 						var update = A3(_minond$brainloller$Main$BackCurrForw, newBack, newCurr, newForw);
 						return {
 							ctor: '_Tuple2',
@@ -16383,26 +14107,26 @@ var _minond$brainloller$Main$update = F2(
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					default:
-						var _p10 = _p6._2;
-						var _p9 = _p6._1;
-						var newForw = {ctor: '::', _0: _p9, _1: _p10};
+						var _p23 = _p19._2;
+						var _p22 = _p19._1;
+						var newForw = {ctor: '::', _0: _p22, _1: _p23};
 						var update = function () {
-							var _p8 = _p6._0;
-							if (_p8.ctor === '[]') {
+							var _p21 = _p19._0;
+							if (_p21.ctor === '[]') {
 								return A3(
 									_minond$brainloller$Main$BackCurrForw,
 									{ctor: '[]'},
-									_p9,
-									_p10);
+									_p22,
+									_p23);
 							} else {
-								if (_p8._1.ctor === '[]') {
+								if (_p21._1.ctor === '[]') {
 									return A3(
 										_minond$brainloller$Main$BackCurrForw,
 										{ctor: '[]'},
-										_p8._0,
+										_p21._0,
 										newForw);
 								} else {
-									return A3(_minond$brainloller$Main$BackCurrForw, _p8._1, _p8._0, newForw);
+									return A3(_minond$brainloller$Main$BackCurrForw, _p21._1, _p21._0, newForw);
 								}
 							}
 						}();
@@ -16415,20 +14139,20 @@ var _minond$brainloller$Main$update = F2(
 						};
 				}
 			case 'Redo':
-				var _p11 = _p2._1.work;
-				if (_p11.ctor === 'BackCurrForw') {
-					var _p14 = _p11._1;
-					var _p13 = _p11._0;
-					var newBack = {ctor: '::', _0: _p14, _1: _p13};
+				var _p24 = _p16._1.work;
+				if (_p24.ctor === 'BackCurrForw') {
+					var _p27 = _p24._1;
+					var _p26 = _p24._0;
+					var newBack = {ctor: '::', _0: _p27, _1: _p26};
 					var update = function () {
-						var _p12 = _p11._2;
-						if (_p12.ctor === '[]') {
-							return A2(_minond$brainloller$Main$BackCurr, _p13, _p14);
+						var _p25 = _p24._2;
+						if (_p25.ctor === '[]') {
+							return A2(_minond$brainloller$Main$BackCurr, _p26, _p27);
 						} else {
-							if (_p12._1.ctor === '[]') {
-								return A2(_minond$brainloller$Main$BackCurr, newBack, _p12._0);
+							if (_p25._1.ctor === '[]') {
+								return A2(_minond$brainloller$Main$BackCurr, newBack, _p25._0);
 							} else {
-								return A3(_minond$brainloller$Main$BackCurrForw, newBack, _p12._0, _p12._1);
+								return A3(_minond$brainloller$Main$BackCurrForw, newBack, _p25._0, _p25._1);
 							}
 						}
 					}();
@@ -16443,35 +14167,35 @@ var _minond$brainloller$Main$update = F2(
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
 			case 'WriteCmd':
-				if (_p2._2.ctor === 'Just') {
-					var _p18 = _p2._0._1;
-					var _p17 = _p2._0._0;
-					var _p16 = _p2._1.work;
-					var rewrite = _p2._0._2 || _p2._1.writeEnabled;
-					var pixel = A2(_minond$brainloller$Lang$getBlCmd, _p2._2._0, _minond$brainloller$Lang$blCmdPixel);
-					var program = _minond$brainloller$Main$historyCurr(_p16);
+				if (_p16._2.ctor === 'Just') {
+					var _p31 = _p16._0._1;
+					var _p30 = _p16._0._0;
+					var _p29 = _p16._1.work;
+					var rewrite = _p16._0._2 || _p16._1.writeEnabled;
+					var pixel = A2(_minond$brainloller$Brainloller$getCmd, _p16._2._0, _minond$brainloller$Brainloller$cmdToPixel);
+					var program = _minond$brainloller$Main$historyCurr(_p29);
 					var back = A2(
 						_elm_lang$core$List$take,
 						20,
 						{
 							ctor: '::',
 							_0: program,
-							_1: _minond$brainloller$Main$historyBack(_p16)
+							_1: _minond$brainloller$Main$historyBack(_p29)
 						});
-					var resized = rewrite ? A3(_minond$brainloller$Lang$resizeProgram, program, _p17, _p18) : program;
+					var resized = rewrite ? A3(_minond$brainloller$Brainloller$resize, program, _p30, _p31) : program;
 					var update = function () {
-						var _p15 = {
+						var _p28 = {
 							ctor: '_Tuple2',
 							_0: rewrite,
-							_1: A3(_minond$brainloller$Lang$getCellMaybe, resized, _p17, _p18)
+							_1: A3(_minond$brainloller$Brainloller$getCellMaybe, resized, _p30, _p31)
 						};
-						if (((_p15.ctor === '_Tuple2') && (_p15._0 === true)) && (_p15._1.ctor === 'Just')) {
+						if (((_p28.ctor === '_Tuple2') && (_p28._0 === true)) && (_p28._1.ctor === 'Just')) {
 							return A2(
 								_minond$brainloller$Main$BackCurr,
 								back,
-								A4(_minond$brainloller$Lang$setCellAt, resized, _p17, _p18, pixel));
+								A4(_minond$brainloller$Brainloller$setCellAt, resized, _p30, _p31, pixel));
 						} else {
-							return _p16;
+							return _p29;
 						}
 					}();
 					return {
@@ -16490,7 +14214,7 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							activeCmd: _elm_lang$core$Maybe$Just(_p2._0._0)
+							activeCmd: _elm_lang$core$Maybe$Just(_p16._0._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -16511,7 +14235,7 @@ var _minond$brainloller$Main$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'IncreaseSize':
-				var _p19 = _p2._1.boardDimensions;
+				var _p32 = _p16._1.boardDimensions;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16519,14 +14243,14 @@ var _minond$brainloller$Main$update = F2(
 						{
 							boardDimensions: {
 								ctor: '_Tuple2',
-								_0: _elm_lang$core$Tuple$first(_p19) + 1,
-								_1: _elm_lang$core$Tuple$second(_p19) + 1
+								_0: _elm_lang$core$Tuple$first(_p32) + 1,
+								_1: _elm_lang$core$Tuple$second(_p32) + 1
 							}
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'DecreaseSize':
-				var _p20 = _p2._1.boardDimensions;
+				var _p33 = _p16._1.boardDimensions;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -16534,8 +14258,8 @@ var _minond$brainloller$Main$update = F2(
 						{
 							boardDimensions: {
 								ctor: '_Tuple2',
-								_0: _elm_lang$core$Tuple$first(_p20) - 1,
-								_1: _elm_lang$core$Tuple$second(_p20) - 1
+								_0: _elm_lang$core$Tuple$first(_p33) - 1,
+								_1: _elm_lang$core$Tuple$second(_p33) - 1
 							}
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -16545,7 +14269,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{zoomLevel: _p2._1.zoomLevel + 0.1}),
+						{zoomLevel: _p16._1.zoomLevel + 0.1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'ZoomOut':
@@ -16553,7 +14277,7 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{zoomLevel: _p2._1.zoomLevel - 0.1}),
+						{zoomLevel: _p16._1.zoomLevel - 0.1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:

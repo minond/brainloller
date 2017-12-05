@@ -1,57 +1,56 @@
-module Main exposing (main)
+port module Main exposing (main)
 
-import Editor
+import Brainloller
+import Html
     exposing
-        ( cmdContentBtn
-        , cmdTextBtn
-        , commandsForm
-        , link
-        , mainTitle
-        , memoryTape
-        , programCells
-        , textCopy
-        , textLabel
+        ( Attribute
+        , Html
+        , a
+        , button
+        , code
+        , div
+        , h1
+        , input
+        , label
+        , option
+        , p
+        , section
+        , select
+        , span
+        , text
         )
-import Html exposing (Html, div, input, label, option, select, span, text)
-import Html.Attributes exposing (class, id, style, type_, value)
+import Html.Attributes exposing (class, href, id, style, target, type_, value)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode as Json
-import Lang
-    exposing
-        ( BLOptCode
-        , BLProgram
-        , BLRuntime
-        , blCmdPixel
-        , createRuntime
-        , getBlCmd
-        , getCellMaybe
-        , programDimensions
-        , resizeProgram
-        , setCellAt
-        )
-import List
-import Maybe
-import Ports
-    exposing
-        ( downloadProgram
-        , imageProcessed
-        , interpreterHalt
-        , interpreterTick
-        , pauseExecution
-        , setInterpreterSpeed
-        , startExecution
-        , uploadProgram
-        )
-import Program exposing (progCat, progFib, progHelloWorld)
-import Tachyons exposing (classes)
-import Tachyons.Classes as Tac
-import Tuple exposing (first, second)
-import Util exposing (asList)
+import Program
+
+
+port downloadProgram : Brainloller.Program -> Cmd msg
+
+
+port uploadProgram : String -> Cmd msg
+
+
+port startExecution : Brainloller.Environment -> Cmd msg
+
+
+port setInterpreterSpeed : String -> Cmd msg
+
+
+port pauseExecution : Brainloller.Environment -> Cmd msg
+
+
+port imageProcessed : (Brainloller.Program -> msg) -> Sub msg
+
+
+port interpreterTick : (Brainloller.Runtime -> msg) -> Sub msg
+
+
+port interpreterHalt : (Brainloller.Runtime -> msg) -> Sub msg
 
 
 type Msg
-    = NoOp
-    | SetCmd BLOptCode
+    = SetCmd Brainloller.Optcode
     | SetSpeed String
     | LoadMemoryProgram String
     | WriteCmd Int Int Bool
@@ -61,7 +60,7 @@ type Msg
     | DecreaseSize
     | DownloadProgram
     | UploadProgram
-    | ImageProcessed BLProgram
+    | ImageProcessed Brainloller.Program
     | Undo
     | Redo
     | ZoomIn
@@ -70,8 +69,8 @@ type Msg
     | Start
     | Pause
     | Continue
-    | Tick BLRuntime
-    | Halt BLRuntime
+    | Tick Brainloller.Runtime
+    | Halt Brainloller.Runtime
 
 
 type History a
@@ -81,9 +80,9 @@ type History a
 
 
 type alias Model =
-    { work : History BLProgram
-    , activeCmd : Maybe BLOptCode
-    , runtime : BLRuntime
+    { work : History Brainloller.Program
+    , activeCmd : Maybe Brainloller.Optcode
+    , runtime : Brainloller.Runtime
     , tickCounter : Int
     , boardDimensions : ( Int, Int )
     , zoomLevel : Float
@@ -103,11 +102,15 @@ main =
 
 initialModel : Model
 initialModel =
-    { work = Curr progHelloWorld
+    let
+        program =
+            Program.load "helloworld.png"
+    in
+    { work = Curr program
     , activeCmd = Nothing
-    , runtime = createRuntime Nothing
+    , runtime = Brainloller.create Nothing
     , tickCounter = 0
-    , boardDimensions = programDimensions progHelloWorld
+    , boardDimensions = Brainloller.dimensions program
     , zoomLevel = 1
     , interpreterSpeed = "5"
     , writeEnabled = False
@@ -117,27 +120,13 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
-        ( NoOp, _, _ ) ->
-            ( model, Cmd.none )
-
         ( LoadMemoryProgram prog, { work }, _ ) ->
             let
                 runtime =
-                    createRuntime Nothing
+                    Brainloller.create Nothing
 
                 program =
-                    case prog of
-                        "helloworld.png" ->
-                            progHelloWorld
-
-                        "cat.png" ->
-                            progCat
-
-                        "fib.png" ->
-                            progFib
-
-                        _ ->
-                            []
+                    Program.load prog
             in
             ( { model
                 | runtime = runtime
@@ -205,7 +194,7 @@ update message model =
             ( { model
                 | work = Curr prog
                 , zoomLevel = 1
-                , boardDimensions = programDimensions prog
+                , boardDimensions = Brainloller.dimensions prog
               }
             , Cmd.none
             )
@@ -218,10 +207,10 @@ update message model =
                 BackCurr back curr ->
                     let
                         newCurr =
-                            asList <| List.head back
+                            Maybe.withDefault [] <| List.head back
 
                         newBack =
-                            asList <| List.tail back
+                            Maybe.withDefault [] <| List.tail back
 
                         newForw =
                             [ curr ]
@@ -281,21 +270,21 @@ update message model =
                     List.take 20 (program :: historyBack work)
 
                 pixel =
-                    getBlCmd activeCmd blCmdPixel
+                    Brainloller.getCmd activeCmd Brainloller.cmdToPixel
 
                 rewrite =
                     force || writeEnabled
 
                 resized =
                     if rewrite then
-                        resizeProgram program x y
+                        Brainloller.resize program x y
                     else
                         program
 
                 update =
-                    case ( rewrite, getCellMaybe resized x y ) of
+                    case ( rewrite, Brainloller.getCellMaybe resized x y ) of
                         ( True, Just _ ) ->
-                            BackCurr back (setCellAt resized x y pixel)
+                            BackCurr back (Brainloller.setCellAt resized x y pixel)
 
                         _ ->
                             work
@@ -317,7 +306,7 @@ update message model =
         ( IncreaseSize, { boardDimensions }, _ ) ->
             ( { model
                 | boardDimensions =
-                    ( first boardDimensions + 1, second boardDimensions + 1 )
+                    ( Tuple.first boardDimensions + 1, Tuple.second boardDimensions + 1 )
               }
             , Cmd.none
             )
@@ -325,7 +314,7 @@ update message model =
         ( DecreaseSize, { boardDimensions }, _ ) ->
             ( { model
                 | boardDimensions =
-                    ( first boardDimensions - 1, second boardDimensions - 1 )
+                    ( Tuple.first boardDimensions - 1, Tuple.second boardDimensions - 1 )
               }
             , Cmd.none
             )
@@ -352,225 +341,69 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        title =
-            mainTitle "Brainloller"
-
         cmdClass =
             Maybe.withDefault "" model.activeCmd
-
-        containerClasses =
-            [ "main-container"
-            , "main-container--" ++ cmdClass
-            , Tac.cf
-            , Tac.pa3
-            , Tac.pa4_ns
-            ]
     in
-    div [ classes containerClasses ]
-        [ title
+    div [ class ("cf pa3 pa4-ns container helvetica main-container--" ++ cmdClass) ]
+        [ h1
+            [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
+            [ text "Brainloller" ]
         , div
-            [ class "cf" ]
+            [ class "fl w-75 w-50-l editor-section" ]
+            -- section [] <| editorIntroduction model
+            -- section [] <| editorInformation model
+            [ section [] <| editorRunControls model
+            , section [] <| editorControls model
+            , section [] <| editorOptcodes model
+            , section [] <| editorMemory model
+            , section [] <| editorOutput model
+            ]
+        , div
+            [ class "fl w-100 w-50-l editor-section" ]
             [ div
-                [ class "w-100 w-40-l mb4" ]
-                [ textCopy introText1 ]
+                [ class "noselect" ]
+                [ editorCanvas model ]
             , div
-                [ class "" ]
-                [ programContainer model ]
+                [ class "helvetica program-message-status" ]
+                [ text "" ]
             ]
         ]
 
 
-programContainer : Model -> Html Msg
-programContainer model =
-    let
-        uploadBtn =
-            cmdContentBtn
-                "Upload"
-                [ onClick NoOp ]
-                [ input
-                    [ type_ "file"
-                    , id "fileupload"
-                    , class "dn"
-                    , on "change" (Json.succeed UploadProgram)
-                    ]
-                    []
-                ]
+btn : String -> List (Attribute msg) -> Html msg
+btn val attrs =
+    button
+        ([ class "mr2 mb2 pointer" ] ++ attrs)
+        [ text val ]
 
-        downloadBtn =
-            cmdTextBtn "Download" [ onClick DownloadProgram ]
 
-        playBtn =
-            cmdTextBtn "Play" [ onClick Start ]
-
-        continueBtn =
-            cmdTextBtn "Continue" [ onClick Continue ]
-
-        pauseBtn =
-            cmdTextBtn "Pause" [ onClick Pause ]
-
-        undoBtn =
-            cmdTextBtn "Undo" [ onClick Undo ]
-
-        redoBtn =
-            cmdTextBtn "Redo" [ onClick Redo ]
-
-        growBtn =
-            cmdTextBtn "Expand canvas" [ onClick IncreaseSize ]
-
-        shrinkBtn =
-            cmdTextBtn "Contract canvas" [ onClick DecreaseSize ]
-
-        zoomInBtn =
-            cmdTextBtn "Zoom in" [ onClick ZoomIn ]
-
-        zoomOutBtn =
-            cmdTextBtn "Zoom out" [ onClick ZoomOut ]
-
-        resetBtn =
-            cmdTextBtn "Clear" [ onClick Reset ]
-
-        commands =
-            [ playBtn
-            , pauseBtn
-            , continueBtn
-            , undoBtn
-            , redoBtn
-            , growBtn
-            , shrinkBtn
-            , zoomInBtn
-            , zoomOutBtn
-            , resetBtn
-            , uploadBtn
-            , downloadBtn
-            ]
-
-        output =
-            div
-                [ class "program-output" ]
-                [ text (Maybe.withDefault "none" model.runtime.output) ]
-    in
+lbl : String -> Html Msg
+lbl txt =
     div
-        [ class "cf" ]
-        [ div
-            [ class "fl w-100 w-50-m w-40-l pr3-m pr5-l" ]
-            [ div
-                []
-                [ textLabel
-                    "Load a program"
-                    [ select
-                        [ onInput LoadMemoryProgram ]
-                        [ option
-                            []
-                            [ text "helloworld.png" ]
-                        , option
-                            []
-                            [ text "cat.png" ]
-                        , option
-                            []
-                            [ text "fib.png" ]
-                        ]
-                    ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Change evaluation speed"
-                    [ input
-                        [ type_ "range"
-                        , value model.interpreterSpeed
-                        , onInput SetSpeed
-                        ]
-                        []
-                    ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Editor and program commands"
-                    [ div
-                        []
-                        commands
-                    ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Brainloller commands"
-                    [ div
-                        []
-                        (programCommands model)
-                    ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Program output"
-                    [ output ]
-                ]
-            , div
-                []
-                [ textLabel
-                    "Program memory"
-                    [ div
-                        [ class "program-memory" ]
-                        (memoryTape model.runtime)
-                    ]
-                ]
-            ]
-        , div
-            [ class "helvetica program-message-status" ]
-            [ text "" ]
-        , div
-            [ class "noselect fl w-100 w-50-m w-60-l" ]
-            [ programCanvas model ]
+        [ class "f6 mb2 gray i" ]
+        [ text txt ]
+
+
+mono : String -> Html Msg
+mono str =
+    code
+        [ class "f6 ph1 tc bg-light-gray word-wrap" ]
+        [ text str ]
+
+
+link : String -> String -> Bool -> Html msg
+link label to external =
+    a
+        [ href to
+        , target
+            (if external then
+                "_blank"
+             else
+                "_self"
+            )
+        , class "link dim blue"
         ]
-
-
-programCanvas : Model -> Html Msg
-programCanvas model =
-    let
-        program =
-            historyCurr model.work
-
-        dim =
-            programDimensions program
-
-        minWidth =
-            35
-
-        minHeight =
-            25
-
-        width =
-            2 + max minWidth (max (first dim) (first model.boardDimensions))
-
-        height =
-            2 + max minHeight (max (second dim) (second model.boardDimensions))
-
-        write =
-            \x y f -> WriteCmd x y f
-    in
-    div
-        [ class "program-cells" ]
-        [ div
-            [ class "program-cells-wrapper" ]
-            [ div
-                [ style [ ( "zoom", toString model.zoomLevel ) ] ]
-                [ programCells width height program model.runtime write EnableWrite DisableWrite ]
-            ]
-        ]
-
-
-programCommands : Model -> List (Html Msg)
-programCommands model =
-    let
-        setCmd =
-            \cmd -> SetCmd cmd
-
-        activeCmd =
-            Maybe.withDefault "" model.activeCmd
-    in
-    commandsForm setCmd activeCmd
+        [ text label ]
 
 
 historyCurr : History a -> a
@@ -599,9 +432,186 @@ historyBack hist =
             back
 
 
-introText1 : List (Html msg)
-introText1 =
-    [ textCopy
+editorOutput : Model -> List (Html Msg)
+editorOutput model =
+    let
+        output =
+            Maybe.withDefault "none" model.runtime.output
+    in
+    [ div
+        [ class "mb3" ]
+        [ lbl "Output"
+        , mono output
+        ]
+    ]
+
+
+editorOptcodes : Model -> List (Html Msg)
+editorOptcodes model =
+    let
+        setCmd =
+            \cmd -> SetCmd cmd
+
+        activeCmd =
+            Maybe.withDefault "" model.activeCmd
+    in
+    [ lbl "Brainloller commands"
+    , div
+        [ class "mb2" ]
+        (Brainloller.commands setCmd activeCmd)
+    ]
+
+
+editorMemory : Model -> List (Html Msg)
+editorMemory { runtime } =
+    [ lbl "Program memory"
+    , div
+        [ class "program-memory" ]
+        (Brainloller.memoryTape runtime)
+    ]
+
+
+editorControls : Model -> List (Html Msg)
+editorControls _ =
+    let
+        uploadBtn =
+            label
+                []
+                [ span
+                    [ class "btn-like mr2 mb2 pointer"
+                    , type_ "button"
+                    ]
+                    [ text "Upload" ]
+                , input
+                    [ type_ "file"
+                    , id "fileupload"
+                    , class "dn"
+                    , on "change" (Json.succeed UploadProgram)
+                    ]
+                    []
+                ]
+
+        downloadBtn =
+            btn "Download" [ onClick DownloadProgram ]
+
+        playBtn =
+            btn "Play" [ onClick Start ]
+
+        continueBtn =
+            btn "Continue" [ onClick Continue ]
+
+        pauseBtn =
+            btn "Pause" [ onClick Pause ]
+
+        undoBtn =
+            btn "Undo" [ onClick Undo ]
+
+        redoBtn =
+            btn "Redo" [ onClick Redo ]
+
+        growBtn =
+            btn "Expand canvas" [ onClick IncreaseSize ]
+
+        shrinkBtn =
+            btn "Contract canvas" [ onClick DecreaseSize ]
+
+        zoomInBtn =
+            btn "Zoom in" [ onClick ZoomIn ]
+
+        zoomOutBtn =
+            btn "Zoom out" [ onClick ZoomOut ]
+
+        resetBtn =
+            btn "Clear" [ onClick Reset ]
+
+        commands =
+            [ playBtn
+            , pauseBtn
+            , continueBtn
+            , undoBtn
+            , redoBtn
+            , growBtn
+            , shrinkBtn
+            , zoomInBtn
+            , zoomOutBtn
+            , resetBtn
+            , uploadBtn
+            , downloadBtn
+            ]
+    in
+    [ lbl "Program controls"
+    , div
+        [ class "mb2" ]
+        commands
+    ]
+
+
+editorRunControls : Model -> List (Html Msg)
+editorRunControls { interpreterSpeed } =
+    [ lbl "Load a program"
+    , select
+        [ onInput LoadMemoryProgram
+        , class "w-50 mb3"
+        ]
+        [ option
+            []
+            [ text "helloworld.png" ]
+        , option
+            []
+            [ text "cat.png" ]
+        , option
+            []
+            [ text "fib.png" ]
+        ]
+    , lbl ("Change evaluation delay (" ++ interpreterSpeed ++ ")")
+    , input
+        [ type_ "range"
+        , class "w-50 mb2"
+        , value interpreterSpeed
+        , onInput SetSpeed
+        ]
+        []
+    ]
+
+
+editorCanvas : Model -> Html Msg
+editorCanvas { work, boardDimensions, zoomLevel, runtime } =
+    let
+        program =
+            historyCurr work
+
+        dim =
+            Brainloller.dimensions program
+
+        minWidth =
+            35
+
+        minHeight =
+            25
+
+        width =
+            2 + max minWidth (max (Tuple.first dim) (Tuple.first boardDimensions))
+
+        height =
+            2 + max minHeight (max (Tuple.second dim) (Tuple.second boardDimensions))
+
+        write =
+            \x y f -> WriteCmd x y f
+    in
+    div
+        [ class "program-cells" ]
+        [ div
+            [ class "program-cells-wrapper" ]
+            [ div
+                [ style [ ( "zoom", toString zoomLevel ) ] ]
+                [ Brainloller.programCells width height program runtime write EnableWrite DisableWrite ]
+            ]
+        ]
+
+
+editorIntroduction : Model -> List (Html Msg)
+editorIntroduction _ =
+    [ p [ class "mt0 lh-copy" ]
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is "
         , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
@@ -615,5 +625,61 @@ introText1 =
             interpreter. Automatically loaded is a "Hello, World" program. Run
             it by clicking on the "Play" button below.
             """
+        ]
+    ]
+
+
+editorInformation : Model -> List (Html Msg)
+editorInformation { work, runtime } =
+    let
+        program =
+            historyCurr work
+
+        dims =
+            Brainloller.dimensions program
+
+        width =
+            Tuple.first dims
+
+        height =
+            Tuple.second dims
+
+        x =
+            Tuple.first runtime.activeCoor
+
+        y =
+            Tuple.second runtime.activeCoor
+
+        opt =
+            Brainloller.getCellAt program x y
+
+        outputMessage =
+            case runtime.output of
+                Nothing ->
+                    text "The program has had no output yet."
+
+                Just str ->
+                    span
+                        []
+                        [ text "Output length is "
+                        , mono <| toString <| String.length str
+                        , text " characters long."
+                        ]
+    in
+    [ p
+        [ class "mt0 lh-copy" ]
+        [ text "Here's some information about your program: it is "
+        , mono <| toString width
+        , text " pixels wide by "
+        , mono <| toString height
+        , text " pixels tall."
+        , text " of which are valid commands. The interpreter is going to interpret the character at coordinates "
+        , mono <| toString runtime.activeCoor
+        , text ", which is "
+        , mono <| toString opt
+        , text ", and is rotated "
+        , mono <| toString runtime.pointerDeg
+        , text " degrees. "
+        , outputMessage
         ]
     ]
