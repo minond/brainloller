@@ -1,7 +1,6 @@
 module Editor
     exposing
-        ( cmdContentBtn
-        , cmdTextBtn
+        ( cmdTextBtn
         , commandsForm
         , link
         , mainTitle
@@ -53,13 +52,6 @@ link label to external =
             ]
         ]
         [ text label ]
-
-
-cmdContentBtn : String -> List (Attribute msg) -> List (Html msg) -> Html msg
-cmdContentBtn val attrs content =
-    button
-        ([ class "mr2 mb2 pointer" ] ++ attrs)
-        ([ text val ] ++ content)
 
 
 cmdTextBtn : String -> List (Attribute msg) -> Html msg

@@ -2,8 +2,7 @@ module Main exposing (main)
 
 import Editor
     exposing
-        ( cmdContentBtn
-        , commandsForm
+        ( commandsForm
         , link
         , mainTitle
         , memoryTape
@@ -49,8 +48,7 @@ import Util exposing (asList)
 
 
 type Msg
-    = NoOp
-    | SetCmd BLOptCode
+    = SetCmd BLOptCode
     | SetSpeed String
     | LoadMemoryProgram String
     | WriteCmd Int Int Bool
@@ -116,9 +114,6 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case ( message, model, model.activeCmd ) of
-        ( NoOp, _, _ ) ->
-            ( model, Cmd.none )
-
         ( LoadMemoryProgram prog, { work }, _ ) ->
             let
                 runtime =
@@ -384,10 +379,14 @@ programContainer : Model -> Html Msg
 programContainer model =
     let
         uploadBtn =
-            cmdContentBtn
-                "Upload"
-                [ onClick NoOp ]
-                [ input
+            label
+                []
+                [ span
+                    [ class "btn-like mr2 mb2 pointer"
+                    , type_ "button"
+                    ]
+                    [ text "Upload" ]
+                , input
                     [ type_ "file"
                     , id "fileupload"
                     , class "dn"
