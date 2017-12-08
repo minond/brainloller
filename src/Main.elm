@@ -9,6 +9,8 @@ import Html
         , button
         , code
         , div
+        , ul
+        , li
         , h1
         , input
         , label
@@ -349,10 +351,11 @@ view model =
             [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
             [ text "Brainloller" ]
         , div
-            [ class "fl w-75 w-50-l editor-section" ]
-            -- section [] <| editorIntroduction model
-            -- section [] <| editorInformation model
-            [ section [] <| editorRunControls model
+            [ class "fl w-100 w-50-l editor-section" ]
+            [ section [] <| editorIntroduction model
+            , section [] <| editorTutorial model
+            , section [] <| editorInformation model
+            , section [] <| editorRunControls model
             , section [] <| editorControls model
             , section [] <| editorOptcodes model
             , section [] <| editorMemory model
@@ -388,6 +391,13 @@ mono : String -> Html Msg
 mono str =
     code
         [ class "f6 ph1 tc bg-light-gray word-wrap" ]
+        [ text str ]
+
+
+monoc : String -> String -> Html Msg
+monoc str klass =
+    code
+        [ class ("f6 ph1 tc bg-light-gray word-wrap " ++ klass) ]
         [ text str ]
 
 
@@ -609,21 +619,54 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
         ]
 
 
+editorTutorial : Model -> List (Html Msg)
+editorTutorial _ =
+    [ p [ class "lh-copy" ]
+        [ text "Brainloller's commands and what they do:"
+        ]
+    , ul
+        [ class "pl4 lh-copy" ]
+        [ li
+            []
+            [ monoc "rgb(255, 0, 0)" "shiftRight"
+            , text " ("
+            , mono ">"
+            , text ") and "
+            , monoc "rgb(128, 0, 0)" "shiftLeft"
+            , text " ("
+            , mono "<"
+            , text ") and "
+            , text """Move the pointer to the left and to the right. Keep an on
+                the memory cells by the editor -- the cell that has a black
+                background color is the active cell and the one where
+                increment, decrement, and loops will act on or check.
+                """
+            ]
+        ]
+    ]
+
+
 editorIntroduction : Model -> List (Html Msg)
 editorIntroduction _ =
     [ p [ class "mt0 lh-copy" ]
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
-        , text " is "
+        , text " is simply a pixel based representation of the "
         , link "Brainfuck" "https://esolangs.org/wiki/Brainfuck" False
-        , text """ but represented as an image. If you're not familiar with
-            Brainfuck already, go checkout
+        , text """ language.  Like Brainfuck, Brainloller has a limited set of
+            commands, all of which it copies from Brainfuck with the addition
+            of two commands which allow you to change the direction (right,
+            down, left, up) the program is evaluated in.
             """
-        , link " this debugger" "http://minond.xyz/brainfuck" True
-        , text """. Brainloller gives you the eight commands that you have in
-            Brainfuck with two additional commands for rotating the direction
-            in which the program is evaluated. Below is an editor and
-            interpreter. Automatically loaded is a "Hello, World" program. Run
-            it by clicking on the "Play" button below.
+        ]
+    , p [ class "lh-copy" ]
+        [ text """The two additional are needed due to Brainloller's 2D nature.
+            Where in Brainfuck you are able to evalulate the program one line
+            at a time, always from left to right, Brainloller works with a two
+            dimensional array of pixels. No real technical reason why
+            Brainloller programs couldn't be evaluated line by line, always
+            going from left to right, but this is what the specification calls
+            for and after all, this is an esoteric programming language, so we
+            can't complain.
             """
         ]
     ]

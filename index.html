@@ -94,23 +94,25 @@
       border-top: 0;
     }
 
+    .shiftRight,
     .main-container--shiftRight .program-cell:hover,
     .cmd-btn--shiftRight {
+      color: white;
       background-color: rgb(255, 0, 0) !important;
     }
 
     .cmd-btn--shiftRight:after {
-      color: white;
       content: '>';
     }
 
+    .shiftLeft,
     .main-container--shiftLeft .program-cell:hover,
     .cmd-btn--shiftLeft {
+      color: white;
       background-color: rgb(128, 0, 0) !important;
     }
 
     .cmd-btn--shiftLeft:after {
-      color: white;
       content: '<';
     }
 
@@ -291,11 +293,6 @@
 
     /* large */
     @media screen and (min-width: 60em) {
-      .editor-section {
-        margin-top: 5rem;
-        margin-bottom: 2rem;
-      }
-
       .editor-section:first-of-type {
         padding-right: 1.5rem;
       }
