@@ -13771,12 +13771,12 @@ var _minond$brainloller$Brainloller$memoryTape = function (runtime) {
 					_0: _elm_lang$html$Html_Attributes$classList(
 						{
 							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'program-memory-cell', _1: true},
+							_0: {ctor: '_Tuple2', _0: 'memcell', _1: true},
 							_1: {
 								ctor: '::',
 								_0: {
 									ctor: '_Tuple2',
-									_0: 'program-memory-cell--active',
+									_0: 'selected',
 									_1: _elm_lang$core$Native_Utils.eq(runtime.activeCell, i)
 								},
 								_1: {ctor: '[]'}
@@ -13787,12 +13787,8 @@ var _minond$brainloller$Brainloller$memoryTape = function (runtime) {
 				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('program-memory-cell-content'),
-							_1: {ctor: '[]'}
-						},
+						_elm_lang$html$Html$span,
+						{ctor: '[]'},
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(
@@ -13802,7 +13798,18 @@ var _minond$brainloller$Brainloller$memoryTape = function (runtime) {
 					_1: {ctor: '[]'}
 				});
 		});
-	return A2(_elm_lang$core$List$indexedMap, cell, cells);
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('cellrow'),
+				_1: {ctor: '[]'}
+			},
+			A2(_elm_lang$core$List$indexedMap, cell, cells)),
+		_1: {ctor: '[]'}
+	};
 };
 var _minond$brainloller$Brainloller$pixelStyle = function (p) {
 	return {
@@ -17397,7 +17404,7 @@ var _minond$brainloller$Main$editorMemory = function (_p9) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('program-memory'),
+					_0: _elm_lang$html$Html_Attributes$class('mt1 mb3'),
 					_1: {ctor: '[]'}
 				},
 				_minond$brainloller$Brainloller$memoryTape(_p10.runtime)),

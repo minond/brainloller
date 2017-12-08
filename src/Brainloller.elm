@@ -19,7 +19,7 @@ module Brainloller
         , setCellAt
         )
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, text, span)
 import Html.Attributes exposing (class, classList, style, tabindex, title)
 import Html.Events exposing (onClick, onMouseDown, onMouseOver, onMouseUp)
 import List.Extra exposing (getAt, setAt)
@@ -311,12 +311,12 @@ memoryTape runtime =
             \i val ->
                 div
                     [ classList
-                        [ ( "program-memory-cell", True )
-                        , ( "program-memory-cell--active", runtime.activeCell == i )
+                        [ ( "memcell", True )
+                        , ( "selected", runtime.activeCell == i )
                         ]
                     ]
-                    [ div
-                        [ class "program-memory-cell-content" ]
+                    [ span
+                        []
                         [ text (toString val) ]
                     ]
 
@@ -329,4 +329,7 @@ memoryTape runtime =
         cells =
             runtime.memory ++ padding
     in
-        List.indexedMap cell cells
+        [ div
+            [ class "cellrow" ]
+            (List.indexedMap cell cells)
+        ]

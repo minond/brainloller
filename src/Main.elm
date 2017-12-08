@@ -476,7 +476,7 @@ editorMemory : Model -> List (Html Msg)
 editorMemory { runtime } =
     [ lbl "Program memory"
     , div
-        [ class "program-memory" ]
+        [ class "mt1 mb3" ]
         (Brainloller.memoryTape runtime)
     ]
 

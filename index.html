@@ -201,39 +201,6 @@
       content: '-90';
     }
 
-    .program-memory-cell {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      text-align: center;
-      border-top: 1px solid #9e9e9e;
-      border-bottom: 1px solid #9e9e9e;
-      border-right: 1px solid #9e9e9e;
-      box-sizing: border-box;
-      position: relative;
-      margin-top: -1px;
-      font-size: .875rem;
-      font-family: monospace;
-    }
-
-    .program-memory-cell--active {
-      background: black;
-      color: white;
-    }
-
-    .program-memory-cell-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-50%);
-    }
-
-    .program-memory {
-      font-size: 0;
-      margin: .3rem 0 1rem 0;
-      border-left: 1px solid #9e9e9e
-    }
-
     .program-output {
       font-size: 1.1rem;
       font-family: monospace;
@@ -290,6 +257,47 @@
 
     .editor-section {
       box-sizing: border-box;
+    }
+
+    .cellrow {
+      font-size: 0;
+      max-width: 30rem;
+    }
+
+    .cellrow:not(:first-child) .memcell {
+      border-top: 0;
+    }
+
+    .memcell {
+      font-size: 1rem;
+      border-bottom: 1px solid #c0c0c0;
+      border-right: 1px solid #c0c0c0;
+      border-top: 1px solid #c0c0c0;
+      box-sizing: border-box;
+      display: inline-block;
+      font-family: monospace;
+      height: 0;
+      padding-bottom: 10%;
+      text-align: center;
+      width: 10%;
+      position: relative;
+      transition: color .2s, background-color .2s;
+    }
+
+    .memcell:first-child {
+      border-left: 1px solid #c0c0c0;
+    }
+
+    .memcell span {
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+    }
+
+    .memcell.selected {
+      background-color: black;
+      color: white;
     }
 
     /* medium */
