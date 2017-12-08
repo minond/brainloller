@@ -355,15 +355,15 @@ view model =
                 [ section [] <| editorIntroduction model
                 , section [] <| editorTutorial model
                 , section [] <| editorInformation model
-                , section [] <| editorRunControls model
+                ]
+            , div
+                [ class "fl w-100 w-50-l editor-section" ]
+                [ section [] <| editorRunControls model
                 , section [] <| editorControls model
                 , section [] <| editorOptcodes model
                 , section [] <| editorMemory model
                 , section [] <| editorOutput model
-                ]
-            , div
-                [ class "fl w-100 w-50-l editor-section" ]
-                [ div
+                , div
                     [ class "noselect" ]
                     [ editorCanvas model ]
                 , div

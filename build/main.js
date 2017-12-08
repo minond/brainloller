@@ -18211,42 +18211,7 @@ var _minond$brainloller$Main$view = function (model) {
 									_elm_lang$html$Html$section,
 									{ctor: '[]'},
 									_minond$brainloller$Main$editorInformation(model)),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$section,
-										{ctor: '[]'},
-										_minond$brainloller$Main$editorRunControls(model)),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$section,
-											{ctor: '[]'},
-											_minond$brainloller$Main$editorControls(model)),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$section,
-												{ctor: '[]'},
-												_minond$brainloller$Main$editorOptcodes(model)),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$section,
-													{ctor: '[]'},
-													_minond$brainloller$Main$editorMemory(model)),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$section,
-														{ctor: '[]'},
-														_minond$brainloller$Main$editorOutput(model)),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								}
+								_1: {ctor: '[]'}
 							}
 						}
 					}),
@@ -18262,32 +18227,67 @@ var _minond$brainloller$Main$view = function (model) {
 						{
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('noselect'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _minond$brainloller$Main$editorCanvas(model),
-									_1: {ctor: '[]'}
-								}),
+								_elm_lang$html$Html$section,
+								{ctor: '[]'},
+								_minond$brainloller$Main$editorRunControls(model)),
 							_1: {
 								ctor: '::',
 								_0: A2(
-									_elm_lang$html$Html$div,
-									{
+									_elm_lang$html$Html$section,
+									{ctor: '[]'},
+									_minond$brainloller$Main$editorControls(model)),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$section,
+										{ctor: '[]'},
+										_minond$brainloller$Main$editorOptcodes(model)),
+									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('helvetica program-message-status'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(''),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
+										_0: A2(
+											_elm_lang$html$Html$section,
+											{ctor: '[]'},
+											_minond$brainloller$Main$editorMemory(model)),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$section,
+												{ctor: '[]'},
+												_minond$brainloller$Main$editorOutput(model)),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$div,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$class('noselect'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _minond$brainloller$Main$editorCanvas(model),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$div,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$class('helvetica program-message-status'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text(''),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
 							}
 						}),
 					_1: {ctor: '[]'}
