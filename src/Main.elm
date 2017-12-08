@@ -364,11 +364,11 @@ view model =
                 , section [] <| editorMemory model
                 , section [] <| editorOutput model
                 , div
-                    [ class "noselect" ]
-                    [ editorCanvas model ]
-                , div
                     [ class "helvetica program-message-status" ]
                     [ text "" ]
+                , div
+                    [ class "noselect" ]
+                    [ editorCanvas model ]
                 ]
             ]
 
