@@ -664,11 +664,11 @@ editorTutorial _ =
                 "shiftLeft"
                 (Just "<")
                 """
-            Move the pointer to the left and to the right. Keep an on the
-            memory cells by the editor -- the cell that has a black background
-            color is the active cell and the one where increment, decrement,
-            and loops will act on or check.
-            """
+                Move the pointer to the left and to the right. Keep an on the
+                memory cells by the editor -- the cell that has a black
+                background color is the active cell and the one where
+                increment, decrement, and loops will act on or check.
+                """
             , cmd True
                 "rgb(0, 255, 0)"
                 "increment"
@@ -677,10 +677,10 @@ editorTutorial _ =
                 "decrement"
                 (Just "-")
                 """
-            Increment and decrement the active cell. Note that incrementing
-            above 255 will "wrap" the value back around to 0, and decrementing
-            below 0 will take you to 255.
-            """
+                Increment and decrement the active cell. Note that incrementing
+                above 255 will "wrap" the value back around to 0, and
+                decrementing below 0 will take you to 255.
+                """
             , cmd True
                 "rgb(0, 0, 255)"
                 "ioWrite"
@@ -689,9 +689,9 @@ editorTutorial _ =
                 "ioRead"
                 (Just ",")
                 """
-            Are the io functions. A period will output the character associated
-            with the ASCII in the active cell.
-            """
+                Are the io functions. A period will output the character
+                associated with the ASCII in the active cell.
+                """
             , cmd True
                 "rgb(255, 255, 0)"
                 "loopOpen"
@@ -700,10 +700,10 @@ editorTutorial _ =
                 "loopClose"
                 (Just "]")
                 """
-            Are the language's only control flow operators. The code inside of
-            the loop is ran as long as that value of the active cell is not
-            zero.
-            """
+                Are the language's only control flow operators. The code inside
+                of the loop is ran as long as that value of the active cell is
+                not zero.
+                """
             , cmd True
                 "rgb(0, 255, 255)"
                 "rotateClockwise"
@@ -712,10 +712,10 @@ editorTutorial _ =
                 "rotateCounterClockwise"
                 Nothing
                 """
-            We start the program by checking the left-most pixel in the first
-            row. With these two commands we're able to change that direction by
-            rotating +/- 90 degrees.
-            """
+                We start the program by checking the left-most pixel in the
+                first row. With these two commands we're able to change that
+                direction by rotating +/- 90 degrees.
+                """
             ]
         ]
 
