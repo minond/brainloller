@@ -108,15 +108,15 @@ initialModel =
         program =
             Program.load "helloworld.png"
     in
-    { work = Curr program
-    , activeCmd = Nothing
-    , runtime = Brainloller.create Nothing
-    , tickCounter = 0
-    , boardDimensions = Brainloller.dimensions program
-    , zoomLevel = 1
-    , interpreterSpeed = "5"
-    , writeEnabled = False
-    }
+        { work = Curr program
+        , activeCmd = Nothing
+        , runtime = Brainloller.create Nothing
+        , tickCounter = 0
+        , boardDimensions = Brainloller.dimensions program
+        , zoomLevel = 1
+        , interpreterSpeed = "5"
+        , writeEnabled = False
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -130,15 +130,15 @@ update message model =
                 program =
                     Program.load prog
             in
-            ( { model
-                | runtime = runtime
-                , work = Curr program
-              }
-            , pauseExecution
-                { program = program
-                , runtime = runtime
-                }
-            )
+                ( { model
+                    | runtime = runtime
+                    , work = Curr program
+                  }
+                , pauseExecution
+                    { program = program
+                    , runtime = runtime
+                    }
+                )
 
         ( SetSpeed speed, _, _ ) ->
             ( { model | interpreterSpeed = speed }, setInterpreterSpeed speed )
@@ -220,7 +220,7 @@ update message model =
                         update =
                             BackCurrForw newBack newCurr newForw
                     in
-                    ( { model | work = update }, Cmd.none )
+                        ( { model | work = update }, Cmd.none )
 
                 BackCurrForw back curr forw ->
                     let
@@ -238,7 +238,7 @@ update message model =
                                 head :: tail ->
                                     BackCurrForw tail head newForw
                     in
-                    ( { model | work = update }, Cmd.none )
+                        ( { model | work = update }, Cmd.none )
 
         ( Redo, { work }, _ ) ->
             case work of
@@ -258,7 +258,7 @@ update message model =
                                 head :: tail ->
                                     BackCurrForw newBack head tail
                     in
-                    ( { model | work = update }, Cmd.none )
+                        ( { model | work = update }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -291,7 +291,7 @@ update message model =
                         _ ->
                             work
             in
-            ( { model | work = update }, Cmd.none )
+                ( { model | work = update }, Cmd.none )
 
         ( WriteCmd _ _ _, _, Nothing ) ->
             ( model, Cmd.none )
@@ -346,31 +346,31 @@ view model =
         cmdClass =
             Maybe.withDefault "" model.activeCmd
     in
-    div [ class ("cf pa3 pa4-ns container helvetica main-container--" ++ cmdClass) ]
-        [ h1
-            [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
-            [ text "Brainloller" ]
-        , div
-            [ class "fl w-100 w-50-l editor-section" ]
-            [ section [] <| editorIntroduction model
-            , section [] <| editorTutorial model
-            , section [] <| editorInformation model
-            , section [] <| editorRunControls model
-            , section [] <| editorControls model
-            , section [] <| editorOptcodes model
-            , section [] <| editorMemory model
-            , section [] <| editorOutput model
-            ]
-        , div
-            [ class "fl w-100 w-50-l editor-section" ]
-            [ div
-                [ class "noselect" ]
-                [ editorCanvas model ]
+        div [ class ("cf pa3 pa4-ns container helvetica main-container--" ++ cmdClass) ]
+            [ h1
+                [ class "mt0 f3 f2-m f1-l title fw1 baskerville" ]
+                [ text "Brainloller" ]
             , div
-                [ class "helvetica program-message-status" ]
-                [ text "" ]
+                [ class "fl w-100 w-50-l editor-section" ]
+                [ section [] <| editorIntroduction model
+                , section [] <| editorTutorial model
+                , section [] <| editorInformation model
+                , section [] <| editorRunControls model
+                , section [] <| editorControls model
+                , section [] <| editorOptcodes model
+                , section [] <| editorMemory model
+                , section [] <| editorOutput model
+                ]
+            , div
+                [ class "fl w-100 w-50-l editor-section" ]
+                [ div
+                    [ class "noselect" ]
+                    [ editorCanvas model ]
+                , div
+                    [ class "helvetica program-message-status" ]
+                    [ text "" ]
+                ]
             ]
-        ]
 
 
 btn : String -> List (Attribute msg) -> Html msg
@@ -448,12 +448,12 @@ editorOutput model =
         output =
             Maybe.withDefault "none" model.runtime.output
     in
-    [ div
-        [ class "mb3" ]
-        [ lbl "Output"
-        , mono output
+        [ div
+            [ class "mb3" ]
+            [ lbl "Output"
+            , mono output
+            ]
         ]
-    ]
 
 
 editorOptcodes : Model -> List (Html Msg)
@@ -465,11 +465,11 @@ editorOptcodes model =
         activeCmd =
             Maybe.withDefault "" model.activeCmd
     in
-    [ lbl "Brainloller commands"
-    , div
-        [ class "mb2" ]
-        (Brainloller.commands setCmd activeCmd)
-    ]
+        [ lbl "Brainloller commands"
+        , div
+            [ class "mb2" ]
+            (Brainloller.commands setCmd activeCmd)
+        ]
 
 
 editorMemory : Model -> List (Html Msg)
@@ -549,11 +549,11 @@ editorControls _ =
             , downloadBtn
             ]
     in
-    [ lbl "Program controls"
-    , div
-        [ class "mb2" ]
-        commands
-    ]
+        [ lbl "Program controls"
+        , div
+            [ class "mb2" ]
+            commands
+        ]
 
 
 editorRunControls : Model -> List (Html Msg)
@@ -608,15 +608,15 @@ editorCanvas { work, boardDimensions, zoomLevel, runtime } =
         write =
             \x y f -> WriteCmd x y f
     in
-    div
-        [ class "program-cells" ]
-        [ div
-            [ class "program-cells-wrapper" ]
+        div
+            [ class "program-cells" ]
             [ div
-                [ style [ ( "zoom", toString zoomLevel ) ] ]
-                [ Brainloller.programCells width height program runtime write EnableWrite DisableWrite ]
+                [ class "program-cells-wrapper" ]
+                [ div
+                    [ style [ ( "zoom", toString zoomLevel ) ] ]
+                    [ Brainloller.programCells width height program runtime write EnableWrite DisableWrite ]
+                ]
             ]
-        ]
 
 
 editorTutorial : Model -> List (Html Msg)
@@ -637,62 +637,87 @@ editorTutorial _ =
         cmd =
             \padded c1name c1class c1opt c2name c2class c2opt desc ->
                 li
-                    [ class (if padded then "pt2" else "") ]
-                    (
-                        [ monoc c1name c1class ]
-                        ++ (opt c1opt) ++
-                        [ text " and ", monoc c2name c2class ]
-                        ++ (opt c2opt) ++
-                        [ text desc ]
+                    [ class
+                        (if padded then
+                            "pt2"
+                         else
+                            ""
+                        )
+                    ]
+                    ([ monoc c1name c1class ]
+                        ++ (opt c1opt)
+                        ++ [ text " and ", monoc c2name c2class ]
+                        ++ (opt c2opt)
+                        ++ [ text desc ]
                     )
     in
-    [ p [ class "lh-copy" ]
-        [ text "Brainloller's commands and what they do:"
-        ]
-    , ul
-        [ class "pl4 lh-copy" ]
-        [ cmd False
-            "rgb(255, 0, 0)" "shiftRight" (Just ">")
-            "rgb(128, 0, 0)" "shiftLeft" (Just "<")
-            """
+        [ p [ class "lh-copy" ]
+            [ text "Brainloller's commands and what they do:"
+            ]
+        , ul
+            [ class "pl4 lh-copy" ]
+            [ cmd False
+                "rgb(255, 0, 0)"
+                "shiftRight"
+                (Just ">")
+                "rgb(128, 0, 0)"
+                "shiftLeft"
+                (Just "<")
+                """
             Move the pointer to the left and to the right. Keep an on the
             memory cells by the editor -- the cell that has a black background
             color is the active cell and the one where increment, decrement,
             and loops will act on or check.
             """
-        , cmd True
-            "rgb(0, 255, 0)" "increment" (Just "+")
-            "rgb(0, 128, 0)" "decrement" (Just "-")
-            """
+            , cmd True
+                "rgb(0, 255, 0)"
+                "increment"
+                (Just "+")
+                "rgb(0, 128, 0)"
+                "decrement"
+                (Just "-")
+                """
             Increment and decrement the active cell. Note that incrementing
             above 255 will "wrap" the value back around to 0, and decrementing
             below 0 will take you to 255.
             """
-        , cmd True
-            "rgb(0, 0, 255)" "ioWrite" (Just ".")
-            "rgb(0, 0, 128)" "ioRead" (Just ",")
-            """
+            , cmd True
+                "rgb(0, 0, 255)"
+                "ioWrite"
+                (Just ".")
+                "rgb(0, 0, 128)"
+                "ioRead"
+                (Just ",")
+                """
             Are the io functions. A period will output the character associated
             with the ASCII in the active cell.
             """
-        , cmd True
-            "rgb(255, 255, 0)" "loopOpen" (Just "[")
-            "rgb(128, 128, 0)" "loopClose" (Just "]")
-            """
+            , cmd True
+                "rgb(255, 255, 0)"
+                "loopOpen"
+                (Just "[")
+                "rgb(128, 128, 0)"
+                "loopClose"
+                (Just "]")
+                """
             Are the language's only control flow operators. The code inside of
             the loop is ran as long as that value of the active cell is not
             zero.
             """
-        , cmd True
-            "rgb(0, 255, 255)" "rotateClockwise" Nothing
-            "rgb(0, 128, 128)" "rotateCounterClockwise" Nothing
-            """
+            , cmd True
+                "rgb(0, 255, 255)"
+                "rotateClockwise"
+                Nothing
+                "rgb(0, 128, 128)"
+                "rotateCounterClockwise"
+                Nothing
+                """
             We start the program by checking the left-most pixel in the first
             row. With these two commands we're able to change that direction by
             rotating +/- 90 degrees.
             """
+            ]
         ]
-    ]
 
 
 editorIntroduction : Model -> List (Html Msg)
@@ -758,20 +783,20 @@ editorInformation { work, runtime } =
                         , text " characters long."
                         ]
     in
-    [ p
-        [ class "mt0 lh-copy" ]
-        [ text "Here's some information about your program: it is "
-        , mono <| toString width
-        , text " pixels wide by "
-        , mono <| toString height
-        , text " pixels tall."
-        , text " of which are valid commands. The interpreter is going to interpret the character at coordinates "
-        , mono <| toString runtime.activeCoor
-        , text ", which is "
-        , mono <| toString opt
-        , text ", and is rotated "
-        , mono <| toString runtime.pointerDeg
-        , text " degrees. "
-        , outputMessage
+        [ p
+            [ class "mt0 lh-copy" ]
+            [ text "Here's some information about your program: it is "
+            , mono <| toString width
+            , text " pixels wide by "
+            , mono <| toString height
+            , text " pixels tall."
+            , text " of which are valid commands. The interpreter is going to interpret the character at coordinates "
+            , mono <| toString runtime.activeCoor
+            , text ", which is "
+            , mono <| toString opt
+            , text ", and is rotated "
+            , mono <| toString runtime.pointerDeg
+            , text " degrees. "
+            , outputMessage
+            ]
         ]
-    ]

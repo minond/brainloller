@@ -190,7 +190,7 @@ setCellAt program x y p =
         updatedProgram =
             asList (setAt y updatedRow program)
     in
-    updatedProgram
+        updatedProgram
 
 
 dimensions : Program -> ( Int, Int )
@@ -205,7 +205,7 @@ dimensions program =
                     (\row -> Just <| List.length row)
                     (List.head program)
     in
-    ( width, height )
+        ( width, height )
 
 
 resize : Program -> Int -> Int -> Program
@@ -220,15 +220,15 @@ resize program x y =
         height =
             max (y + 1) (Tuple.second dims)
     in
-    List.indexedMap
-        (\y _ ->
-            List.indexedMap
-                (\x _ ->
-                    getCellAt program x y
-                )
-                (List.repeat width Nothing)
-        )
-        (List.repeat height Nothing)
+        List.indexedMap
+            (\y _ ->
+                List.indexedMap
+                    (\x _ ->
+                        getCellAt program x y
+                    )
+                    (List.repeat width Nothing)
+            )
+            (List.repeat height Nothing)
 
 
 pixelStyle : Pixel -> ( String, String )
@@ -255,17 +255,17 @@ programCells width height program runtime writeHandler enableHandler disableHand
                                 isActive =
                                     runtime.activeCoor == ( cellIndex, rowIndex )
                             in
-                            cell
-                                [ onClick (writeHandler cellIndex rowIndex True)
-                                , onMouseDown (writeHandler cellIndex rowIndex True)
-                                , onMouseOver (writeHandler cellIndex rowIndex False)
-                                , style [ pixelStyle pixel ]
-                                , classList
-                                    [ ( "program-cell", True )
-                                    , ( "program-cell--active", isActive )
+                                cell
+                                    [ onClick (writeHandler cellIndex rowIndex True)
+                                    , onMouseDown (writeHandler cellIndex rowIndex True)
+                                    , onMouseOver (writeHandler cellIndex rowIndex False)
+                                    , style [ pixelStyle pixel ]
+                                    , classList
+                                        [ ( "program-cell", True )
+                                        , ( "program-cell--active", isActive )
+                                        ]
                                     ]
-                                ]
-                                []
+                                    []
                         )
                         (List.repeat width div)
             )
@@ -291,17 +291,17 @@ commands cmdSetter activeCmd =
                     ]
                     []
     in
-    [ picker ">" cmds.shiftRight
-    , picker "<" cmds.shiftLeft
-    , picker "+" cmds.increment
-    , picker "-" cmds.decrement
-    , picker "." cmds.ioWrite
-    , picker "," cmds.ioRead
-    , picker "[" cmds.loopOpen
-    , picker "]" cmds.loopClose
-    , picker "+90" cmds.rotateClockwise
-    , picker "-90" cmds.rotateCounterClockwise
-    ]
+        [ picker ">" cmds.shiftRight
+        , picker "<" cmds.shiftLeft
+        , picker "+" cmds.increment
+        , picker "-" cmds.decrement
+        , picker "." cmds.ioWrite
+        , picker "," cmds.ioRead
+        , picker "[" cmds.loopOpen
+        , picker "]" cmds.loopClose
+        , picker "+90" cmds.rotateClockwise
+        , picker "-90" cmds.rotateCounterClockwise
+        ]
 
 
 memoryTape : Runtime -> List (Html msg)
@@ -329,4 +329,4 @@ memoryTape runtime =
         cells =
             runtime.memory ++ padding
     in
-    List.indexedMap cell cells
+        List.indexedMap cell cells
