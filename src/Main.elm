@@ -364,8 +364,11 @@ view model =
                 , section [] <| editorMemory model
                 , section [] <| editorOutput model
                 , div
-                    [ class "helvetica program-message-status" ]
-                    [ text "" ]
+                    [ class "relative" ]
+                    [ div
+                        [ class "helvetica program-message-status" ]
+                        [ text "" ]
+                    ]
                 , div
                     [ class "noselect" ]
                     [ editorCanvas model ]
