@@ -12913,7 +12913,7 @@ var _minond$brainloller$Main$editorIntroduction = function (_p2) {
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('The two additional are needed due to Brainloller\'s 2D nature.\n            Where in Brainfuck you are able to evalulate the program one line\n            at a time, always from left to right, Brainloller works with a two\n            dimensional array of pixels. No real technical reason why\n            Brainloller programs couldn\'t be evaluated line by line, always\n            going from left to right, but this is what the specification calls\n            for and after all, this is an esoteric programming language, so we\n            can\'t complain.\n            '),
+					_0: _elm_lang$html$Html$text('The two additional are needed due to Brainloller’s 2D nature.\n            Where in Brainfuck you are able to evalulate the program one line\n            at a time, always from left to right, Brainloller works with a two\n            dimensional array of pixels. No real technical reason why\n            Brainloller programs couldn’t be evaluated line by line, always\n            going from left to right, but this is what the specification calls\n            for and after all, this is an esoteric programming language, so we\n            can’t complain.\n            '),
 					_1: {ctor: '[]'}
 				}),
 			_1: {ctor: '[]'}
@@ -13022,7 +13022,7 @@ var _minond$brainloller$Main$editorTutorial = function (_p3) {
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text('Brainloller\'s commands and what they do:'),
+				_0: _elm_lang$html$Html$text('Brainloller’s commands and what they do:'),
 				_1: {ctor: '[]'}
 			}),
 		_1: {
@@ -13057,7 +13057,7 @@ var _minond$brainloller$Main$editorTutorial = function (_p3) {
 							'rgb(0, 128, 0)',
 							'decrement',
 							_elm_lang$core$Maybe$Just('-'),
-							'\n                Increment and decrement the active cell. Note that incrementing\n                above 255 will \"wrap\" the value back around to 0, and\n                decrementing below 0 will take you to 255.\n                '),
+							'\n                Increment and decrement the active cell. Note that incrementing\n                above 255 will ‘wrap’ the value back around to 0, and\n                decrementing below 0 will take you to 255.\n                '),
 						_1: {
 							ctor: '::',
 							_0: A8(
@@ -13081,10 +13081,10 @@ var _minond$brainloller$Main$editorTutorial = function (_p3) {
 									'rgb(128, 128, 0)',
 									'loopClose',
 									_elm_lang$core$Maybe$Just(']'),
-									'\n                Are the language\'s only control flow operators. The code inside\n                of the loop is ran as long as that value of the active cell is\n                not zero.\n                '),
+									'\n                Are the language’s only control flow operators. The code inside\n                of the loop is ran as long as that value of the active cell is\n                not zero.\n                '),
 								_1: {
 									ctor: '::',
-									_0: A8(cmd, true, 'rgb(0, 255, 255)', 'rotateClockwise', _elm_lang$core$Maybe$Nothing, 'rgb(0, 128, 128)', 'rotateCounterClockwise', _elm_lang$core$Maybe$Nothing, '\n                We start the program by checking the left-most pixel in the\n                first row. With these two commands we\'re able to change that\n                direction by rotating +/- 90 degrees.\n                '),
+									_0: A8(cmd, true, 'rgb(0, 255, 255)', 'rotateClockwise', _elm_lang$core$Maybe$Nothing, 'rgb(0, 128, 128)', 'rotateCounterClockwise', _elm_lang$core$Maybe$Nothing, '\n                We start the program by checking the left-most pixel in the\n                first row. With these two commands we’re able to change that\n                direction by rotating +/- 90 degrees.\n                '),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -13141,7 +13141,7 @@ var _minond$brainloller$Main$editorInformation = function (_p5) {
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text('Here\'s some information about your program: it is '),
+				_0: _elm_lang$html$Html$text('Here’s some information about your program: it is '),
 				_1: {
 					ctor: '::',
 					_0: _minond$brainloller$Main$mono(

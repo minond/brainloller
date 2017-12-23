@@ -655,7 +655,7 @@ editorTutorial _ =
                     )
     in
         [ p [ class "lh-copy" ]
-            [ text "Brainloller's commands and what they do:"
+            [ text "Brainloller’s commands and what they do:"
             ]
         , ul
             [ class "pl4 lh-copy" ]
@@ -681,7 +681,7 @@ editorTutorial _ =
                 (Just "-")
                 """
                 Increment and decrement the active cell. Note that incrementing
-                above 255 will "wrap" the value back around to 0, and
+                above 255 will ‘wrap’ the value back around to 0, and
                 decrementing below 0 will take you to 255.
                 """
             , cmd True
@@ -703,7 +703,7 @@ editorTutorial _ =
                 "loopClose"
                 (Just "]")
                 """
-                Are the language's only control flow operators. The code inside
+                Are the language’s only control flow operators. The code inside
                 of the loop is ran as long as that value of the active cell is
                 not zero.
                 """
@@ -716,7 +716,7 @@ editorTutorial _ =
                 Nothing
                 """
                 We start the program by checking the left-most pixel in the
-                first row. With these two commands we're able to change that
+                first row. With these two commands we’re able to change that
                 direction by rotating +/- 90 degrees.
                 """
             ]
@@ -736,14 +736,14 @@ editorIntroduction _ =
             """
         ]
     , p [ class "lh-copy" ]
-        [ text """The two additional are needed due to Brainloller's 2D nature.
+        [ text """The two additional are needed due to Brainloller’s 2D nature.
             Where in Brainfuck you are able to evalulate the program one line
             at a time, always from left to right, Brainloller works with a two
             dimensional array of pixels. No real technical reason why
-            Brainloller programs couldn't be evaluated line by line, always
+            Brainloller programs couldn’t be evaluated line by line, always
             going from left to right, but this is what the specification calls
             for and after all, this is an esoteric programming language, so we
-            can't complain.
+            can’t complain.
             """
         ]
     ]
@@ -788,7 +788,7 @@ editorInformation { work, runtime } =
     in
         [ p
             [ class "mt0 lh-copy" ]
-            [ text "Here's some information about your program: it is "
+            [ text "Here’s some information about your program: it is "
             , mono <| toString width
             , text " pixels wide by "
             , mono <| toString height
