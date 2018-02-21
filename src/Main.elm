@@ -136,7 +136,15 @@ update message model =
                   }
                 , pauseExecution
                     { program = program
-                    , runtime = runtime
+                    , runtime =
+                        { runtime
+                            | activeCoor = ( 0, 0 )
+                            , activeCell = 0
+                            , pointerDeg = 0
+                            , input = Nothing
+                            , output = Nothing
+                            , memory = []
+                        }
                     }
                 )
 

@@ -14197,7 +14197,19 @@ var _minond$brainloller$Main$update = F2(
 							work: _minond$brainloller$Main$Curr(program)
 						}),
 					_1: _minond$brainloller$Main$pauseExecution(
-						{program: program, runtime: runtime})
+						{
+							program: program,
+							runtime: _elm_lang$core$Native_Utils.update(
+								runtime,
+								{
+									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
+									activeCell: 0,
+									pointerDeg: 0,
+									input: _elm_lang$core$Maybe$Nothing,
+									output: _elm_lang$core$Maybe$Nothing,
+									memory: {ctor: '[]'}
+								})
+						})
 				};
 			case 'SetSpeed':
 				var _p19 = _p18._0._0;
