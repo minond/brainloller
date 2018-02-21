@@ -368,8 +368,9 @@ view model =
                 [ text "Brainloller" ]
             , div
                 [ class "fl w-100 w-50-l editor-section" ]
-                [ section [] <| editorIntroduction model
+                [ section [] <| editorIntroduction1 model
                 , section [] <| editorTutorial model
+                , section [] <| editorIntroduction2 model
                 , section [] <| editorInformation model
                 ]
             , div
@@ -747,8 +748,8 @@ editorTutorial _ =
         ]
 
 
-editorIntroduction : Model -> List (Html Msg)
-editorIntroduction _ =
+editorIntroduction1 : Model -> List (Html Msg)
+editorIntroduction1 _ =
     [ p [ class "mt0 lh-copy" ]
         [ link "Brainloller" "https://esolangs.org/wiki/Brainloller" True
         , text " is simply a pixel based representation of the "
@@ -769,6 +770,26 @@ editorIntroduction _ =
             for and after all, this is an esoteric programming language, so we
             can’t complain.
             """
+        ]
+    ]
+
+
+editorIntroduction2 : Model -> List (Html Msg)
+editorIntroduction2 _ =
+    [ p [ class "lh-copy" ]
+        [ text """Start by running the sample code or creating basic programs
+        on your own and see for yourself how with even the most basic control
+        flow and altering commands you can technically accomplish any task. If
+        you’re curious about the code and the interpreter that are running on
+        this page, """
+        , link "go here" "https://github.com/minond/brainloller" True
+        , text " and "
+        , link "here" "https://github.com/minond/embeddable-interpreters" True
+        , text """, and if you’d like to learn more about Brainloller and other
+        really interesting esoteric programming languages then I recommend
+        heading over to """
+        , link "Esolang" "https://esolangs.org/wiki/Main_Page" True
+        , text "."
         ]
     ]
 
@@ -811,13 +832,14 @@ editorInformation { work, runtime } =
                         ]
     in
         [ p
-            [ class "mt0 lh-copy" ]
+            [ class "lh-copy" ]
             [ text "Here’s some information about your program: it is "
             , mono <| toString width
             , text " pixels wide by "
             , mono <| toString height
             , text " pixels tall."
-            , text " of which are valid commands. The interpreter is going to interpret the character at coordinates "
+            , text """ of which are valid commands. The interpreter is going to
+            interpret the character at coordinates """
             , mono <| toString runtime.activeCoor
             , text ", which is "
             , mono <| toString opt
