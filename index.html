@@ -329,6 +329,8 @@
       'vendor/embeddable-interpreters/brainloller.js'
     ], function (common, bl) {
       var timer;
+      var backTick;
+      var backUpdate;
       var delay = 40;
 
       function memoryBackfill (memory) {
@@ -369,8 +371,33 @@
         var outputBuffer = []
         var inputBuffer = new common.ReadBuffer("");
 
+        var isUpdate = !!runtime.memory.length ||
+          runtime.activeCoor[0] !== 0 ||
+          runtime.activeCoor[1] !== 0 ||
+          runtime.pointerDeg !== 0;
+
+        if (isUpdate && timer) {
+          return;
+        }
+
         bl.exec(env.program, {
           tick: function (_tick, update, state) {
+            if (isUpdate && backTick && backUpdate) {
+              backUpdate({
+                coor: runtime.activeCoor,
+                memory: runtime.memory,
+                pointer: runtime.pointerDeg,
+              });
+
+              timer = setTimeout(backTick, 1);
+
+              isUpdate = false;
+              backTick = null;
+              backUpdate = null;
+
+              return;
+            }
+
             app.ports.interpreterTick.send({
               activeCell: 0,
               activeCoor: state.coor,
@@ -381,6 +408,8 @@
               pointerDeg: state.pointer,
             });
 
+            backTick = _tick;
+            backUpdate = update;
             timer = setTimeout(_tick, delay);
           },
 
