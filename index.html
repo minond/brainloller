@@ -369,7 +369,7 @@
         var runtime = env.runtime;
         var program = env.program;
         var outputBuffer = []
-        var inputBuffer = new common.ReadBuffer("");
+        var inputBuffer = new common.ReadBuffer(runtime.input || "");
 
         var isUpdate = !!runtime.memory.length ||
           runtime.activeCoor[0] !== 0 ||

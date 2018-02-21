@@ -73,6 +73,7 @@ type Msg
     | Continue
     | Tick Brainloller.Runtime
     | Halt Brainloller.Runtime
+    | UpdateProgramInput String
 
 
 type History a
@@ -131,7 +132,7 @@ update message model =
                     Program.load prog
             in
                 ( { model
-                    | runtime = runtime
+                    | runtime = { runtime | input = model.runtime.input }
                     , work = Curr program
                   }
                 , pauseExecution
@@ -141,7 +142,7 @@ update message model =
                             | activeCoor = ( 0, 0 )
                             , activeCell = 0
                             , pointerDeg = 0
-                            , input = Nothing
+                            , input = model.runtime.input
                             , output = Nothing
                             , memory = []
                         }
@@ -176,7 +177,7 @@ update message model =
                         | activeCoor = ( 0, 0 )
                         , activeCell = 0
                         , pointerDeg = 0
-                        , input = Nothing
+                        , input = model.runtime.input
                         , output = Nothing
                         , memory = []
                     }
@@ -185,11 +186,18 @@ update message model =
 
         ( Tick runtime, { tickCounter }, _ ) ->
             ( { model
-                | runtime = runtime
+                | runtime = { runtime | input = model.runtime.input }
                 , tickCounter = tickCounter + 1
               }
             , Cmd.none
             )
+
+        ( UpdateProgramInput input, { runtime }, _ ) ->
+            let
+                update =
+                    { runtime | input = Just input }
+            in
+                ( { model | runtime = update }, Cmd.none )
 
         ( Halt runtime, _, _ ) ->
             ( model, Cmd.none )
@@ -370,7 +378,7 @@ view model =
                 , section [] <| editorControls model
                 , section [] <| editorOptcodes model
                 , section [] <| editorMemory model
-                , section [] <| editorOutput model
+                , section [] <| editorIO model
                 , div
                     [ class "relative" ]
                     [ div
@@ -453,17 +461,25 @@ historyBack hist =
             back
 
 
-editorOutput : Model -> List (Html Msg)
-editorOutput model =
+editorIO : Model -> List (Html Msg)
+editorIO model =
     let
         output =
             Maybe.withDefault "none" model.runtime.output
     in
-        [ div
-            [ class "mb3" ]
-            [ lbl "Output"
-            , mono output
+        [ lbl "Input"
+        , div
+            [ class "pb2 mb2" ]
+            [ input
+                [ class "w-50 f6 monospace"
+                , onInput UpdateProgramInput
+                ]
+                []
             ]
+        , lbl "Output"
+        , div
+            [ class "pb2 mb2" ]
+            [ mono output ]
         ]
 
 
