@@ -13214,29 +13214,6 @@ var _minond$brainloller$Main$lbl = function (txt) {
 			_1: {ctor: '[]'}
 		});
 };
-var _minond$brainloller$Main$editorOutput = function (model) {
-	var output = A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output);
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('mb3'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: _minond$brainloller$Main$lbl('Output'),
-				_1: {
-					ctor: '::',
-					_0: _minond$brainloller$Main$mono(output),
-					_1: {ctor: '[]'}
-				}
-			}),
-		_1: {ctor: '[]'}
-	};
-};
 var _minond$brainloller$Main$editorMemory = function (_p9) {
 	var _p10 = _p9;
 	return {
@@ -13576,6 +13553,62 @@ var _minond$brainloller$Main$Model = F8(
 	function (a, b, c, d, e, f, g, h) {
 		return {work: a, activeCmd: b, runtime: c, tickCounter: d, boardDimensions: e, zoomLevel: f, interpreterSpeed: g, writeEnabled: h};
 	});
+var _minond$brainloller$Main$UpdateProgramInput = function (a) {
+	return {ctor: 'UpdateProgramInput', _0: a};
+};
+var _minond$brainloller$Main$editorIO = function (model) {
+	var output = A2(_elm_lang$core$Maybe$withDefault, 'none', model.runtime.output);
+	return {
+		ctor: '::',
+		_0: _minond$brainloller$Main$lbl('Input'),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('pb2 mb2'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('w-50 f6 monospace'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onInput(_minond$brainloller$Main$UpdateProgramInput),
+								_1: {ctor: '[]'}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: _minond$brainloller$Main$lbl('Output'),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('pb2 mb2'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _minond$brainloller$Main$mono(output),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
+};
 var _minond$brainloller$Main$Halt = function (a) {
 	return {ctor: 'Halt', _0: a};
 };
@@ -14104,7 +14137,7 @@ var _minond$brainloller$Main$view = function (model) {
 											_0: A2(
 												_elm_lang$html$Html$section,
 												{ctor: '[]'},
-												_minond$brainloller$Main$editorOutput(model)),
+												_minond$brainloller$Main$editorIO(model)),
 											_1: {
 												ctor: '::',
 												_0: A2(
@@ -14193,11 +14226,25 @@ var _minond$brainloller$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							runtime: runtime,
+							runtime: _elm_lang$core$Native_Utils.update(
+								runtime,
+								{input: model.runtime.input}),
 							work: _minond$brainloller$Main$Curr(program)
 						}),
 					_1: _minond$brainloller$Main$pauseExecution(
-						{program: program, runtime: runtime})
+						{
+							program: program,
+							runtime: _elm_lang$core$Native_Utils.update(
+								runtime,
+								{
+									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
+									activeCell: 0,
+									pointerDeg: 0,
+									input: model.runtime.input,
+									output: _elm_lang$core$Maybe$Nothing,
+									memory: {ctor: '[]'}
+								})
+						})
 				};
 			case 'SetSpeed':
 				var _p19 = _p18._0._0;
@@ -14243,7 +14290,7 @@ var _minond$brainloller$Main$update = F2(
 									activeCoor: {ctor: '_Tuple2', _0: 0, _1: 0},
 									activeCell: 0,
 									pointerDeg: 0,
-									input: _elm_lang$core$Maybe$Nothing,
+									input: model.runtime.input,
 									output: _elm_lang$core$Maybe$Nothing,
 									memory: {ctor: '[]'}
 								})
@@ -14254,7 +14301,25 @@ var _minond$brainloller$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{runtime: _p18._0._0, tickCounter: _p18._1.tickCounter + 1}),
+						{
+							runtime: _elm_lang$core$Native_Utils.update(
+								_p18._0._0,
+								{input: model.runtime.input}),
+							tickCounter: _p18._1.tickCounter + 1
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'UpdateProgramInput':
+				var update = _elm_lang$core$Native_Utils.update(
+					_p18._1.runtime,
+					{
+						input: _elm_lang$core$Maybe$Just(_p18._0._0)
+					});
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{runtime: update}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Halt':
